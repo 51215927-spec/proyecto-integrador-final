@@ -179,7 +179,7 @@ No se elaboraron ejemplos propios válidos e inválidos; el cierre confirmado no
 - [x] Diseñar importación y mantenimiento del catálogo y copias para partidas iniciadas.
 - [x] Documentar contratos de integración y UML de componentes web.
 - [x] Documentar el procedimiento de verificación en dos equipos.
-- [ ] Completar el vínculo con los casos detallados de la actividad 7 cuando se incorporen.
+- [x] Vincular el protocolo con los [casos de la actividad 7](posibles-fallos.md#red-local-y-consistencia-http).
 - [ ] Obtener revisión del PR por un compañero e integrar el diseño.
 
 **Evidencia disponible:** el usuario informó comunicación correcta entre dos procesos mediante localhost. No aportó una ejecución reproducible del proyecto ni una prueba entre computadoras; no se presenta como implementación del juego o validación de la red escolar. No tiene los equipos disponibles para ejecutar las comprobaciones ahora.
@@ -196,18 +196,12 @@ No se elaboraron ejemplos propios válidos e inválidos; el cierre confirmado no
 
 ### Actividad 7 — Casos de prueba
 
-- [ ] Definir condiciones iniciales, datos y resultado esperado para cada caso de prueba.
-- [ ] Diseñar casos para un personaje válido y para un total distinto de 3000.
-- [ ] Diseñar casos para los límites 250 y 750 y para valores fuera de rango.
-- [ ] Diseñar casos que comprueben los umbrales 650 y 350 y rechacen distribuciones sin especialización.
-- [ ] Diseñar casos de archivos de personajes incompletos, duplicados, incorrectos e ilegibles.
-- [ ] Diseñar casos para un mazo vacío y para las operaciones de mezcla y reparto.
-- [ ] Diseñar casos de ronda ganada, empate y cambio de turno.
-- [ ] Diseñar un caso de jugador sin cartas y finalización de partida.
-- [ ] Diseñar casos de API HTTP inaccesible, pérdida de conexión, reintentos duplicados y elecciones concurrentes.
-- [ ] Diseñar un caso de información que no corresponde al turno esperado.
-- [ ] Indicar qué pruebas usan caja negra y cuáles requieren caja blanca.
-- [ ] Revisar y entregar el plan de pruebas con sus resultados esperados.
+- [x] Documentar condiciones iniciales, datos, acción y resultados esperados de caja negra y blanca en el [plan de pruebas](posibles-fallos.md).
+- [x] Cubrir personajes, formato del catálogo, mazo, reglas de combate y finalización.
+- [x] Cubrir indisponibilidad, turno incorrecto, pausa, recuperación y concurrencia según el contrato HTTP de la actividad 6.
+- [ ] Completar la revisión del plan por un compañero antes de integrarlo.
+
+La ejecución y la evidencia de resultados quedan para Taller de Programación.
 
 ## Taller de Programación — C#
 

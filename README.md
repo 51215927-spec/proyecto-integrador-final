@@ -8,7 +8,7 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 El trabajo actual se limita a **TI: análisis y diseño**. La implementación en Taller de Programación queda para una etapa posterior.
 
-Las actividades 1 a 5 de TI están completadas en su documentación por confirmación del usuario. La actividad 6 documenta el protocolo REST aprobado para la entrega y queda pendiente de revisión y verificación entre equipos. La actividad 7 sigue pendiente.
+Las actividades 1 a 5 de TI están completadas en su documentación por confirmación del usuario. La actividad 6 documenta el protocolo REST aprobado para la entrega y queda pendiente de revisión y verificación entre equipos. El plan de pruebas de la actividad 7 queda pendiente de revisión.
 
 El punto de entrada todavía contiene `Hello, World!`. El repositorio contiene clases de dominio y una prueba vacía. HTTP en red local está aprobado para la entrega y la actividad 6 especifica su diseño. Consultá el [plan de trabajo](docs/Plan.md) para conocer los avances y pendientes.
 
@@ -31,6 +31,7 @@ El punto de entrada todavía contiene `Hello, World!`. El repositorio contiene c
 - [Arquitectura](docs/Arquitectura.md): decisiones de diseño y especificaciones por clase y método, con características, contratos y justificación.
 - [Tecnologías REST](docs/Tecnologias-rest.md): selección acordada para el protocolo HTTP, alcance de persistencia y decisiones pendientes.
 - [Diagrama UML](docs/diagramas/UML.uxf): modelo de dominio actualizado para abrir con UMLet; integración del protocolo pendiente de la actividad 6.
+- [Plan de pruebas de TI](docs/posibles-fallos.md) con escenarios y resultados esperados.
 - [Guía de colaboración](CONTRIBUTING.md): organización del trabajo, ramas, commits, revisión de cambios y [metodología TDD](CONTRIBUTING.md#desarrollo-guiado-por-pruebas-tdd).
 
 ## Instalación de herramientas y dependencias
