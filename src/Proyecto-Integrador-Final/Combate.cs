@@ -14,28 +14,27 @@ namespace Proyecto_Integrador_Final
         private TipoAtributo? atributoElegido;
         private Personaje? cartaQueElige;
         private Personaje? cartaRival;
-
         private Jugador? ganador;
 
         public Combate(Jugador quienElige, Jugador rival)
         {
-            jugadorQueElige = quienElige
-                ?? throw new ArgumentNullException(nameof(quienElige));
-
-            jugadorRival = rival
-                ?? throw new ArgumentNullException(nameof(rival));
+            ArgumentNullException.ThrowIfNull(quienElige);
+            ArgumentNullException.ThrowIfNull(rival);
 
             if (ReferenceEquals(quienElige, rival))
                 throw new ArgumentException(
-                    "Los participantes de un combate deben ser distintos."
+                    "Los participantes deben ser distintos."
                 );
+
+            jugadorQueElige = quienElige;
+            jugadorRival = rival;
         }
 
         public void SetAtributo(TipoAtributo tipo)
         {
             if (atributoElegido.HasValue)
                 throw new InvalidOperationException(
-                    "El atributo del combate ya fue elegido."
+                    "El atributo ya fue elegido."
                 );
 
             if (!Enum.IsDefined(tipo))
@@ -49,42 +48,11 @@ namespace Proyecto_Integrador_Final
             ArgumentNullException.ThrowIfNull(jugador);
             ArgumentNullException.ThrowIfNull(personaje);
 
-            if (!ReferenceEquals(jugador, jugadorQueElige) &&
-                !ReferenceEquals(jugador, jugadorRival))
-            {
-                throw new ArgumentException(
-                    "El jugador no participa en este combate.",
-                    nameof(jugador)
-                );
-            }
-
-            if (ReferenceEquals(jugador, jugadorQueElige))
-            {
-                if (cartaQueElige != null)
-                    throw new InvalidOperationException(
-                        "El jugador que elige ya registró su carta."
-                    );
-            }
-            else
-            {
-                if (cartaRival != null)
-                    throw new InvalidOperationException(
-                        "El rival ya registró su carta."
-                    );
-            }
-
-            if (!jugador.TieneCarta(personaje))
-                throw new ArgumentException(
-                    "La carta no se encuentra en la mano del jugador.",
-                    nameof(personaje)
-                );
+            ValidarParticipante(jugador);
+            ValidarCartaDisponible(jugador, personaje);
 
             jugador.QuitarCarta(personaje);
-
-            if (ReferenceEquals(jugador, jugadorQueElige))
-                cartaQueElige = personaje;
-            else
-                cartaRival = personaje;
+            RegistrarCarta(jugador, personaje);
         }
 
         public bool EstaCompleto()
@@ -155,11 +123,51 @@ namespace Proyecto_Integrador_Final
 
         public Jugador[] GetParticipantes()
         {
-            return new Jugador[]
+            return new[]
             {
-                jugadorQueElige,
-                jugadorRival
-            };
+            jugadorQueElige,
+            jugadorRival
+        };
+        }
+
+        private void ValidarParticipante(Jugador jugador)
+        {
+            if (!ReferenceEquals(jugador, jugadorQueElige) &&
+                !ReferenceEquals(jugador, jugadorRival))
+            {
+                throw new ArgumentException(
+                    "El jugador no participa en este combate.",
+                    nameof(jugador)
+                );
+            }
+        }
+
+        private void ValidarCartaDisponible(Jugador jugador, Personaje personaje)
+        {
+            bool esElector = ReferenceEquals(jugador, jugadorQueElige);
+            Personaje? cartaRegistrada = esElector ? cartaQueElige : cartaRival;
+
+            if (cartaRegistrada != null)
+                throw new InvalidOperationException(
+                    "El jugador ya registró su carta."
+                );
+
+            if (!jugador.TieneCarta(personaje))
+                throw new ArgumentException(
+                    "La carta no se encuentra en la mano del jugador.",
+                    nameof(personaje)
+                );
+        }
+
+        private void RegistrarCarta(Jugador jugador, Personaje personaje)
+        {
+            if (ReferenceEquals(jugador, jugadorQueElige))
+            {
+                cartaQueElige = personaje;
+                return;
+            }
+
+            cartaRival = personaje;
         }
     }
 }
