@@ -1,8 +1,6 @@
 # Tecnologías del protocolo REST
 
-## Decisión y alcance
-
-El usuario confirmó la selección tecnológica durante la discusión del 13 de noviembre de 2026 y precisó que la base de datos también conserva permanentemente los personajes. Esta decisión corresponde a TI: no autoriza implementación, instalación de dependencias ni migración del proyecto. Complementa el [protocolo REST](Protocolo-partida-web.md) de la actividad 6. El 17 de noviembre de 2026 el usuario informó la aprobación de HTTP para la entrega. Los contratos detallados siguen pendientes de revisión.
+Selección tecnológica de TI para el [protocolo HTTP](Protocolo-partida-web.md) de la actividad 6. La incorporación de paquetes al servidor corresponde a Taller.
 
 ## Tecnologías seleccionadas
 
@@ -16,21 +14,13 @@ El usuario confirmó la selección tecnológica durante la discusión del 13 de 
 | Entity Framework Core con proveedor SQLite | Acceso a datos, configuración del modelo persistente, migraciones y transacciones. |
 | xUnit | Pruebas automatizadas de reglas e integración durante Taller, siguiendo TDD. |
 
-REST es el estilo de comunicación; HTTP y JSON son el protocolo y el formato de intercambio. La selección cubre la base tecnológica prevista. Los mecanismos concretos de identidad, despliegue y recuperación se definirán con sus contratos; no se agregan paquetes por anticipado.
-
 ## Persistencia
 
-La base de datos no es solamente una copia para emergencias: es el almacenamiento permanente del catálogo. Conservará nombre, descripción, ASCII y los seis atributos de cada personaje. Se mantienen las restricciones del dominio: suma exactamente 3000, cada atributo entre 250 y 750 inclusive, al menos uno mayor o igual a 650 y al menos uno menor o igual a 350.
+SQLite almacena en el servidor el catálogo permanente y el estado de las partidas. Los clientes obtienen sus vistas mediante la API. La importación del CSV, las copias por partida y los límites de transacción están en el [diseño de persistencia](Protocolo-partida-web.md#persistencia-concurrencia-y-catálogo). El contrato de DataBases describe el [formato de origen](Arquitectura.md#formato-de-archivos-de-personajes--actividad-5).
 
-También se prevé conservar participantes, estado, orden del mazo, manos, rondas, combates, elecciones, resultados, marcadores y control de operaciones de las partidas. Las tablas, relaciones, restricciones y límites de las transacciones todavía deben diseñarse. Elegir SQLite y EF Core no implica que el modelo o la recuperación estén implementados.
+## Versiones de referencia
 
-El servidor será el único componente que acceda a SQLite; los clientes consultarán la API. La base quedará en el disco local del servidor, sin compartirse como archivo entre clientes.
-
-Queda pendiente definir cómo ingresa y se mantiene el catálogo: importación del CSV existente, altas y modificaciones desde el sistema, o una combinación. No se incorpora un editor de personajes por inferencia. También debe definirse cómo conservar los datos usados por una partida para que una modificación posterior del catálogo no cambie sus reglas o resultados. El contrato Personaje.Configurar de DataBases sigue perteneciendo al diseño anterior y deberá conciliarse al adaptar el modelo REST; no se mantienen dos fuentes de persistencia autoritativas por defecto.
-
-## Versiones y orden de inicio confirmados
-
-El usuario confirmó mantener `net8.0` y utilizar versiones estables compatibles de ASP.NET Core y EF Core. Se selecciona la línea 8.0 con parche estable 8.0.34, verificado el 13 de noviembre de 2026:
+El proyecto usa `net8.0` como framework de destino. Las versiones acordadas para el servidor son las siguientes.
 
 | Componente | Versión de referencia |
 |---|---|
@@ -40,13 +30,44 @@ El usuario confirmó mantener `net8.0` y utilizar versiones estables compatibles
 | Microsoft.EntityFrameworkCore.Sqlite | 8.0.34 |
 | Herramientas y paquete Design de EF Core, si se utilizan para migraciones | Misma línea y parche que EF Core; verificar al preparar Taller. |
 
-La distribución oficial ofrece SDK 8.0.428 y 8.0.134 con esos runtimes; falta comprobar cuál está disponible y es adecuado para las herramientas de los equipos. Son versiones de referencia del diseño, no instalaciones realizadas. Se conserva net8.0 aunque esta línea ya terminó su soporte, circunstancia comunicada durante la discusión. No se migra a .NET 10 ni se emplean versiones preliminares.
+Los SDK 8.0.428 y 8.0.134 incluyen los runtimes de referencia. La selección y la comprobación de las instalaciones de ambos equipos quedan para la [verificación en red](Protocolo-partida-web.md#verificación-en-dos-equipos). La línea .NET 8 ya terminó su soporte.
 
-Se ejecutan un servidor y dos clientes como procesos separados. Primero se abre el servidor y se espera a que esté preparado para aceptar conexiones; después se abren los clientes. El arranque del servidor no inicia automáticamente una partida. La comprobación concreta de disponibilidad y el tratamiento de un cliente abierto sin servidor quedan pendientes del contrato de conexión. Solo el servidor accede a SQLite.
+## Instalación prevista en Taller
 
-El usuario confirmó el paso 2: dos equipos Windows, servidor y cliente J1 en el primero y cliente J2 en el segundo. Las comprobaciones de instalaciones siguen pendientes hasta disponer de los equipos. En el paso 3 se acordaron HTTP local, TCP 5000 y dirección configurable; las pruebas entre equipos, permisos y firewall siguen pendientes. El detalle vigente está en [Conexión acordada](Protocolo-partida-web.md#conexión-acordada--paso-3). La consulta periódica del estado sigue siendo una propuesta; su intervalo y la presencia de clientes no quedan aprobados por elegir las bibliotecas.
+Estos son los comandos de instalación previstos. Se ejecutarán cuando Taller esté autorizado y exista el proyecto servidor; no deben aplicarse al proyecto de consola actual. Cuando llegue esa etapa, PowerShell pedirá la ruta real del archivo `.csproj` del servidor, para no depender de un nombre todavía sin definir:
 
-## Referencias consultadas durante la discusión
+```powershell
+$proyectoServidor = Read-Host "Ruta del archivo .csproj del servidor"
+if (-not (Test-Path -LiteralPath $proyectoServidor -PathType Leaf)) {
+    throw "No existe el archivo de proyecto indicado."
+}
+dotnet add "$proyectoServidor" package Microsoft.EntityFrameworkCore --version 8.0.34
+dotnet add "$proyectoServidor" package Microsoft.EntityFrameworkCore.Sqlite --version 8.0.34
+dotnet add "$proyectoServidor" package Microsoft.EntityFrameworkCore.Design --version 8.0.34
+dotnet restore "$proyectoServidor"
+dotnet list "$proyectoServidor" package
+```
+
+El proveedor SQLite incluye las dependencias necesarias para usar la base desde .NET. No hace falta instalar un servidor SQLite por separado. Los clientes de consola no necesitan estos paquetes de persistencia.
+
+Para instalar la herramienta de migraciones de EF Core por primera vez:
+
+```powershell
+dotnet tool install --global dotnet-ef --version 8.0.34
+dotnet ef --version
+```
+
+Si `dotnet-ef` ya estaba instalada y necesitás seleccionar esta versión, usá esta alternativa al comando de instalación:
+
+```powershell
+dotnet tool update --global dotnet-ef --version 8.0.34
+```
+
+Si la versión global existente pertenece a otra línea y la herramienta rechaza el cambio, conservála y revisá una instalación local para este proyecto; no hace falta desinstalar herramientas usadas por otros proyectos. Crear tablas y migraciones requiere diseñar e implementar primero el modelo de datos; instalar los paquetes no crea la base del juego.
+
+Referencias oficiales del [proveedor SQLite](https://learn.microsoft.com/en-us/ef/core/providers/sqlite/) y las [herramientas de EF Core](https://learn.microsoft.com/en-us/ef/core/cli/dotnet).
+
+## Referencias
 
 - [Minimal APIs de ASP.NET Core](https://dotnet.microsoft.com/en-us/learn/back-end-web-dev).
 - [System.Text.Json](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/overview).
@@ -55,5 +76,3 @@ El usuario confirmó el paso 2: dos equipos Windows, servidor y cliente J1 en el
 - [EF Core 8.0.34](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore/8.0.34).
 - [Proveedor SQLite 8.0.34](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.Sqlite/8.0.34).
 - [Política de soporte de .NET](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core).
-
-Las referencias explican las tecnologías; no acreditan implementación o verificaciones del proyecto. Las tareas vigentes están en [Plan](Plan.md).

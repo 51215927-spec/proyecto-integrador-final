@@ -4,23 +4,6 @@ Trabajo de análisis y diseño para TI. La base es el cliente de consola previst
 
 El [comparador de propuestas](juego-guerra-propuestas.html) reúne las maquetas estáticas del inicio, la mano, el resultado de combate y el cierre de ronda.
 
-## Secciones de la interfaz
-
-En orden de recorrido, incluidas las pantallas que aparecen solo en ciertos estados.
-
-1. [Inicio y preparación](juego-guerra-propuestas.html#inicio).
-2. Espera inicial.
-3. Inicio de ronda y reparto.
-4. [Mano y elección de carta y atributo al abrir](juego-guerra-propuestas.html#detalle).
-5. Espera de la apertura rival.
-6. Elección de carta de respuesta.
-7. Envío, confirmación y espera del resultado.
-8. [Resultado de combate](juego-guerra-propuestas.html#duelo-paralelo).
-9. [Cierre de ronda](juego-guerra-propuestas.html#cierre-ronda).
-10. Cierre de partida.
-11. Suspensión o estado sin confirmar.
-12. Interrupción, abandono y errores de cierre.
-
 ## Estados del cliente
 
 | Estado | Información visible y acciones |
@@ -63,8 +46,8 @@ Las siguientes respuestas son propuestas de diseño.
 
 - **Preparación.** Catálogo ausente, ilegible o inválido, configuración incorrecta y comunicación inaccesible. Para menos de seis cartas válidas, mostrar «No se puede jugar porque no hay suficientes cartas».
 - **Elección.** Carta no disponible, turno cambiado, solicitud consumida, rechazo o confirmación perdida. Una pérdida de comunicación tras el envío deja el resultado incierto hasta comprobarlo.
-- **Espera.** Distinguir ausencia del rival, recurso compartido o servidor inaccesible, estado desactualizado y respuesta inválida cuando el protocolo permita identificarlos.
-- **Cierre.** Distinguir victoria, salida solicitada, abandono y fallo fatal. La política ante fallos sigue pendiente de conciliación entre las reglas integradas y los diseños de la [actividad 6](Plan.md#actividad-6--archivo-de-partida-compartida).
+- **Espera.** Distinguir ausencia del rival, servidor inaccesible, estado desactualizado y respuesta inválida cuando el protocolo permita identificarlos.
+- **Cierre.** Distinguir victoria, salida solicitada, abandono y fallo fatal. El [protocolo HTTP](Protocolo-partida-web.md#estados-presencia-y-recuperación) define pausa, abandono y cancelación.
 
 ## Decisiones pendientes
 
@@ -72,14 +55,7 @@ Las siguientes respuestas son propuestas de diseño.
 - Decidir si se admite entrada redirigida para jugar y probar.
 - Definir si los resultados avanzan automáticamente, requieren confirmación local o permanecen visibles junto a la siguiente acción.
 - Definir cuándo mostrar el arte y la descripción. La propuesta es consultarlos en una ficha separada.
-- Definir inicio, asignación del rol, confirmación de salida y recuperación según el protocolo. Confirmar si el diseño también abarca la consola del servidor.
-
-## Escenarios para revisar el diseño
-
-- Recorrer la partida como J1 y J2. Validar que el rival no vea la carta ni el atributo antes de la resolución.
-- Revisar una ronda 2–0, una ronda 2–1 con empate de atributos y el cierre al alcanzar 15 rondas ganadas.
-- Combinar una ventana estrecha y baja con cartas extensas, redimensionamiento, redirección y fin de entrada.
-- Cambiar el turno mientras se escribe y perder la comunicación justo después de enviar una elección.
+- Definir cómo se presentan la incorporación, el rol asignado, la recuperación y la confirmación de salida. Decidir si el diseño visual abarca la consola del servidor.
 
 ## Aspecto de las pantallas
 
@@ -112,3 +88,10 @@ Las [cuatro maquetas](juego-guerra-propuestas.html#cierre-ronda) presentan el mi
 La interfaz tiene una distribución y una interacción personalizadas. La composición de pantallas, cajas, columnas y resaltados se resolverá con métodos propios. El uso directo de `Utilidades.Funciones` y `Utilidades.DecoracionConsola` será excepcional y se evaluará caso por caso, cuando un método resuelva una necesidad concreta y encaje con el diseño.
 
 El menú de la mano tendrá su propio código para mantener coordinados el foco de la lista, la ficha visible y la instrucción. Los métodos de Utilidades pueden servir como referencia para resolver partes similares, como leer teclas, validar opciones, recorrer la lista o actualizar el elemento en foco. La navegación definitiva se decide por separado. `MyConsole` puede seguir sirviendo como mecanismo de escritura de las líneas compuestas.
+
+## Escenarios de prueba de la interfaz
+
+- Recorrer la partida como J1 y J2. Validar que el rival no vea la carta ni el atributo antes de la resolución.
+- Probar una ronda 2–0, una ronda 2–1 con empate de atributos y el cierre al alcanzar 15 rondas ganadas.
+- Combinar una ventana estrecha y baja con cartas extensas, redimensionamiento, redirección y fin de entrada.
+- Cambiar el turno mientras se escribe y perder la comunicación justo después de enviar una elección.

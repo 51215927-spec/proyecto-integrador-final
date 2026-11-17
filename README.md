@@ -6,11 +6,9 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 ## Estado actual
 
-El trabajo actual se limita a **TI: análisis y diseño**. La implementación en Taller de Programación queda para una etapa posterior.
+El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. La implementación de red y su validación entre dos computadoras corresponden al trabajo pendiente del [plan](docs/Plan.md).
 
-Las actividades 1 a 5 de TI están completadas en su documentación por confirmación del usuario. La actividad 6 documenta el protocolo REST aprobado para la entrega y queda pendiente de revisión y verificación entre equipos. El plan de pruebas de la actividad 7 queda pendiente de revisión.
-
-El punto de entrada todavía contiene `Hello, World!`. El repositorio contiene clases de dominio y una prueba vacía. HTTP en red local está aprobado para la entrega y la actividad 6 especifica su diseño. Consultá el [plan de trabajo](docs/Plan.md) para conocer los avances y pendientes.
+La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, con pruebas de dominio en xUnit. La aplicación de consola todavía imprime `Hello, World!`.
 
 ## Contenido del repositorio
 
@@ -23,17 +21,14 @@ El punto de entrada todavía contiene `Hello, World!`. El repositorio contiene c
 
 ## Documentación
 
-- [Consigna](docs/Consigna.md): requisitos y entregables del proyecto.
-- [Reglas del juego](docs/Reglas-del-juego.md): funcionamiento esperado del sistema.
-- [Plan de trabajo](docs/Plan.md): estado de las actividades y próximos pasos.
-- [Diseño de la interfaz](docs/Interfaz.md). Inventario de estados, fallos de consola y decisiones pendientes.
-- [Protocolo de partida web](docs/Protocolo-partida-web.md): diseño aprobado de comunicación HTTP, contratos REST en revisión y verificaciones pendientes.
-- [Diagrama de comunicación HTTP](docs/Arquitectura.md#comunicación-http--actividad-6): clientes, API, dominio y persistencia.
-- [Arquitectura](docs/Arquitectura.md): decisiones de diseño y especificaciones por clase y método, con características, contratos y justificación.
-- [Tecnologías REST](docs/Tecnologias-rest.md): selección acordada para el protocolo HTTP, alcance de persistencia y decisiones pendientes.
-- [Diagrama UML](docs/diagramas/UML.uxf): modelo de dominio actualizado para abrir con UMLet; integración del protocolo pendiente de la actividad 6.
-- [Plan de pruebas de TI](docs/posibles-fallos.md) con escenarios y resultados esperados.
-- [Guía de colaboración](CONTRIBUTING.md): organización del trabajo, ramas, commits, revisión de cambios y [metodología TDD](CONTRIBUTING.md#desarrollo-guiado-por-pruebas-tdd).
+| Tema | Documentos |
+|---|---|
+| Qué debe hacer el juego | [Consigna](docs/Consigna.md) y [reglas](docs/Reglas-del-juego.md) |
+| Entregables y pendientes | [Plan de trabajo](docs/Plan.md) |
+| Dominio y catálogo de personajes | [Arquitectura](docs/Arquitectura.md) y [diagrama UML](docs/diagramas/UML.uxf) |
+| Comunicación entre equipos | [Protocolo HTTP](docs/Protocolo-partida-web.md) y [tecnologías REST](docs/Tecnologias-rest.md) |
+| Pantallas y controles | [Diseño de consola](docs/Interfaz.md) y [maquetas](docs/juego-guerra-propuestas.html) |
+| Validación y colaboración | [Plan de pruebas](docs/posibles-fallos.md) y [guía de colaboración](CONTRIBUTING.md) |
 
 ## Instalación de herramientas y dependencias
 
@@ -109,56 +104,9 @@ dotnet test Proyecto-Integrador-Final.sln
 dotnet run --project src/Proyecto-Integrador-Final
 ```
 
-La revisión de `main` en `d6d81c1` encontró dos errores de compilación en `Partida.cs`: `Mazo` carece de `GetCantidadCartas` y `RecibirCartas`. Las pruebas quedan bloqueadas hasta resolverlos. El punto de entrada contiene `Hello, World!`.
+El programa de consola muestra `Hello, World!`. Las pruebas automatizadas cubren la base de código de dominio.
 
-### Dependencias previstas para REST
-
-El diseño REST acordado utiliza ASP.NET Core, HttpClient, System.Text.Json, SQLite y Entity Framework Core. HttpClient y System.Text.Json forman parte de .NET; ASP.NET Core se incluye con el SDK. EF Core y su proveedor SQLite se incorporarán como paquetes del futuro proyecto servidor, con versiones estables compatibles de la línea 8.0 (referencia acordada: 8.0.34).
-
-Todavía no existe ese servidor ni están declarados esos paquetes en la solución. Por eso, la restauración actual no instala EF Core ni prepara una base de datos. Cuando se autorice Taller y se incorporen sus referencias, se actualizará esta guía con los pasos para crear la base y ejecutar el servidor. SQLite se utilizará dentro del servidor; no se prevé instalar un servicio de base de datos independiente. Las herramientas de migraciones de EF Core también quedan para esa etapa.
-
-#### Comandos de PowerShell para EF Core y SQLite (etapa futura)
-
-Estos son los comandos de instalación previstos. Se ejecutarán cuando Taller esté autorizado y exista el proyecto servidor; no deben aplicarse al proyecto de consola actual. Cuando llegue esa etapa, PowerShell pedirá la ruta real del archivo `.csproj` del servidor, para no depender de un nombre todavía sin definir:
-
-```powershell
-$proyectoServidor = Read-Host "Ruta del archivo .csproj del servidor"
-if (-not (Test-Path -LiteralPath $proyectoServidor -PathType Leaf)) {
-    throw "No existe el archivo de proyecto indicado."
-}
-dotnet add "$proyectoServidor" package Microsoft.EntityFrameworkCore --version 8.0.34
-dotnet add "$proyectoServidor" package Microsoft.EntityFrameworkCore.Sqlite --version 8.0.34
-dotnet add "$proyectoServidor" package Microsoft.EntityFrameworkCore.Design --version 8.0.34
-dotnet restore "$proyectoServidor"
-dotnet list "$proyectoServidor" package
-```
-
-El proveedor SQLite incluye las dependencias necesarias para usar la base desde .NET. No hace falta instalar un servidor SQLite por separado. Los clientes de consola no necesitan estos paquetes de persistencia.
-
-Para instalar la herramienta de migraciones de EF Core por primera vez:
-
-```powershell
-dotnet tool install --global dotnet-ef --version 8.0.34
-dotnet ef --version
-```
-
-Si `dotnet-ef` ya estaba instalada y necesitás seleccionar esta versión, usá esta alternativa al comando de instalación:
-
-```powershell
-dotnet tool update --global dotnet-ef --version 8.0.34
-```
-
-Si la versión global existente pertenece a otra línea y la herramienta rechaza el cambio, conservála y revisá una instalación local para este proyecto; no hace falta desinstalar herramientas usadas por otros proyectos. Crear tablas y migraciones requiere diseñar e implementar primero el modelo de datos; instalar los paquetes no crea la base del juego.
-
-Sintaxis contrastada con las referencias oficiales del [proveedor SQLite](https://learn.microsoft.com/en-us/ef/core/providers/sqlite/) y las [herramientas de EF Core](https://learn.microsoft.com/en-us/ef/core/cli/dotnet).
-
-En el diseño acordado, primero se abre el servidor y, cuando está disponible, se abren los clientes. La implementación y los comandos de inicio específicos siguen pendientes.
-
-## Cómo usarlo
-
-Para consultar la documentación, empezá por la consigna y las reglas; luego revisá el plan y la arquitectura. Para ejecutar la base de código, seguí la guía de instalación anterior.
-
-Antes de modificar el proyecto, seguí la [guía de colaboración](CONTRIBUTING.md). Los cambios se proponen mediante un Pull Request y requieren revisión de un compañero antes de integrarse a `main`.
+Las dependencias y los comandos del futuro servidor están en [Tecnologías REST](docs/Tecnologias-rest.md#instalación-prevista-en-taller).
 
 ## Autores
 

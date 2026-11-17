@@ -1,8 +1,12 @@
 # Arquitectura
 
-Modelo de análisis y diseño de TI, actualizado el 17 de noviembre de 2026. El [UML](diagramas/UML.uxf) describe el dominio. El código existente y sus pendientes se registran en el [plan](Plan.md). Los requisitos vigentes están en [Reglas del juego](Reglas-del-juego.md).
+Diseño de TI basado en las [reglas del juego](Reglas-del-juego.md) y el [diagrama UML](diagramas/UML.uxf). El [plan](Plan.md) reúne los entregables y pendientes.
 
-Las bibliotecas DataBases y Utilidades existen en el submódulo `Mis-Librerias/`, están referenciadas por la aplicación e incluidas en la solución principal. No hay flujo ejecutable de carga o comunicación conectado a ellas. Las llamadas descritas a continuación siguen siendo contratos del diseño.
+- [Componentes HTTP](#comunicación-http--actividad-6)
+- [Responsabilidades del dominio](#distribución-y-responsabilidades)
+- [Contratos por clase](#especificación-de-clases-y-métodos--actividad-4)
+- [Formato del catálogo](#formato-de-archivos-de-personajes--actividad-5)
+- [Presentación de consola](#presentación-de-consola)
 
 ## Comunicación HTTP — actividad 6
 
@@ -18,7 +22,7 @@ flowchart LR
 
 Servidor y cliente J1 se ejecutan en el primer equipo Windows. El cliente J2 se ejecuta en el segundo. Cada cliente usa una dirección configurable y el puerto acordado es TCP 5000. El servidor inicia primero.
 
-La API identifica al participante, valida el intercambio y prepara una presentación por jugador. El dominio mantiene la partida y aplica las reglas. El servidor confirma el estado y los recibos de las operaciones mediante persistencia local. SQLite también conserva el catálogo permanente. Los DTO delimitan los datos visibles en cada cliente. El protocolo especifica la identidad, la concurrencia y la recuperación. La prueba local informada por el usuario no acredita conectividad entre los equipos.
+La API identifica al participante, valida el intercambio y prepara una presentación por jugador. El dominio mantiene la partida y aplica las reglas. El servidor confirma el estado y los recibos de las operaciones mediante persistencia local. SQLite también conserva el catálogo permanente. Los DTO delimitan los datos visibles en cada cliente. El protocolo especifica la identidad, la concurrencia y la recuperación. Las comprobaciones de conectividad están en el [procedimiento de verificación](Protocolo-partida-web.md#verificación-en-dos-equipos).
 
 El [UML de dominio](diagramas/UML.uxf) y las firmas de la actividad 4 sirven como base de diseño. El modelo de integración web complementa el UML de dominio.
 
@@ -72,17 +76,15 @@ El jugador mano pertenece exclusivamente a Ronda y permanece fijo durante sus co
 
 Las referencias a objetos y colecciones de entidades se representan exclusivamente mediante asociaciones, sin duplicarlas en el compartimento de atributos. Cada extremo navegable indica el nombre del rol, su multiplicidad y su visibilidad: `-` privado y `+` público. Por ejemplo, Ronda se relaciona con Jugador mediante los roles privados `- jugadorMano` y `- jugadorRival`, cada uno con multiplicidad 1.
 
-Los roles diferentes se dibujan como asociaciones distintas, incluso si apuntan a la misma clase. El ganador de Combate tiene multiplicidad 0..1 mientras no se resuelva; sus dos cartas también tienen 0..1 durante la elección. Datos tiene la asociación pública estática `+ Modelo`, con lectura pública y escritura privada. Las dependencias de uso y la realización de interfaces no representan atributos y no llevan visibilidad de miembro. Los valores simples y enumeraciones permanecen en el compartimento de atributos.
+Los roles diferentes se dibujan como asociaciones distintas, incluso si apuntan a la misma clase. El ganador de Combate tiene multiplicidad 0..1 mientras no se resuelva; sus dos cartas también tienen 0..1 durante la elección. Datos tiene la asociación pública estática `+ Modelo`, con multiplicidad 0..1 hasta inicializarse, lectura pública y escritura privada. Las dependencias de uso y la realización de interfaces no representan atributos y no llevan visibilidad de miembro. Los valores simples y enumeraciones permanecen en el compartimento de atributos.
 
-### Revisión de notación y distribución
+### Convenciones de representación
 
 Se consultó la [especificación UML 2.5.1 de OMG](https://www.omg.org/spec/UML/2.5.1/PDF): sección 9.4.4 para miembros estáticos y de solo lectura, 10.2.4 para enumeraciones y 11.5.4 para asociaciones. La [documentación de UMLet](https://www.umlet.com/faq.htm) define la representación mediante lt, r1/r2 y m1/m2 y la conexión de extremos a los bordes.
 
 TipoAtributo utiliza la palabra clave «enumeration» y un literal por línea. Por convención solicitada por el usuario, cada literal lleva `+`. Los miembros estáticos se subrayan; la propiedad Modelo se representa en su asociación, subrayada, con acceso público y una aclaración de escritura privada. La realización de IEntidad apunta a la interfaz con triángulo hueco y línea discontinua. Las asociaciones navegables usan línea continua y punta abierta; las dependencias de uso se explican por escrito y no se dibujan con flechas `.>`, por indicación del usuario. Utilidades se representa como paquete y los nombres externos de DataBases se califican con `::`.
 
 Las firmas conservan nombres de tipos y colecciones de C# para orientar la futura implementación; no constituyen una especificación completa de plantillas UML. El atributo opcional TipoAtributo de Combate expresa multiplicidad `[0..1]`.
-
-El diagrama se exportó con UMLet 15.1 y se revisó visualmente. Se separaron los roles para evitar superponer sus etiquetas. También se comprobaron geométricamente las 16 relaciones: extremos en bordes, tramos ortogonales y ningún tramo dentro de cajas de clases, paquete o notas. Estas comprobaciones no acreditan todavía el protocolo de comunicación.
 
 ## Especificación de clases y métodos — actividad 4
 
@@ -385,7 +387,7 @@ Es público y estático. Devuelve el rol guardado por Configurar en el diseño b
 
 #### `Iniciar(): void`
 
-Es público y estático. Se llama una vez, después de Configurar. Registra las entidades con ConstructorModelo, construye el modelo y carga las tablas iniciales, exigiendo que exista el catálogo de personajes. Asigna Modelo cuando la preparación termina correctamente. Los errores de configuración, datos o archivos se propagan al punto de ejecución, que los informa y finaliza. El contrato de importación a SQLite se completará en la actividad 6.
+Es público y estático. Se llama una vez, después de Configurar. Registra las entidades con ConstructorModelo, construye el modelo y carga las tablas iniciales, exigiendo que exista el catálogo de personajes. Asigna Modelo cuando la preparación termina correctamente. Los errores de configuración, datos o archivos se propagan al punto de ejecución, que los informa y finaliza. La importación a SQLite usa el [contrato de la actividad 6](Protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
 
 ### InterfazConsola
 
@@ -506,26 +508,10 @@ DataBases no impone unicidad de personajes. Por confirmación del usuario, el ca
 
 La conversión de la información de los personajes al catálogo CSV se definirá posteriormente. El usuario considera como posibilidades un script o solicitar la generación del CSV a partir de los datos, sin haber elegido todavía una alternativa. No se exige por ahora que cada alumno entregue un CSV individual ni se define un formato de conversión.
 
-### Aspectos posteriores que no condicionan el cierre
+### Importación y presentación
 
-- Descripción: presentación en consola. Su contenido es opcional, no tiene límite de longitud y su ausencia se representa con texto vacío ("").
-
-El usuario confirmó el cierre de la actividad 5 con la especificación actual. No se agregaron ejemplos propios de personajes válidos e inválidos; no se presentan como realizados ni se mantienen como condición para reabrir la actividad. La conversión al CSV permanece postergada por indicación del usuario. La ubicación del CSV y el mecanismo de importación al catálogo permanente siguen pendientes de la actividad 6.
+La conversión al CSV está postergada. La ubicación del archivo se registra en el [plan](Plan.md#archivos) y la importación está definida en el [protocolo](Protocolo-partida-web.md#persistencia-concurrencia-y-catálogo). La presentación de la descripción sigue abierta en el [diseño de interfaz](Interfaz.md#decisiones-pendientes).
 
 ## Presentación de consola
 
 La [especificación de interfaz](Interfaz.md) describe las pantallas, sus maquetas y el uso puntual de Utilidades. La validación de opciones de entrada pertenece al cliente. Las consultas, esperas y reintentos siguen el [protocolo HTTP](Protocolo-partida-web.md#estados-presencia-y-recuperación).
-
-## Decisiones pendientes y límites de cierre
-
-- Actividad 4: completada por confirmación del usuario el 9 de noviembre de 2026. Las 58 especificaciones se revisaron para mejorar la lectura y evitar validaciones repetidas. Los detalles de formatos e integración siguen en las actividades 5 y 6.
-- Actividad 5: completada por confirmación del usuario. Columnas, descripción, ASCII y lectura especificados; conversión al CSV postergada. Las rutas reales corresponden a la actividad 6.
-- Actividad 6: quedan la revisión del diseño y las verificaciones en dos computadoras.
-La [consigna](Consigna.md) conserva el texto original y registra la aprobación de HTTP para la entrega.
-La actividad 3 está completada por confirmación del usuario: modelo de dominio y justificación revisados. Las entidades, relaciones, configuración en Datos y firmas de integración que resulten del protocolo son tareas de la actividad 6 y no condicionan este cierre. El modelo y las especificaciones quedaron integrados mediante los PR #9 y #10. Los nuevos PR mantienen la revisión de un compañero exigida por CONTRIBUTING; no se confunde con una tarea de modelado.
-
-Las cajas se ajustaron a las medidas del texto exportado por UMLet, con margen mínimo de lectura. Tras ampliar Datos y agregar TipoProceso se recalcularon las asociaciones y se verificó la ausencia de tramos dentro de cajas; la exportación SVG se comprobó para asegurar que los textos no excedan sus límites.
-
-## Resultado de la revisión final del dominio
-
-Se corrigió la pertenencia del jugador mano a Ronda, se explicitó la consulta de participantes de Combate para la presentación y se ajustó la multiplicidad de Modelo a su ciclo de inicialización. Se precisaron los contratos de incorporación de combates, resolución y recuperación completa de personajes. No se agregaron clases ni implementación. La incorporación posterior de la descripción a Personaje, su constructor, GetDescripcion y la columna descripcion se documenta en la actividad 5 por indicación del usuario. La descripción es opcional y no tiene límite de longitud; su ausencia se representa con texto vacío ("") y su presentación sigue pendiente. Posteriormente el usuario aprobó agregar id: int al catálogo y GetId a Personaje; los DTO HTTP y el estado persistido corresponden a la actividad 6 y deberán reflejarse después en este modelo.

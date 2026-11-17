@@ -78,11 +78,9 @@ Mantener la documentación y el código coherentes. Una modificación arquitect�
 - `Mis-Librerias/DataBases viejo/` contiene código anterior y no forma parte de la solución actual.
 - No asumir que el comportamiento de una biblioteca es conocido sin consultar su implementación o documentación pertinente.
 
-### Estado inicial
+### Estado del proyecto
 
-El programa principal todavía contiene el ejemplo inicial `Hello, World!` y las pruebas también son iniciales. El repositorio ya contiene código de Personaje, Mazo, Jugador, Combate, Ronda y Partida. La API REST y los clientes de red corresponden al diseño de TI.
-
-No asumir que existe funcionalidad implementada previamente sin comprobarlo en el repositorio.
+Consultar el [estado actual](README.md#estado-actual) y confirmar el código y las pruebas presentes en la rama de trabajo antes de atribuirles un comportamiento.
 
 ## 5. Gestión de Git y GitHub
 
@@ -143,10 +141,8 @@ Ejemplos:
 
 No trabajar directamente sobre `main`.
 
-### Rama de trabajo vigente por indicación del usuario
+### Ramas con PR y formato de las tareas
 
-- A partir de la consolidación de ramas solicitada el 13 de noviembre de 2026, continuar el trabajo únicamente en `docs/protocolo-partida-web` y su worktree existente.
-- Esta indicación específica sustituye para el trabajo actual la regla general de crear otra rama por tarea. Mantener commits exclusivamente documentales y el alcance en TI.
 - Las ramas de PR ya preparados se conservan para revisión e integración; no iniciar nuevas tareas en ellas. La sincronización y limpieza necesarias tras integrar siguen aplicándose.
 - Presentar las tareas con casillas `- [ ]` o `- [x]`, sin numeración, según la última indicación del usuario. Mantener una jerarquía coherente de encabezados, con Archivos y REST bajo la actividad 6.
 
