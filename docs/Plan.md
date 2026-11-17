@@ -2,9 +2,9 @@
 
 Plan basado en [la consigna](Consigna.md). Marcar una tarea cuando su resultado esté disponible y revisado. Las actividades de TI definen los contratos que se usarán en Taller; las decisiones pendientes deben resolverse antes de implementar el componente correspondiente. Por decisión del usuario, no se utilizarán diagramas Nassi-Schneiderman (NS); el comportamiento de los métodos se documentará por escrito con sus entradas, resultados, precondiciones y validaciones. La consigna original se conserva como referencia sin modificar.
 
-## Estado revisado — 13 de noviembre de 2026
+## Estado revisado — 17 de noviembre de 2026
 
-Alcance actual: únicamente TI (análisis y diseño). Taller queda pendiente y fuera del trabajo actual. El punto de entrada todavía muestra `Hello, World!` y la única prueba está vacía. Existen implementaciones parciales de Personaje y Mazo, sin pruebas de comportamiento; el juego y la comunicación no están implementados. Este registro de código existente no autoriza avanzar con Taller.
+Alcance actual: TI (análisis y diseño). Taller queda pendiente. El punto de entrada contiene `Hello, World!` y la única prueba está vacía. `main` incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida. En `d6d81c1`, la compilación y las pruebas quedaron bloqueadas por dos llamadas a métodos ausentes de Mazo en Partida. La comunicación HTTP sigue en diseño.
 
 Se revisaron el documento de avance aportado por el usuario y el [UML existente](diagramas/UML.uxf). El documento se utilizó como referencia local y no forma parte de la entrega del repositorio. Cada casilla de TI refleja esa revisión y las confirmaciones posteriores del usuario: `[x]` indica un resultado comprobado o confirmado, `[ ]` indica trabajo pendiente y **En curso** señala un avance parcial con el cierre que falta. Los valores verificados de personajes corresponden a Lysander y Reched. El usuario confirmó que la actividad 1 está completada; se retiran los pendientes de alternativas, comparación, justificación y verificación de otras fichas como condiciones para reabrirla. La imagen se trabaja en Arte. Las demás actividades conservan su estado de revisión. Completar una tarea de diseño no implica implementar código.
 
@@ -15,7 +15,7 @@ Se revisaron el documento de avance aportado por el usuario y el [UML existente]
 | 3. Modelo de clases | Completada por confirmación del usuario. UML y Arquitectura revisados, con firmas, relaciones, responsabilidades y justificación. | Sin pendientes propios. El modelado de comunicación y su integración se realizan en la actividad 6. |
 | 4. Métodos | Completada por confirmación del usuario. Las 58 especificaciones están redactadas en Arquitectura, con un párrafo por método y sin validaciones repetidas. | Sin pendientes propios. Los formatos y la integración corresponden a las actividades 5 y 6. |
 | 5. Archivos de personajes | Completada por confirmación del usuario. Formato de DataBases, columnas, descripción, ASCII y errores documentados en Arquitectura; UML y contratos de Personaje actualizados. | Sin condiciones pendientes para el cierre aceptado. Conversión al CSV postergada; ejemplos propios no elaborados. |
-| 6. Archivo de partida | En curso en ramas no integradas: protocolo por archivos JSON, fotografía de estado y UML de comunicación; además, borrador alternativo REST. El detalle se registra debajo. | Revisar contratos, UML y viabilidad en red; resolver compatibilidad académica de REST si se adopta. Revisión de compañero e integración pendientes. |
+| 6. Comunicación HTTP | HTTP aprobado para la entrega. Diseño [REST](Protocolo-partida-web.md) en curso. | Completar contratos, UML, casos y verificaciones en red. Revisión de compañero pendiente. |
 | 7. Pruebas | No se encontró un plan de casos desarrollado en el material revisado. | Diseñar condiciones iniciales, datos y resultados esperados para casos normales, límites y errores. |
 
 ### Verificación de personajes
@@ -52,20 +52,24 @@ Esta decisión y las reglas confirmadas están redactadas en [Reglas del juego](
 
 - Contratos de dominio revisados frente a las reglas; falta completar su integración con el protocolo de la actividad 6.
 - Restauración completa del mazo especificada en UML y Arquitectura, incluidas las cartas no jugadas y la devolución única al cerrar la ronda.
-- El mazo inicial se forma a partir del CSV compartido que genera un sistema externo al cliente. Los repetidos están prohibidos y menos de seis cartas válidas impiden iniciar la partida con un mensaje de error. El usuario garantiza que el catálogo preparado no tendrá duplicados. El formato está documentado en Arquitectura, actividad 5; la conversión se definirá después.
+- El servidor forma el mazo a partir del catálogo permanente previsto en SQLite. El formato CSV de origen está definido en la actividad 5 y su importación queda pendiente. Se requieren al menos seis cartas válidas y el catálogo se prepara sin duplicados.
 - Especificar cómo se mantienen ocultas carta y atributo hasta registrar ambas elecciones; el orden de elección ya está definido en Reglas-del-juego.md.
 - Las especificaciones de la actividad 4 se redactan directamente desde el UML y Arquitectura. Se corrige la referencia anterior a un borrador: el usuario confirmó que no existe.
-- Separar los archivos iniciales de s del intercambio de acciones de la partida; definir identidad de partida, turno, ronda y combate, acciones duplicadas o fuera de turno y escrituras incompletas.
+- Completar los contratos HTTP de partida, turno, ronda y combate, y definir el tratamiento de reintentos y elecciones fuera de turno.
 
 ### Orden de trabajo para TI
 
 1. Actividades 1 y 2 completadas en su documentación e integradas mediante los PR #6 y #7. La actividad 2 está lista para copiar a la entrega; esa copia externa no se ha comprobado.
 2. Actividad 3 completada: UML y justificación revisados. La ampliación del modelo para comunicación corresponde a la actividad 6.
 3. Actividad 4 completada: especificaciones de métodos revisadas y aceptadas por el usuario.
-4. Actividad 5 completada por confirmación del usuario. Continuar con el protocolo de partida compartida (actividad 6).
+4. Actividad 5 completada por confirmación del usuario. Continuar con el protocolo HTTP de partida (actividad 6).
 5. Completar el plan de pruebas y revisar que todos los entregables de TI sean coherentes (actividad 7).
 
 Las actividades 1, 2, 3 y 4 tienen sus entregables documentados; el usuario confirmó el cierre de las actividades 3 y 4. El modelado e integración de comunicación se completarán en la actividad 6. Los demás entregables de TI no se consideran cerrados solo por contar con documentación parcial.
+
+## Aprobación de HTTP — 17 de noviembre de 2026
+
+El [protocolo HTTP](Protocolo-partida-web.md) documenta el intercambio de elecciones y resultados de la actividad 6. El formato CSV de personajes corresponde a la actividad 5.
 
 ## TI — Análisis de Sistemas
 
@@ -85,11 +89,11 @@ Las actividades 1, 2, 3 y 4 tienen sus entregables documentados; el usuario conf
 - [x] Escribir el objetivo del juego: alcanzar 15 rondas ganadas.
 - [x] Identificar a los dos participantes y sus acciones: elegir atributo cuando corresponde y elegir una carta de su mano.
 - [x] Definir el reparto de tres cartas a cada jugador desde un mazo común y la mezcla entre rondas.
-- [x] Definir el origen del mazo inicial: s cargados en un CSV compartido por un sistema externo al cliente de los jugadores.
-- [x] Registrar que carta y  son el mismo elemento y que no se utilizará una clase Carta adicional.
+- [x] Definir el origen del mazo inicial: catálogo administrado por el servidor, con formato CSV inicial definido en la actividad 5 e importación por especificar.
+- [x] Registrar que carta y personaje son el mismo elemento y que no se utilizará una clase Carta adicional.
 - [x] Definir que menos de seis cartas válidas impiden iniciar la partida y muestran el error «No se puede jugar porque no hay suficientes cartas».
-- [x] Prohibir s repetidos en el mazo.
-- [x] Asignar la prevención de s duplicados al sistema externo de carga, fuera del cliente y del servidor de partida.
+- [x] Prohibir personajes repetidos en el mazo.
+- [x] Registrar que el catálogo inicial se prepara sin duplicados.
 - [x] Definir quién es jugador mano al iniciar la partida: J1, según confirmación del usuario.
 - [x] Reunir las reglas confirmadas en [Reglas del juego](Reglas-del-juego.md), diferenciando partida, ronda, combate, jugador mano y mano de cartas y señalando las decisiones pendientes.
 - [x] Preparar Reglas-del-juego.md como contenido de entrega que copiará el usuario, con J1 como jugador mano inicial y alternancia J1/J2 al terminar cada ronda.
@@ -101,13 +105,13 @@ Las actividades 1, 2, 3 y 4 tienen sus entregables documentados; el usuario conf
 - [x] Definir la restauración del mazo completo al terminar cada ronda, incluidas las cartas no jugadas; se mezcla antes del nuevo reparto.
 - [x] Definir la alternancia del jugador mano entre rondas y del jugador que elige el atributo entre combates.
 - [x] Definir la secuencia: quien comienza el combate elige carta y atributo; el rival elige sin conocer esas elecciones; luego se revelan ambas cartas y el atributo.
-- [x] Limitar la ocultación de elecciones a la interfaz: se revelan cuando ambos han elegido; se acepta que los archivos puedan consultarse manualmente. No se exige una garantía de secreto frente a ese acceso.
+- [x] Reservar la carta y el atributo elegidos hasta que ambos jugadores hayan respondido.
 - [x] Establecer la victoria y finalización normal de la partida al alcanzar 15 rondas ganadas.
-- [x] Completar los datos de ejecución: s y mazo, cartas disponibles y jugadas, jugadores, ronda, combate, jugador mano, elección de atributo, elecciones realizadas, marcadores, resultados y estado de partida.
-- [x] Definir la comunicación general: dos clientes publican sus elecciones; el servidor las lee, analiza y publica mensajes de resultados. Cada proceso solo escribe sus archivos y lee los de los demás.
-- [x] Asignar al cliente la validación de sus datos antes del envío y al servidor el tratamiento de errores al iniciar la partida.
-- [x] Definir responsabilidades y política general de errores: el cliente garantiza envíos válidos; cualquier error termina el juego completo, incluido el fallo del servidor. Los tipos de acciones, secuencias y formatos se difieren a la actividad 6.
-- [x] Definir la respuesta ante errores iniciales y de ejecución: finalizar el juego completo, sin recuperación. Con menos de seis cartas se informa además el mensaje ya acordado.
+- [x] Completar los datos de ejecución: personajes y mazo, cartas, jugadores, rondas, combates, elecciones, marcadores y resultados.
+- [x] Definir la comunicación general: los clientes envían elecciones por HTTP y el servidor valida, resuelve y entrega las presentaciones.
+- [x] Asignar al cliente la validación de entrada y al servidor la validación de cada elección contra el estado vigente.
+- [x] Registrar que el manejo de errores HTTP, presencia y recuperación se especifica en la actividad 6.
+- [x] Impedir que se inicie el juego con menos de seis cartas válidas y mostrar el mensaje acordado.
 - [x] Separar los requerimientos funcionales de las condiciones técnicas de ejecución en Reglas-del-juego.md.
 - [x] Revisar la cobertura de la consigna y preparar el documento de requerimientos y reglas, listo para que el usuario lo copie a su entrega. No se afirma que ya haya realizado la copia ni presentado la entrega.
 
@@ -117,8 +121,8 @@ El [PR #7](https://github.com/51215927-spec/Proyecto-Integrador-Final/pull/7) de
 
 **Completada por confirmación del usuario.** El UML y su justificación están revisados. No hay implementación. El detalle vigente está en [Arquitectura](Arquitectura.md). Las tareas de modelado e integración de comunicación se trasladan a la actividad 6.
 
-- [x] Representar , Mazo, Jugador, Partida, Ronda y Combate con atributos privados, firmas tipadas y relaciones.
-- [x] Adaptar todas las referencias al concepto unificado de .
+- [x] Representar Personaje, Mazo, Jugador, Partida, Ronda y Combate con atributos privados, firmas tipadas y relaciones.
+- [x] Adaptar todas las referencias al concepto unificado de Personaje.
 - [x] Asignar coordinación del dominio al servidor y presentación a los clientes, sin comunicación directa entre rivales.
 - [x] Incorporar Datos estática y las dependencias de DataBases sin duplicar la lectura CSV.
 - [x] Definir en Datos constantes de rutas y Configurar(TipoProceso), con identidad fija de servidor, cliente J1 o cliente J2 antes de Iniciar.
@@ -161,61 +165,22 @@ Verificación documental: las 58 operaciones del UML tienen una subsección de e
 
 No se elaboraron ejemplos propios válidos e inválidos; el cierre confirmado no los presenta como realizados ni los conserva como condición para reabrir esta actividad. La presentación de la descripción en consola sigue sin definir y no condiciona este cierre. La conversión al CSV queda postergada por indicación del usuario.
 
-### Actividad 6 — Archivo de partida compartida
+### Actividad 6 — Comunicación HTTP en red local
 
-**En curso, con avances fuera de main.** La lista que sigue describe la base integrada anterior; no debe interpretarse como ausencia de trabajo en las ramas de protocolos. Revisión del 13 de noviembre de 2026:
+**En curso.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](Protocolo-partida-web.md), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
 
-| Rama revisada | Evidencia disponible | Pendientes declarados |
-|---|---|---|
-| `docs/protocolo-partida-compartida` (`70302da`) | `docs/Protocolo-partida.md` y `docs/diagramas/Comunicacion.uxf`: roles, historiales JSON con un escritor por historial, Estado completo, catálogo estable, propuesta de publicación y recuperación; contratos y UML ampliados. | Revisar propuesta de tres mensajes y captura/restauración; revisión visual del UML; verificar Windows/SMB con rutas y permisos reales; revisión de compañero antes de integrar. |
-| `docs/protocolo-partida-web` (`c807a42`) | Conserva la alternativa por archivos en `docs/Protocolo-partida-archivos.md` y agrega el borrador REST `docs/Protocolo-partidad-web.md`. | Resolver con el docente la compatibilidad con la consigna; confirmar tecnologías, sesiones, rutas/DTO/estados HTTP, persistencia, concurrencia, presencia y recuperación; adaptar UML y diseñar verificaciones. |
+- [x] Registrar la aprobación de HTTP y retirar el protocolo por archivos de la documentación vigente.
+- [x] Documentar responsabilidades, despliegue y la secuencia propuesta de combate.
 
-Los documentos se encuentran en los worktrees hermanos de cada rama; aún no existen en main. Ambas ramas contienen el main revisado (`dcfc9eb`) y coinciden con sus referencias remotas. No se integran alternativas ni se da por aprobada una propuesta técnica por estar redactada.
-
-El protocolo por archivos registra decisiones del usuario del 12 de noviembre que sustituyen el cierre inmediato: suspensión ante ausencia, espera de cinco segundos y recuperación mientras sobreviva un proceso. También separa Personaje CSV/DataBases de Accion y Estado JSON. Estas decisiones están documentadas en la rama; la política anterior que permanece debajo y en Arquitectura corresponde a la base integrada y deberá conciliarse al revisar e integrar el protocolo. El borrador REST no reemplaza automáticamente el requisito académico de archivo compartido.
-
-**Criterio de cierre:** revisar los contratos y diagramas de la alternativa que corresponda a la entrega, verificar las condiciones reales de SSI y completar la revisión de compañero. La actividad 7 sigue pendiente; describir escenarios del protocolo no equivale a entregar el plan de pruebas.
-
-#### Archivos
-
-Lista de la base integrada, pendiente de conciliación con el protocolo por archivos.
-
-Los registros de elecciones y publicaciones se definirán en esta actividad. El acceso a archivos se realiza mediante Datos y DataBases. La validez de los envíos corresponde al cliente y cualquier fallo de ejecución finaliza el juego completo, sin recuperación.
-
-- [x] Definir un escritor exclusivo por archivo: cada cliente escribe sus elecciones y el servidor sus publicaciones; los demás procesos leen.
-- [ ] Definir las entidades de intercambio y sus campos, cantidad de archivos, rutas, permisos y configuración en DataBases.
-- [ ] Especificar la identificación de partida, jugadores, estado, ronda, combate y jugador autorizado a elegir.
-- [ ] Definir cómo se relacionan los registros de intercambio con los s del catálogo.
-- [ ] Determinar cuándo cada proceso ejecuta Cargar<T> y Guardar<T> y qué tablas puede guardar.
-- [ ] Especificar la secuencia de elecciones y la publicación de resultados sin revelar elecciones anticipadamente en la interfaz.
-- [ ] Definir cómo se reconocen registros ya procesados, repetidos o correspondientes a otra partida, ronda o combate.
-- [ ] Especificar publicación de mensajes completos y coherencia entre archivos, considerando que Guardar reemplaza una tabla completa y no hay transacciones entre archivos.
-- [ ] Especificar la creación inicial de las tablas y cuáles requieren archivos existentes al cargarse.
-- [ ] Definir la detección de fallos y el cierre coordinado de clientes y servidor, sin recuperación.
-- [ ] Verificar con SSI el acceso, permisos, bloqueos y reemplazo de archivos en la red local.
-- [ ] Incorporar al UML y Arquitectura las entidades de elecciones de los clientes y publicaciones del servidor, con atributos, relaciones y configuración en Datos.
-- [ ] Definir los métodos que conectan los registros de intercambio con Partida y los clientes, conforme al protocolo acordado.
-- [ ] Revisar la coherencia de esas ampliaciones con las reglas y el modelo de dominio ya cerrado en la actividad 3.
-- [ ] Entregar la especificación de intercambio, diferenciándola del catálogo inicial de s.
-
-#### REST
-
-Las tareas se presentan con casillas, sin numeración. Las decisiones del protocolo se redactan en `docs/protocolo-partida-web`; esta reorganización en `docs/actualizar-tareas` modifica únicamente el plan y conserva el seguimiento anterior.
-
-- [ ] **Acordar con el docente si REST sustituye el archivo compartido.** Pendiente.
 - [x] **Definir versiones y distribución de ejecución.** Terminado por confirmación del usuario: net8.0; ASP.NET Core y EF Core estables de la línea 8.0 (referencia 8.0.34); ambas computadoras Windows; servidor y cliente J1 en la primera y cliente J2 en la segunda. Primero se abre el servidor y después los clientes. La comprobación de instalaciones queda pendiente en las verificaciones, sin reabrir esta tarea.
-- [ ] **Definir conexión y disponibilidad del servidor.** Decisiones redactadas: HTTP en red local, TCP 5000 y dirección configurable. Ante indisponibilidad se informa y se permite reintentar o salir, conservando una elección pendiente sin tratarla como una jugada nueva. Pruebas entre equipos pendientes.
-- [ ] **Definir administración, incorporación, J1/J2, credenciales y reincorporación.** Pendiente.
-- [ ] **Completar rutas, DTO, respuestas HTTP y transiciones del juego.** Pendiente.
-- [ ] **Definir consultas, presencia, pausa, abandono y recuperación.** Pendiente.
-- [ ] **Diseñar idempotencia, revisiones y concurrencia.** Pendiente.
-- [ ] **Diseñar tablas, relaciones y transacciones de personajes y partidas.** Pendiente. SQLite conserva permanentemente el catálogo, además del estado de partidas.
-- [ ] **Definir incorporación y mantenimiento de personajes.** Pendiente.
-- [ ] **Preservar datos de personajes en partidas iniciadas ante cambios del catálogo.** Pendiente.
-- [ ] **Adaptar Arquitectura y UML a REST y conciliar la persistencia anterior.** Pendiente.
-- [ ] **Diseñar casos de prueba y vincularlos con la actividad 7.** Pendiente.
-- [ ] **Planificar y registrar la verificación en dos computadoras.** Pendiente; las verificaciones concretas se mantienen debajo.
-- [ ] **Conciliar documentos y completar revisión antes de integrar.** Pendiente.
+- [x] Definir conexión, disponibilidad, administración, sesiones y reincorporación.
+- [x] Especificar rutas, DTO, errores, estados, presencia, pausa y abandono.
+- [x] Diseñar revisiones, idempotencia, concurrencia y persistencia transaccional.
+- [x] Diseñar importación y mantenimiento del catálogo y copias para partidas iniciadas.
+- [x] Documentar contratos de integración y UML de componentes web.
+- [x] Documentar el procedimiento de verificación en dos equipos.
+- [x] Vincular el protocolo con los [casos de la actividad 7](posibles-fallos.md#red-local-y-consistencia-http).
+- [ ] Obtener revisión del PR por un compañero e integrar el diseño.
 
 **Evidencia disponible:** el usuario informó comunicación correcta entre dos procesos mediante localhost. No aportó una ejecución reproducible del proyecto ni una prueba entre computadoras; no se presenta como implementación del juego o validación de la red escolar. No tiene los equipos disponibles para ejecutar las comprobaciones ahora.
 
@@ -231,18 +196,12 @@ Las tareas se presentan con casillas, sin numeración. Las decisiones del protoc
 
 ### Actividad 7 — Casos de prueba
 
-- [ ] Definir condiciones iniciales, datos y resultado esperado para cada caso de prueba.
-- [ ] Diseñar casos para un personaje válido y para un total distinto de 3000.
-- [ ] Diseñar casos para los límites 250 y 750 y para valores fuera de rango.
-- [ ] Diseñar casos que comprueben los umbrales 650 y 350 y rechacen distribuciones sin especialización.
-- [ ] Diseñar casos de archivos de personajes incompletos, duplicados, incorrectos e ilegibles.
-- [ ] Diseñar casos para un mazo vacío y para las operaciones de mezcla y reparto.
-- [ ] Diseñar casos de ronda ganada, empate y cambio de turno.
-- [ ] Diseñar un caso de jugador sin cartas y finalización de partida.
-- [ ] Diseñar casos de archivo compartido inaccesible y acceso concurrente.
-- [ ] Diseñar un caso de información que no corresponde al turno esperado.
-- [ ] Indicar qué pruebas usan caja negra y cuáles requieren caja blanca.
-- [ ] Revisar y entregar el plan de pruebas con sus resultados esperados.
+- [x] Documentar condiciones iniciales, datos, acción y resultados esperados de caja negra y blanca en el [plan de pruebas](posibles-fallos.md).
+- [x] Cubrir personajes, formato del catálogo, mazo, reglas de combate y finalización.
+- [x] Cubrir indisponibilidad, turno incorrecto, pausa, recuperación y concurrencia según el contrato HTTP de la actividad 6.
+- [ ] Completar la revisión del plan por un compañero antes de integrarlo.
+
+La ejecución y la evidencia de resultados quedan para Taller de Programación.
 
 ## Taller de Programación — C#
 
@@ -260,8 +219,8 @@ Etapas conservadas como referencia futura. No se implementarán en el alcance ac
 
 - [x] Referenciar DataBases y Utilidades desde la aplicación e incluir sus proyectos en la solución.
 - [ ] Implementar Personaje.Configurar con el formato definido en TI: el método existe, pero su cuerpo está vacío.
-- [ ] Crear Datos estática con sus constantes de rutas, Configurar, GetTipoProceso, Modelo e Iniciar conforme al diseño.
-- [ ] Fijar las rutas absolutas reales del recurso de SSI y configurar el rol antes de inicializar el modelo.
+- [ ] Preparar la carga inicial de personajes en el servidor de acuerdo con el contrato de importación que se defina.
+- [ ] Definir la ubicación del CSV de origen y en qué momento se importa al catálogo SQLite.
 - [ ] Cargar el catálogo obligatorio mediante Modelo.Cargar<Personaje>(exigirArchivo: true).
 - [ ] Obtener los personajes de la tabla cargada para construir el mazo inicial.
 - [ ] Mantener la validación de puntajes en el constructor de Personaje y la interpretación del CSV en DataBases.
@@ -301,16 +260,13 @@ El [diseño de la interfaz](Interfaz.md) registra el inventario inicial preparad
 - [ ] Finalizar al alcanzar 15 rondas ganadas, sin iniciar otra ronda.
 - [ ] Ejecutar las pruebas de combates, empates, alternancia, cierre anticipado de ronda y fin de partida.
 
-### Etapa 6 — Comunicación entre computadoras
+### Etapa 6 — Comunicación HTTP entre computadoras
 
-- [ ] Implementar las entidades y configuraciones de intercambio definidas en la actividad 6 de TI.
-- [ ] Comprobar el acceso al recurso compartido desde los dos clientes y el servidor.
-- [ ] Cargar y publicar mediante Datos.Modelo, guardando solo las tablas propias de cada proceso.
-- [ ] Implementar la secuencia de elecciones, análisis en el servidor y presentación de resultados en los clientes.
-- [ ] Aplicar identificación y control de registros procesados conforme al protocolo acordado.
-- [ ] Comprobar bloqueos y publicación de archivos completos con DataBases en la red local.
-- [ ] Implementar el cierre coordinado ante fallos, sin recuperación de la partida.
-- [ ] Probar el intercambio entre dos computadoras, registros repetidos o fuera de secuencia y pérdida de acceso; registrar los resultados.
+- [ ] Implementar la API REST y los clientes según las rutas, DTO y reglas de sesión aprobados en TI.
+- [ ] Conectar la API con el dominio y guardar las transiciones en SQLite conforme al contrato de persistencia.
+- [ ] Implementar vistas de jugador, validación autoritativa, concurrencia y reintentos idempotentes.
+- [ ] Aplicar la política acordada de presencia, abandono y recuperación.
+- [ ] Probar el intercambio en dos computadoras y registrar los resultados.
 
 ### Etapa 7 — Integración
 
@@ -365,3 +321,7 @@ Cierre de la actividad 3 por confirmación del usuario: sin tareas propias pendi
 ## Ampliación documental de Personaje — actividad 5
 
 Por indicación del usuario se agregó descripcion: string al modelo de Personaje y a sus columnas, se amplió el constructor y se especificó GetDescripcion. La descripción es opcional y no tiene límite de longitud por confirmación del usuario; su ausencia se representa con texto vacío ("") y su presentación sigue pendiente de decisión. La conversión al CSV se resolverá posteriormente y el usuario garantiza un catálogo preparado sin duplicados. No se implementó código. Posteriormente el usuario confirmó el cierre de la actividad 5 con esta especificación. Los registros anteriores de 58 operaciones corresponden a la revisión previa a esta ampliación.
+
+## Decisiones reemplazadas de actividad 6
+
+Se aprobaron inicialmente Accion CSV con doce campos y diecisiete tipos, y luego se eligió JSON para Accion y Estado por simplicidad. Estas decisiones pertenecen al diseño histórico por archivos, retirado tras la aprobación de HTTP. El ID permanente de Personaje continúa vigente. No quedan pendientes de configurar Accion en DataBases ni de reconstruir la partida desde logs. Los mecanismos de sesión y publicación deben verificarse como diseño propuesto.

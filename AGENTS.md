@@ -46,7 +46,7 @@ La consigna contempla:
 - Personajes con seis atributos.
 - Cartas y mazos.
 - Reglas y desarrollo de las partidas.
-- Coordinación entre dos computadoras mediante un archivo compartido en una red local.
+- Coordinación entre dos computadoras mediante una API REST sobre HTTP en la red local, según la aprobación informada por el usuario el 17 de noviembre de 2026.
 
 ### Validaciones de personajes
 
@@ -80,7 +80,7 @@ Mantener la documentación y el código coherentes. Una modificación arquitect�
 
 ### Estado inicial
 
-El programa principal todavía contiene el ejemplo inicial `Hello, World!` y las pruebas también son iniciales.
+El programa principal todavía contiene el ejemplo inicial `Hello, World!` y las pruebas también son iniciales. El repositorio ya contiene código de Personaje, Mazo, Jugador, Combate, Ronda y Partida. La API REST y los clientes de red corresponden al diseño de TI.
 
 No asumir que existe funcionalidad implementada previamente sin comprobarlo en el repositorio.
 
@@ -142,6 +142,13 @@ Ejemplos:
 - `test/pruebas-de-personajes`
 
 No trabajar directamente sobre `main`.
+
+### Rama de trabajo vigente por indicación del usuario
+
+- A partir de la consolidación de ramas solicitada el 13 de noviembre de 2026, continuar el trabajo únicamente en `docs/protocolo-partida-web` y su worktree existente.
+- Esta indicación específica sustituye para el trabajo actual la regla general de crear otra rama por tarea. Mantener commits exclusivamente documentales y el alcance en TI.
+- Las ramas de PR ya preparados se conservan para revisión e integración; no iniciar nuevas tareas en ellas. La sincronización y limpieza necesarias tras integrar siguen aplicándose.
+- Presentar las tareas con casillas `- [ ]` o `- [x]`, sin numeración, según la última indicación del usuario. Mantener una jerarquía coherente de encabezados, con Archivos y REST bajo la actividad 6.
 
 ### Trabajo en paralelo con worktrees
 
