@@ -2,6 +2,25 @@
 
 Trabajo de análisis y diseño para TI. La base es el cliente de consola previsto en la [consigna](Consigna.md), las [reglas](Reglas-del-juego.md) y la [arquitectura](Arquitectura.md#interfazconsola).
 
+El [comparador de propuestas](juego-guerra-propuestas.html) reúne las maquetas estáticas del inicio, la mano, el resultado de combate y el cierre de ronda.
+
+## Secciones de la interfaz
+
+En orden de recorrido, incluidas las pantallas que aparecen solo en ciertos estados.
+
+1. [Inicio y preparación](juego-guerra-propuestas.html#inicio).
+2. Espera inicial.
+3. Inicio de ronda y reparto.
+4. [Mano y elección de carta y atributo al abrir](juego-guerra-propuestas.html#detalle).
+5. Espera de la apertura rival.
+6. Elección de carta de respuesta.
+7. Envío, confirmación y espera del resultado.
+8. [Resultado de combate](juego-guerra-propuestas.html#duelo-paralelo).
+9. [Cierre de ronda](juego-guerra-propuestas.html#cierre-ronda).
+10. Cierre de partida.
+11. Suspensión o estado sin confirmar.
+12. Interrupción, abandono y errores de cierre.
+
 ## Estados del cliente
 
 | Estado | Información visible y acciones |
@@ -61,3 +80,35 @@ Las siguientes respuestas son propuestas de diseño.
 - Revisar una ronda 2–0, una ronda 2–1 con empate de atributos y el cierre al alcanzar 15 rondas ganadas.
 - Combinar una ventana estrecha y baja con cartas extensas, redimensionamiento, redirección y fin de entrada.
 - Cambiar el turno mientras se escribe y perder la comunicación justo después de enviar una elección.
+
+## Aspecto de las pantallas
+
+Las maquetas del HTML muestran una consola con espacio suficiente y un flujo de juego normal. Lucía y Mateo son nombres de ejemplo. En la aplicación se muestran los nombres reales en encabezados, turnos, marcadores, esperas y resultados. J1 y J2 son identificadores internos.
+
+### Inicio y preparación · Pendiente de elección
+
+Las [cuatro maquetas](juego-guerra-propuestas.html#inicio) muestran el título del juego, el nombre local cuando está disponible y el estado de preparación. Bienvenida centrada da prioridad al título y al saludo, panel de preparación separa la identidad del estado, arranque por líneas presenta la información en secuencia y estado destacado pone la preparación en primer plano. Los datos de configuración y las acciones de inicio dependen del protocolo.
+
+### Mano y elección · Lista con ficha
+
+En la [maqueta elegida](juego-guerra-propuestas.html#detalle), el encabezado muestra el nombre del jugador local, la ronda, el combate y el marcador acumulado. La mano se presenta en dos bloques alineados.
+
+- **Izquierda.** Lista numerada de cartas disponibles, con la carta en foco identificada junto a su nombre.
+- **Derecha.** Caja con el nombre y los seis atributos de la carta en foco. Las etiquetas se alinean a la izquierda y los puntajes a la derecha. Solo la ficha lleva borde.
+- **Pie.** Instrucción breve sobre la acción disponible. El texto del HTML representa la elección de carta al abrir el combate. Los controles definitivos siguen pendientes.
+
+Para componer la vista, se preparan ambos bloques en memoria, se mide su ancho en columnas visibles de terminal y se unen fila por fila con una separación fija. La lista se rellena con espacios cuando tiene menos filas que la ficha. Los textos largos se ajustan dentro de su bloque para mantener la alineación de la caja.
+
+### Resultado de combate · Duelo en paralelo
+
+En la [maqueta elegida](juego-guerra-propuestas.html#duelo-paralelo), el atributo comparado aparece encima de dos paneles enfrentados. Cada panel muestra el nombre del jugador, la carta jugada y el valor del atributo. El valor tiene más énfasis que el resto del contenido y el panel ganador lleva la etiqueta «Ganador». El pie muestra el marcador de combates y, si la ronda continúa, quién elige el próximo atributo.
+
+### Cierre de ronda · Pendiente de elección
+
+Las [cuatro maquetas](juego-guerra-propuestas.html#cierre-ronda) presentan el mismo resultado y cambian qué se lee primero. Victoria destacada pone al ganador arriba, marcador enfrentado da una columna a cada jugador, resumen en planilla separa combates y rondas en dos filas, y transición pone primero quién abre la ronda siguiente. Si un jugador alcanza 15 rondas ganadas, corresponde presentar el cierre de partida.
+
+## Composición propia y uso de Utilidades
+
+La interfaz tiene una distribución y una interacción personalizadas. La composición de pantallas, cajas, columnas y resaltados se resolverá con métodos propios. El uso directo de `Utilidades.Funciones` y `Utilidades.DecoracionConsola` será excepcional y se evaluará caso por caso, cuando un método resuelva una necesidad concreta y encaje con el diseño.
+
+El menú de la mano tendrá su propio código para mantener coordinados el foco de la lista, la ficha visible y la instrucción. Los métodos de Utilidades pueden servir como referencia para resolver partes similares, como leer teclas, validar opciones, recorrer la lista o actualizar el elemento en foco. La navegación definitiva se decide por separado. `MyConsole` puede seguir sirviendo como mecanismo de escritura de las líneas compuestas.

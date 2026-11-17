@@ -18,7 +18,7 @@ El servidor coordina la partida y analiza los enfrentamientos. Los dos clientes 
 | Partida | Dos jugadores, mazo, ronda actual y número de ronda. | Coordinar inicio, reparto, rondas, recuperación y victoria. Delega la comparación a Combate y el seguimiento de ronda a Ronda. |
 | Ronda | Jugador mano, rival y combates registrados. | Determinar el siguiente elector y el ganador de ronda. Calcula las victorias desde los combates, evitando contadores duplicados. |
 | Combate | Participantes, atributo, elecciones y ganador. | Registrar las elecciones y resolver la comparación. Los campos aún no elegidos y el ganador pendiente son anulables. |
-| InterfazConsola | Sin estado de dominio propio obligatorio. | Construir las pantallas del juego y solicitar opciones usando Utilidades. No determina ganadores. |
+| InterfazConsola | Sin estado de dominio propio obligatorio. | Componer las pantallas del juego y solicitar opciones. No determina ganadores. |
 | Datos (estática) | Constantes de rutas, tipo de proceso y Modelo con escritura privada. | Configurar la identidad del proceso, inicializar su modelo y ofrecer acceso a sus tablas. No aplica las reglas del juego. |
 
 El jugador mano pertenece exclusivamente a Ronda y permanece fijo durante sus combates. Partida numera las rondas desde 1 y calcula los argumentos al construirlas: J1 es mano en las impares y J2 en las pares. No conserva otra referencia de jugador mano ni necesita un método para alternarla. Jugador tampoco conserva una copia de ese rol. Las entidades del juego se conservan porque representan conceptos propios del problema y permiten explicar sus reglas.
@@ -342,23 +342,23 @@ Es público y estático. Se llama una vez, después de Configurar. Registra las 
 
 El [diseño de la interfaz](Interfaz.md) reúne los estados de presentación, las limitaciones de consola y las decisiones pendientes.
 
-Presentación de los clientes, sin decidir ganadores ni modificar marcadores. Todos sus métodos son públicos y de instancia, como indica el UML. Usa Utilidades y MyConsole. El flujo del cliente controla qué información puede presentarse.
+Presentación de los clientes, sin decidir ganadores ni modificar marcadores. Todos sus métodos son públicos y de instancia, como indica el UML. Compone pantallas propias según el [diseño de la interfaz](Interfaz.md#composición-propia-y-uso-de-utilidades). El flujo del cliente controla qué información puede presentarse.
 
 #### `MostrarMano(jugador: Jugador): void`
 
-Recibe al jugador y muestra su mano: nombre, ASCII y seis atributos de cada carta, usando MyConsole y DecoracionConsola. Si está vacía, lo informa. Solo presenta los datos que recibe del flujo del cliente.
+Recibe al jugador y muestra su mano: una lista de cartas disponibles y la ficha con los seis atributos de la carta en foco. Si está vacía, lo informa. Solo presenta los datos que recibe del flujo del cliente.
 
 #### `PedirCarta(jugador: Jugador): Personaje`
 
-Recibe al jugador local y devuelve la carta que selecciona de su mano. El flujo lo llama cuando tiene cartas disponibles. Obtiene una copia de GetCartas, muestra el menú y usa el índice devuelto por PedirOpcionMenu para obtener la carta. Utilidades vuelve a pedir las opciones incorrectas. El método no retira la carta: SetCarta registra y consume la elección.
+Recibe al jugador local y devuelve la carta que selecciona de su mano. El flujo lo llama cuando tiene cartas disponibles. Obtiene una copia de GetCartas, muestra el menú propio y valida la opción contra las cartas disponibles. El método no retira la carta: SetCarta registra y consume la elección.
 
 #### `PedirAtributo(): TipoAtributo`
 
-Devuelve uno de los seis atributos mediante PedirEnum<TipoAtributo>, que vuelve a solicitar la entrada cuando es incorrecta. El flujo del cliente lo llama cuando corresponde elegir y luego comunica la opción.
+Devuelve uno de los seis atributos y vuelve a solicitar la entrada cuando es incorrecta. El flujo del cliente lo llama cuando corresponde elegir y luego comunica la opción.
 
 #### `MostrarMarcador(j1: Jugador, j2: Jugador, ronda: int): void`
 
-Recibe a los dos jugadores y el número de ronda. Muestra sus nombres, las rondas ganadas y la ronda actual mediante MostrarTabla. Usa los datos preparados por Partida sin volver a validarlos.
+Recibe a los dos jugadores y el número de ronda. Muestra sus nombres, las rondas ganadas y la ronda actual en el encabezado de la pantalla. Usa los datos preparados por Partida sin volver a validarlos.
 
 #### `MostrarEsperando(mensaje: string): void`
 
@@ -408,7 +408,7 @@ Es público, estático y abstracto. Recibe el ConstructorEntidad con el que Pers
 
 TipoAtributo contiene Fuerza, Velocidad, Resistencia, Inteligencia, Energia y Habilidad; TipoProceso contiene Servidor, ClienteJ1 y ClienteJ2. No declaran métodos en el UML. Las entradas se convierten a estas opciones después de validarlas; los métodos que las reciben no repiten ese control.
 
-Utilidades es un paquete externo que agrupa Funciones, DecoracionConsola, MyConsole, ColoresMenu y FormatoMenu. No se rediseñan esas clases ni se les inventan métodos: la delegación necesaria está descrita en InterfazConsola y el apartado de presentación.
+Utilidades es un paquete externo que agrupa Funciones, DecoracionConsola, MyConsole, ColoresMenu y FormatoMenu. No se rediseñan esas clases ni se les inventan métodos: su uso se evalúa según el diseño de la interfaz.
 
 ## Datos y persistencia
 
@@ -476,23 +476,9 @@ La conversión de la información de los personajes al catálogo CSV se definir�
 
 El usuario confirmó el cierre de la actividad 5 con la especificación actual. No se agregaron ejemplos propios de personajes válidos e inválidos; no se presentan como realizados ni se mantienen como condición para reabrir la actividad. La conversión al CSV permanece postergada por indicación del usuario. Las rutas reales del recurso compartido y el protocolo de Accion siguen pendientes de la actividad 6.
 
-## Presentación con Utilidades
+## Presentación de consola
 
-[Utilidades](../Mis-Librerias/Utilidades/README.md) aporta Funciones, DecoracionConsola y MyConsole; ColoresMenu y FormatoMenu configuran los menús. Utilidades se muestra como paquete externo en el UML; su uso se describe en esta sección, sin flechas de dependencia ni reproducción de sus implementaciones.
-
-| Firma de InterfazConsola | Delegación |
-|---|---|
-| `MostrarMano(jugador: Jugador): void` | MyConsole para ASCII y DecoracionConsola para atributos. |
-| `PedirCarta(jugador: Jugador): Personaje` | PedirOpcionMenu devuelve un índice desde cero sobre una copia de la mano disponible. |
-| `PedirAtributo(): TipoAtributo` | PedirEnum<TipoAtributo> limita la elección a los seis valores. |
-| `MostrarMarcador(j1: Jugador, j2: Jugador, ronda: int): void` | MostrarTabla presenta marcadores y ronda. |
-| `MostrarEsperando(mensaje: string): void` | Mensaje de espera sin solicitar entradas. |
-| `MostrarCombate(combate: Combate): void` | Presenta elecciones completas, atributo y ganador resuelto. |
-| `MostrarGanadorRonda(ganador: Jugador): void` | Presenta el resultado de ronda. |
-| `MostrarGanadorPartida(ganador: Jugador): void` | Presenta el resultado final. |
-| `MostrarError(mensaje: string): void` | Mensaje de error de la biblioteca. |
-
-El menú con FormatoMenu y flechas limpia la pantalla e historial. Para conservar la mano visible se puede usar SeleccionNumerica o incorporar el contexto al propio menú. La escritura de pantalla se hace mediante MyConsole para respetar su historial. La validación de opciones de entrada pertenece al cliente; una opción de teclado inválida se vuelve a pedir. Los fallos de lectura, persistencia o ejecución siguen la política de cierre completo sin recuperación.
+La [especificación de interfaz](Interfaz.md) describe las pantallas, sus maquetas y el criterio de reutilización puntual de Utilidades. La validación de opciones de entrada pertenece al cliente. Los fallos de lectura, persistencia o ejecución siguen la política de cierre del protocolo aplicable.
 
 ## Decisiones pendientes y límites de cierre
 
