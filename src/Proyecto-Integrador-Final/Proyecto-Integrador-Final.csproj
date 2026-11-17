@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Proyecto-Integrador-Final.Tests" />
     <ProjectReference Include="..\..\Mis-Librerias\DataBases\DataBases.csproj" />
     <ProjectReference Include="..\..\Mis-Librerias\Utilidades\Utilidades.csproj" />
   </ItemGroup>
