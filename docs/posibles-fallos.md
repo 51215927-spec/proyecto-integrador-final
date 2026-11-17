@@ -4,7 +4,7 @@ Este plan de TI especifica resultados esperados. La ejecución y el registro de 
 
 **Caja negra** comprueba resultados observables por consola, API o contrato público del dominio. **Caja blanca** inspecciona el estado persistido o controla un punto de fallo para comprobar efectos que la respuesta por sí sola no demuestra.
 
-Referencias: [consigna](Consigna.md), [reglas](Reglas-del-juego.md), [formato de personajes](Arquitectura.md#reglas-del-formato-proporcionadas-por-databases) y [contrato HTTP de la actividad 6](Protocolo-partida-web.md).
+Los resultados esperados se basan en la [consigna](Consigna.md), las [reglas](Reglas-del-juego.md), el [formato de personajes](Arquitectura.md#reglas-del-formato-proporcionadas-por-databases) y el [contrato HTTP](Protocolo-partida-web.md).
 
 ## Personajes y catálogo
 

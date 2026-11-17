@@ -1,10 +1,13 @@
 # Protocolo de partida web — API REST
 
-## Estado y alcance
+HTTP en red local está aprobado para la entrega de la [actividad 6](Consigna.md). Este documento especifica el diseño REST. La implementación y las comprobaciones en dos computadoras siguen pendientes.
 
-Diseño de TI iniciado el 13 de noviembre de 2026. El 17 de noviembre de 2026 el usuario informó el visto bueno para usar HTTP en red local en la entrega. La comunicación se diseña como una API REST. No hay implementación REST del juego ni verificaciones entre computadoras. El usuario confirmó net8.0, ASP.NET Core con Minimal APIs, HttpClient, System.Text.Json, SQLite, EF Core y xUnit; la referencia estable acordada para ASP.NET Core y EF Core es 8.0.34. La selección no implica dependencias instaladas ni contratos completos.
-
-La aprobación resuelve el medio de comunicación de la [actividad 6](Consigna.md). Los contratos se especifican aquí. Quedan la revisión y las verificaciones en dos computadoras.
+- [Despliegue y conexión](#organización-propuesta)
+- [Identidad y sesiones](#administración-e-identidad)
+- [Operaciones, datos y errores HTTP](#contrato-http)
+- [Estados y recuperación](#estados-presencia-y-recuperación)
+- [Persistencia y catálogo](#persistencia-concurrencia-y-catálogo)
+- [Verificación en dos equipos](#verificación-en-dos-equipos)
 
 ## Organización propuesta
 
@@ -12,11 +15,11 @@ Dos clientes de consola se comunican con una API ASP.NET Core mediante HTTP y JS
 
 EF Core administrará la persistencia en una base SQLite local al servidor, tanto del catálogo permanente de personajes (nombre, descripción, ASCII y seis atributos) como de los datos de partidas. Los clientes acceden exclusivamente a la API. El esquema y las transacciones se definen en este documento.
 
-El usuario dio por terminado el paso 2: dos computadoras Windows; la primera ejecuta servidor y cliente J1 como procesos separados, y la segunda cliente J2. Primero se abre el servidor y, cuando está disponible, los clientes. La comprobación de las instalaciones se posterga hasta disponer de los equipos; no se presenta como realizada.
+En el primer equipo Windows se ejecutan el servidor y el cliente J1 como procesos separados. En el segundo se ejecuta el cliente J2. Se abre primero el servidor y después ambos clientes. Las versiones acordadas están en [Tecnologías REST](Tecnologias-rest.md).
 
 La API y el dominio tienen responsabilidades distintas: la API identifica al jugador y valida el contrato recibido; el dominio decide si la elección es válida y resuelve el juego; la persistencia confirma los cambios. Los DTO de red no son entidades EF ni objetos vivos de Partida.
 
-## Conexión acordada — paso 3
+## Conexión en red local
 
 Para las pruebas en la red local se utiliza HTTP, puerto TCP 5000 y dirección del servidor configurable en cada cliente. Ejemplo ilustrativo: `http://192.168.1.20:5000`; la IP no está asignada ni comprobada. Cada cliente lee la dirección base de su archivo local de configuración al iniciar.
 
@@ -25,12 +28,6 @@ Localhost identifica la computadora del propio proceso: sirve para probar client
 Si el servidor no está disponible, el cliente informa y ofrece reintentar o salir. Conserva una elección pendiente y no la transforma en una operación nueva al reintentar. La confirmación de una elección cuya respuesta se perdió se resolverá mediante los contratos de operaciones e idempotencia de este documento; no se asume que falló por un error de conexión.
 
 HTTP no cifra el intercambio. Su elección se limita al entorno local de prueba acordado; no se define publicación en Internet. Primero se probará la comunicación para determinar si existe un bloqueo, sin asumir que sea necesario abrir el firewall. De requerirse una excepción en un equipo escolar, se coordinará con el responsable y se limitará al servicio, puerto y equipos participantes. No se requiere desactivar el firewall ni abrir puertos del router hacia Internet.
-
-### Evidencia y pruebas postergadas
-
-El usuario informó que dos procesos se comunican correctamente mediante localhost. Es una observación aportada por el usuario, sin comprobación reproducida por el agente; no acredita REST implementado en este repositorio ni conectividad entre equipos.
-
-Por falta de acceso a las computadoras, quedan pendientes: verificar SDK y runtimes, IP real, disponibilidad de TCP 5000, escucha en red, conexión entre equipos, permisos y posibles bloqueos del firewall/red escolar. También se deben probar servidor ausente, pérdida de conexión y reintentos sin duplicación. Se conservan como tareas de verificación del plan, sin reabrir el cierre confirmado del paso 2.
 
 ## Administración e identidad
 
@@ -94,6 +91,9 @@ El operador carga o actualiza el catálogo mediante importación local del forma
 Cada escritura de juego usa una transacción SQLite con adquisición del turno de escritura antes de leer el estado para validar. Se comprueba primero si existe el recibo propio. Si los campos normalizados coinciden se devuelve el recibo guardado sin aplicar otra transición. Si difieren, se rechaza con `operacionIncompatible`. Para una operación nueva se comprueban presencia, fase, revisión, titular, solicitud, carta y atributo. Se confirman juntos estado, solicitud consumida, revisión y recibo. Si la escritura no está disponible se devuelve `503`; el cliente reutiliza el identificador original. Los recibos se conservan junto con la partida, incluso finalizada. Inicio y cancelación locales validan la transición desde la fase persistida antes de modificarla.
 
 ## Verificación en dos equipos
+
+El usuario informó que dos procesos se comunicaron por localhost. La prueba entre equipos sigue pendiente.
+
 
 1. En ambos equipos registrar `dotnet --info` y `dotnet --list-runtimes`. En el servidor registrar la IPv4 local con `ipconfig` y comprobar que TCP 5000 esté libre antes de iniciar y en escucha en la interfaz de red después.
 2. Desde el segundo equipo ejecutar `Test-NetConnection <IPv4-del-servidor> -Port 5000`. Si falla, comprobar primero la IP, la escucha y las condiciones de red indicadas en el apartado de conexión.
