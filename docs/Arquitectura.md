@@ -6,7 +6,7 @@ Las bibliotecas DataBases y Utilidades existen en el submódulo `Mis-Librerias/`
 
 ## Comunicación HTTP — actividad 6
 
-El usuario informó el 17 de noviembre de 2026 que se aprobó usar HTTP en la red local para la entrega. El [protocolo REST](Protocolo-partida-web.md) detalla el flujo y las operaciones propuestas. El [plan](Plan.md#actividad-6--comunicación-http-en-red-local) registra las decisiones y verificaciones pendientes.
+El usuario informó el 17 de noviembre de 2026 que se aprobó usar HTTP en la red local para la entrega. El [protocolo REST](Protocolo-partida-web.md) detalla el flujo y las operaciones HTTP. El [plan](Plan.md#actividad-6--comunicación-http-en-red-local) registra las decisiones y verificaciones pendientes.
 
 ```mermaid
 flowchart LR
@@ -18,9 +18,38 @@ flowchart LR
 
 Servidor y cliente J1 se ejecutan en el primer equipo Windows. El cliente J2 se ejecuta en el segundo. Cada cliente usa una dirección configurable y el puerto acordado es TCP 5000. El servidor inicia primero.
 
-La API identifica al participante, valida el intercambio y prepara una presentación por jugador. El dominio mantiene la partida y aplica las reglas. El servidor confirma el estado y los recibos de las operaciones mediante persistencia local. SQLite también conserva el catálogo permanente. Los DTO delimitan los datos visibles en cada cliente. La integración de estos componentes y los contratos de identidad, concurrencia y recuperación siguen en diseño. La prueba local informada por el usuario no acredita conectividad entre los equipos.
+La API identifica al participante, valida el intercambio y prepara una presentación por jugador. El dominio mantiene la partida y aplica las reglas. El servidor confirma el estado y los recibos de las operaciones mediante persistencia local. SQLite también conserva el catálogo permanente. Los DTO delimitan los datos visibles en cada cliente. El protocolo especifica la identidad, la concurrencia y la recuperación. La prueba local informada por el usuario no acredita conectividad entre los equipos.
 
-El [UML de dominio](diagramas/UML.uxf) y las firmas de la actividad 4 sirven como base de diseño. La adaptación de las interfaces de ejecución y consola a DTO y los detalles de clases de la API quedan en la actividad 6.
+El [UML de dominio](diagramas/UML.uxf) y las firmas de la actividad 4 sirven como base de diseño. El modelo de integración web complementa el UML de dominio.
+
+```mermaid
+classDiagram
+    ClienteHttp ..> ApiPartidas : HTTP JSON
+    InterfazConsola ..> ClienteHttp : solicita y presenta
+    ApiPartidas --> ServicioPartida
+    ServicioPartida --> Partida
+    ServicioPartida --> RepositorioPartida
+    ApiPartidas ..> PresentacionDto
+    ApiPartidas ..> EleccionDto
+    class ClienteHttp {
+        Incorporar(SesionDto) SesionAceptadaDto
+        Consultar() PresentacionDto
+        Elegir(EleccionDto) ReciboDto
+        ConsultarRecibo(Guid) ReciboDto
+        RenovarPresencia()
+        Abandonar()
+    }
+    class ServicioPartida {
+        AplicarEleccion(Guid, Sesion, EleccionDto) ReciboDto
+        Proyectar(Guid, Sesion) PresentacionDto
+    }
+    class RepositorioPartida {
+        Cargar(Guid) EstadoPartida
+        Confirmar(EstadoPartida, ReciboDto)
+    }
+```
+
+ClienteHttp conserva la sesión y la operación pendiente. ApiPartidas valida credenciales y mapea las respuestas HTTP. ServicioPartida aplica las transiciones mediante el dominio y proyecta la vista propia. RepositorioPartida carga y confirma el estado y el recibo en la misma transacción de escritura, según el [contrato HTTP](Protocolo-partida-web.md#contrato-http).
 
 ## Distribución y responsabilidades
 
@@ -57,7 +86,7 @@ El diagrama se exportó con UMLet 15.1 y se revisó visualmente. Se separaron lo
 
 ## Especificación de clases y métodos — actividad 4
 
-Las firmas indican parámetros y retornos. Salvo donde se indica estático, los métodos son de instancia. Las condiciones que garantiza el flujo se describen como precondiciones, sin exigir que cada método vuelva a comprobarlas. Los datos externos se validan al recibirlos: las opciones en la entrada, las reglas numéricas al construir Personaje y la disponibilidad de la carta en Combate.SetCarta. Los controles de las solicitudes HTTP se definirán en la actividad 6. Los errores técnicos de entrada o archivos llegan al punto de ejecución para informar y finalizar.
+Las firmas indican parámetros y retornos. Salvo donde se indica estático, los métodos son de instancia. Las condiciones que garantiza el flujo se describen como precondiciones, sin exigir que cada método vuelva a comprobarlas. Los datos externos se validan al recibirlos: las opciones en la entrada, las reglas numéricas al construir Personaje y la disponibilidad de la carta en Combate.SetCarta. Los controles de solicitudes HTTP están especificados en el protocolo web. Los errores técnicos de entrada o archivos llegan al punto de ejecución para informar y finalizar.
 
 ### Personaje
 
@@ -432,7 +461,7 @@ Utilidades es un paquete externo que agrupa Funciones, DecoracionConsola, MyCons
 
 [DataBases](../Mis-Librerias/DataBases/README.md) documenta el formato del catálogo CSV de la actividad 5. El diseño REST usa SQLite mediante EF Core para conservar los personajes y las partidas en el servidor. Los clientes reciben las vistas de la API.
 
-La actividad 6 definirá la importación inicial, el esquema, la conservación de los datos usados en partidas activas y las transacciones que confirman una elección. Las reglas de validación de atributos siguen en Personaje. Consultá [Tecnologías del protocolo REST](Tecnologias-rest.md) y [Concurrencia, reintentos y persistencia](Protocolo-partida-web.md#concurrencia-reintentos-y-persistencia).
+El protocolo HTTP define la importación, el esquema, las copias para cada partida y las transacciones de elección. Las reglas de validación de atributos siguen en Personaje. Consultá [Tecnologías del protocolo REST](Tecnologias-rest.md) y [Concurrencia, reintentos y persistencia](Protocolo-partida-web.md#concurrencia-reintentos-y-persistencia).
 
 ## Formato de archivos de personajes — actividad 5
 
@@ -503,7 +532,7 @@ El menú con FormatoMenu y flechas limpia la pantalla e historial. Para conserva
 
 - Actividad 4: completada por confirmación del usuario el 9 de noviembre de 2026. Las 58 especificaciones se revisaron para mejorar la lectura y evitar validaciones repetidas. Los detalles de formatos e integración siguen en las actividades 5 y 6.
 - Actividad 5: completada por confirmación del usuario. Columnas, descripción, ASCII y lectura especificados; conversión al CSV postergada. Las rutas reales corresponden a la actividad 6.
-- Actividad 6: completar los contratos HTTP, la integración de Partida y los clientes, y el UML de detalle. Revisar identidad, transiciones, persistencia y recuperación.
+- Actividad 6: quedan la revisión del diseño y las verificaciones en dos computadoras.
 La [consigna](Consigna.md) conserva el texto original y registra la aprobación de HTTP para la entrega.
 La actividad 3 está completada por confirmación del usuario: modelo de dominio y justificación revisados. Las entidades, relaciones, configuración en Datos y firmas de integración que resulten del protocolo son tareas de la actividad 6 y no condicionan este cierre. El modelo y las especificaciones quedaron integrados mediante los PR #9 y #10. Los nuevos PR mantienen la revisión de un compañero exigida por CONTRIBUTING; no se confunde con una tarea de modelado.
 

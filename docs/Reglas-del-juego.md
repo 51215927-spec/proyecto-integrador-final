@@ -67,7 +67,7 @@ Dos clientes de consola se conectan al servidor mediante HTTP en la red local e 
 | CSV inicial inexistente, ilegible o inválido | Informar el error de carga. El formato y sus validaciones se describen en [Arquitectura](Arquitectura.md#formato-de-archivos-de-personajes--actividad-5). |
 | Servidor inaccesible o conexión interrumpida | Informar y ofrecer reintentar o salir. Si hay una elección pendiente, conservar su identificación para el reintento. |
 | Elección inválida, solicitud consumida o estado incompatible | Rechazar sin modificar el juego. Los códigos HTTP y la actualización de la presentación se detallan en la propuesta de protocolo. |
-| Cliente ausente o proceso reiniciado | Definir presencia, pausa, abandono y recuperación durante la actividad 6. |
+| Cliente ausente o proceso reiniciado | Aplicar la política de presencia, pausa, abandono y recuperación del [protocolo HTTP](Protocolo-partida-web.md#estados-presencia-y-recuperación). |
 
 ## Condiciones técnicas de ejecución
 

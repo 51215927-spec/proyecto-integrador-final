@@ -2,15 +2,15 @@
 
 ## Estado y alcance
 
-Borrador de TI iniciado el 13 de noviembre de 2026. El 17 de noviembre de 2026 el usuario informó el visto bueno para usar HTTP en red local en la entrega. La comunicación se diseña como una API REST. No hay implementación REST del juego ni verificaciones entre computadoras. El usuario confirmó net8.0, ASP.NET Core con Minimal APIs, HttpClient, System.Text.Json, SQLite, EF Core y xUnit; la referencia estable acordada para ASP.NET Core y EF Core es 8.0.34. La selección no implica dependencias instaladas ni contratos completos.
+Diseño de TI iniciado el 13 de noviembre de 2026. El 17 de noviembre de 2026 el usuario informó el visto bueno para usar HTTP en red local en la entrega. La comunicación se diseña como una API REST. No hay implementación REST del juego ni verificaciones entre computadoras. El usuario confirmó net8.0, ASP.NET Core con Minimal APIs, HttpClient, System.Text.Json, SQLite, EF Core y xUnit; la referencia estable acordada para ASP.NET Core y EF Core es 8.0.34. La selección no implica dependencias instaladas ni contratos completos.
 
-La aprobación resuelve el medio de comunicación de la [actividad 6](Consigna.md). La especificación de contratos, la revisión y las verificaciones quedan pendientes en TI.
+La aprobación resuelve el medio de comunicación de la [actividad 6](Consigna.md). Los contratos se especifican aquí. Quedan la revisión y las verificaciones en dos computadoras.
 
 ## Organización propuesta
 
 Dos clientes de consola se comunican con una API ASP.NET Core mediante HTTP y JSON. El servidor dirige el juego y es la única autoridad sobre cartas, turnos, resultados y marcadores. Cada cliente recibe exclusivamente la información que puede ver y devuelve las elecciones solicitadas.
 
-EF Core administrará la persistencia en una base SQLite local al servidor, tanto del catálogo permanente de personajes (nombre, descripción, ASCII y seis atributos) como de los datos de partidas. Los clientes acceden exclusivamente a la API. La selección está acordada; el esquema, las transacciones y el mantenimiento del catálogo siguen pendientes.
+EF Core administrará la persistencia en una base SQLite local al servidor, tanto del catálogo permanente de personajes (nombre, descripción, ASCII y seis atributos) como de los datos de partidas. Los clientes acceden exclusivamente a la API. El esquema y las transacciones se definen en este documento.
 
 El usuario dio por terminado el paso 2: dos computadoras Windows; la primera ejecuta servidor y cliente J1 como procesos separados, y la segunda cliente J2. Primero se abre el servidor y, cuando está disponible, los clientes. La comprobación de las instalaciones se posterga hasta disponer de los equipos; no se presenta como realizada.
 
@@ -18,11 +18,11 @@ La API y el dominio tienen responsabilidades distintas: la API identifica al jug
 
 ## Conexión acordada — paso 3
 
-Para las pruebas en la red local se utiliza HTTP, puerto TCP 5000 y dirección del servidor configurable en cada cliente. Ejemplo ilustrativo: `http://192.168.1.20:5000`; la IP no está asignada ni comprobada. La ubicación concreta de esa configuración y su carga se completarán al especificar los contratos.
+Para las pruebas en la red local se utiliza HTTP, puerto TCP 5000 y dirección del servidor configurable en cada cliente. Ejemplo ilustrativo: `http://192.168.1.20:5000`; la IP no está asignada ni comprobada. Cada cliente lee la dirección base de su archivo local de configuración al iniciar.
 
 Localhost identifica la computadora del propio proceso: sirve para probar clientes y servidor en el mismo equipo. El cliente de otra computadora debe usar la dirección de red del servidor. Este debe aceptar conexiones en una interfaz accesible desde esa red, no limitarse a localhost; no hay configuración implementada que lo acredite.
 
-Si el servidor no está disponible, el cliente informa y ofrece reintentar o salir. Conserva una elección pendiente y no la transforma en una operación nueva al reintentar. La confirmación de una elección cuya respuesta se perdió se resolverá mediante los contratos de operaciones e idempotencia de los pasos 5 y 7; no se asume que falló por un error de conexión.
+Si el servidor no está disponible, el cliente informa y ofrece reintentar o salir. Conserva una elección pendiente y no la transforma en una operación nueva al reintentar. La confirmación de una elección cuya respuesta se perdió se resolverá mediante los contratos de operaciones e idempotencia de este documento; no se asume que falló por un error de conexión.
 
 HTTP no cifra el intercambio. Su elección se limita al entorno local de prueba acordado; no se define publicación en Internet. Primero se probará la comunicación para determinar si existe un bloqueo, sin asumir que sea necesario abrir el firewall. De requerirse una excepción en un equipo escolar, se coordinará con el responsable y se limitará al servicio, puerto y equipos participantes. No se requiere desactivar el firewall ni abrir puertos del router hacia Internet.
 
@@ -32,104 +32,70 @@ El usuario informó que dos procesos se comunican correctamente mediante localho
 
 Por falta de acceso a las computadoras, quedan pendientes: verificar SDK y runtimes, IP real, disponibilidad de TCP 5000, escucha en red, conexión entre equipos, permisos y posibles bloqueos del firewall/red escolar. También se deben probar servidor ausente, pérdida de conexión y reintentos sin duplicación. Se conservan como tareas de verificación del plan, sin reabrir el cierre confirmado del paso 2.
 
-## Identidad y sesiones
+## Administración e identidad
 
-Propuesta: cada partida tiene un UUID; cada participante tiene un identificador y una credencial de reincorporación. El rol J1/J2 se asigna o reserva en el servidor, con mecanismo todavía por definir. El cuerpo enviado por el cliente no puede atribuirse libremente otro rol. La credencial se envía mediante un encabezado de autorización y no forma parte de las URL ni de las presentaciones.
+El operador crea, inicia y cancela partidas mediante la consola local del servidor. La creación genera un UUID de partida y dos credenciales aleatorias independientes, una por plaza J1/J2, que el operador entrega a cada jugador fuera de la API. Solo se almacena el hash de cada credencial. El cliente envía su credencial en `Authorization: Bearer` y el servidor deduce la plaza. El nombre visible se registra al incorporarse y queda fijo. El operador puede reemplazar una credencial desde el servidor y revocar la sesión anterior sin cambiar de plaza ni perder la mano.
 
-Debe definirse quién administra el servidor, quién crea e inicia partidas, cómo se distribuyen las credenciales y cómo se evita ocupar dos veces un rol. El nombre visible no sirve como autenticación. Una instancia nueva del cliente no debe desplazar silenciosamente a otra conectada.
+Cada instancia genera un UUID de sesión y lo conserva mientras se ejecuta. La primera incorporación reserva la plaza para esa sesión. Una instancia posterior con la misma credencial debe esperar al vencimiento de la anterior o pedir al operador que la cierre. Un reintento de incorporación con la misma sesión renueva su plazo. Si el nombre ya está registrado, debe coincidir. Las credenciales se usan únicamente en la red local acordada, fuera de URLs y registros.
 
-## Recursos y operaciones propuestas
+## Contrato HTTP
 
-Prefijo de versión: `/api/v1`. Las rutas representan recursos; los nombres y contratos son iniciales.
+Las rutas llevan el prefijo `/api/v1/partidas/{id}`. Los cuerpos son JSON UTF-8 con propiedades camelCase. `id`, `idSesion`, `idSolicitud` e `idOperacion` son UUID. Los identificadores de personaje, números de combate y ronda, puntajes y revisión son enteros. Todas las operaciones salvo la incorporación requieren la sesión vigente en la cabecera `X-Sesion`. La creación, el inicio y la cancelación administrativa se ejecutan localmente en el servidor.
 
-| Método y ruta | Finalidad | Resultado inicial propuesto |
+| Método y ruta relativa | Entrada | Éxito |
 |---|---|---|
-| `POST /partidas` | Crear la partida desde la administración autorizada. | `201 Created`, identificación y cabecera Location. |
-| `POST /partidas/{id}/participantes` | Incorporarse a una plaza disponible. | `201 Created`, identidad y credencial. |
-| `POST /partidas/{id}/inicio` | Solicitar inicio explícito con ambos jugadores preparados. | `201 Created` al registrar el inicio. |
-| `GET /partidas/{id}/presentacion` | Consultar la vista del participante autenticado. | `200 OK`, presentación completa. |
-| `POST /partidas/{id}/elecciones` | Registrar la respuesta a una solicitud pendiente. | `201 Created`, recibo de aceptación. |
-| `GET /partidas/{id}/elecciones/{idOperacion}` | Consultar el recibo propio tras perder una respuesta HTTP. | `200 OK` o `404 Not Found`. |
-| `PUT /partidas/{id}/participantes/me/presencia` | Renovar la presencia del cliente autenticado. | `204 No Content`. |
+| `PUT /participantes/me/sesion` | `idSesion`, `nombre` no vacío | `200` con `rol`, `idSesion` y `venceUtc` |
+| `PUT /participantes/me/presencia` | Sin cuerpo | `204`. Renueva la sesión vigente |
+| `GET /presentacion` | Sin cuerpo | `200` con vista propia. Usar `Cache-Control: no-store` |
+| `POST /elecciones` | `idOperacion`, `idSolicitud`, `revisionEsperada`, `idPersonaje`, `atributo` si se solicita | `201` con recibo y `Location` al consultar el recibo. Una repetición aceptada devuelve `200` con el mismo recibo |
+| `GET /elecciones/{idOperacion}` | Sin cuerpo | `200` con recibo propio o `404` |
+| `PUT /participantes/me/abandono` | Sin cuerpo | `204`. Finaliza la partida y repetirlo para el mismo participante conserva el resultado |
 
-La administración requiere permisos distintos de los de jugador. El acceso a recibos y presentaciones se limita a su titular. Crear recursos y registrar el inicio también requiere protección contra reintentos duplicados; su contrato de idempotencia debe completarse antes de implementar.
+- **Presentación** contiene `idPartida`, `revision`, `fase`, `pausada`, `rolPropio`, nombres de ambas plazas cuando estén registradas, `numeroRonda`, `numeroCombate`, `marcador` por plaza, `mano`, `solicitud` y `resultados`. Los números de ronda y combate son nulos antes del juego. Cada elemento de mano contiene `idPersonaje`, `nombre`, `descripcion`, `ascii` y los seis atributos como mapa de nombres canónicos a puntajes.
+- **Solicitud** es nula si el jugador debe esperar o la partida está pausada o terminada. Si existe, contiene `idSolicitud`, `tipo` (`cartaYAtributo` o `carta`), `idsPersonajePermitidos` y `atributosPermitidos`, vacío para `carta`. Los atributos usan los nombres de la consigna. El rival desconoce carta y atributo hasta la resolución.
+- **Recibo** contiene `idOperacion`, `idSolicitud` y `revisionConfirmada`. **Resultados** es el historial ordenado de combates ya resueltos, con ronda, combate, cartas reveladas por plaza, atributo, puntajes y ganadores de combate y ronda si corresponde. En fase final, la vista incluye `motivoFin` (`victoria`, `abandono` o `cancelacion`) y `ganador` cuando corresponde a una victoria por las reglas.
 
-## Presentación y elecciones
-
-La presentación propuesta contiene `idPartida`, `revision`, `fase`, rol y nombre propios, mano visible, marcador, resultado público y `solicitud` opcional. Una solicitud incluye `idSolicitud`, clase de entrada y opciones permitidas. No expone la mano rival ni su carta o atributo elegidos antes de la revelación. Los detalles exactos de cada DTO quedan por especificar.
-
-Ejemplo ilustrativo de una elección, con identificadores de ejemplo:
-
-```json
-{
-  "idOperacion": "fd222e81-d696-4c1a-95eb-6b5e5ce67f31",
-  "idSolicitud": "9d421cf5-f1fe-4dc1-88b9-0bb11832dced",
-  "revisionEsperada": 12,
-  "idPersonaje": 7,
-  "atributo": "Fuerza"
-}
-```
-
-El rol procede de la identidad autenticada. El atributo solo se admite cuando la solicitud lo exige. El servidor verifica partida, solicitud vigente, propietario de la carta y opciones ofrecidas. Los nombres de atributos corresponden a los seis definidos en la consigna. El tratamiento del nombre del jugador y las demás clases de entrada debe completar este contrato.
-
-`revisionEsperada` identifica la versión del juego vista por el cliente. La renovación de presencia no debe invalidar elecciones incrementando esa revisión. Falta definir con precisión qué transiciones cambian la revisión y si una modificación compatible permite conservar la solicitud.
-
-## Secuencia de un combate
-
-1. El servidor prepara una solicitud para quien elige carta y atributo. El rival recibe una presentación de espera.
-2. El elector envía su elección. El servidor la valida y confirma antes de responder.
-3. El servidor solicita la carta del rival sin revelar carta ni atributo del elector, conforme a las reglas documentadas.
-4. Al confirmar la segunda elección, resuelve el combate y prepara el resultado público para ambos.
-5. Los clientes consultan y muestran el resultado. La necesidad de confirmar su lectura antes de avanzar queda pendiente.
-
-Se mantienen las [reglas del juego](Reglas-del-juego.md): alternancia del elector, desempate a favor de quien no eligió atributo, dos combates para ganar la ronda y quince rondas para ganar la partida. El protocolo no cambia las restricciones de personajes: total 3000, rango inclusivo 250–750 y umbrales 650/350.
-
-## Consultas y presencia
-
-Propuesta inicial: consultar la presentación cada segundo mientras se espera, con una sola consulta pendiente por cliente y timeout configurable. El intervalo se evaluará en red. Cada respuesta es una vista completa; el cliente puede comparar la revisión para evitar redibujar sin cambios. La captura de teclado no debe impedir las consultas de presencia.
-
-HTTP no demuestra que un programa siga activo entre solicitudes. Se propone una renovación periódica de presencia y un plazo de vencimiento medido por el servidor; ambos valores quedan pendientes. Un timeout local tampoco prueba que el servidor haya cerrado.
-
-Debe decidirse cuándo se pausa el juego, si se conserva el diálogo de espera cada cinco segundos y qué significa abandonar. No se puede aplicar directamente la regla anterior de «si todos cierran, la partida deja de ser recuperable»: el servidor web necesita una definición observable de sesión y abandono.
-
-## Concurrencia, reintentos y persistencia
-
-Las modificaciones de una misma partida deben aplicarse de forma serializada y confirmarse de manera atómica. Propuesta: guardar en una transacción el estado resultante, la solicitud consumida, la revisión y el recibo de la operación. El mecanismo concreto con EF Core/SQLite y su modelo de datos quedan pendientes.
-
-El cliente genera `idOperacion` antes del primer envío y lo conserva durante los reintentos. Una misma operación del mismo participante y partida, con idéntico contenido, devuelve su recibo sin volver a consumir cartas ni sumar victorias. El mismo identificador con otro contenido produce conflicto. La comprobación de duplicados precede al rechazo por revisión antigua para poder recuperar un éxito previo.
-
-Una operación nueva sobre una solicitud consumida o revisión incompatible se rechaza sin efectos. Un error de red no autoriza al cliente a asumir que la elección falló: consulta el recibo o reenvía la misma operación. El estado persistido es autoritativo; no se anuncia éxito antes de confirmar la transacción.
-
-El reparto completo debe confirmarse antes de mostrar las manos. Tras reiniciar el servidor no se vuelve a mezclar una partida ya guardada. Falta definir retención de recibos, recuperación de credenciales y política de continuidad tras reinicios. La base conservaría catálogo utilizado, orden del mazo, manos, ronda, combates, solicitudes y marcadores; el esquema relacional frente a una captura JSON aún debe evaluarse. La importación inicial del CSV/DataBases también queda pendiente.
-
-## Respuestas de error
-
-| Estado HTTP | Uso propuesto |
+| Estado | Código de error y tratamiento |
 |---|---|
-| `400 Bad Request` | JSON inválido, campos obligatorios ausentes o formato incorrecto. |
-| `401 Unauthorized` | Credencial ausente o inválida. |
-| `403 Forbidden` | Identidad válida sin permiso para la operación. |
-| `404 Not Found` | Recurso inexistente o no accesible conforme a la política de visibilidad. |
-| `409 Conflict` | Turno, solicitud o revisión incompatible; operación reutilizada con otro contenido. |
-| `422 Unprocessable Content` | Elección bien formada que incumple las opciones permitidas. |
-| `503 Service Unavailable` | Servicio temporalmente incapaz de procesar la operación. |
+| 400 | `entradaInvalida` por JSON, campos o tipos inválidos. Corregir datos antes de reenviar |
+| 401 | `credencialInvalida`. Revisar credencial |
+| 403 | `sinPermiso`. La identidad autenticada carece de autorización |
+| 404 | `recursoNoEncontrado`. También se usa para recibos de otro participante |
+| 409 | `sesionOcupada`, `sesionVencida`, `partidaPausada`, `revisionDesactualizada`, `solicitudNoVigente` u `operacionIncompatible`. Actualizar sesión o presentación según el código |
+| 422 | `eleccionInvalida` por carta o atributo fuera de las opciones. Solicitar otra entrada |
+| 503 | `servicioNoDisponible`. Consultar recibo o reintentar con la misma operación |
 
-Se propone un cuerpo uniforme con `codigo`, `mensaje` e identificador de seguimiento, sin detalles internos. El cliente conserva su entrada ante fallos de red y obtiene una presentación actualizada ante conflictos. Los errores no revelan elecciones ocultas. El contrato definitivo de errores y las reglas de reintento se revisarán conjuntamente.
+El error incluye `codigo`, `mensaje` e `idSeguimiento`; sus campos excluyen elecciones ocultas y detalles internos.
 
-## Pendientes de diseño y verificación
+## Estados, presencia y recuperación
 
-- Verificar las instalaciones y las condiciones reales de ejecución cuando estén disponibles los equipos.
-- Definir administración, identidad, incorporación, presencia, abandono y recuperación.
-- Precisar DTO, rutas, respuestas, estados y transiciones, incluyendo inicio y fin de ronda/partida.
-- Diseñar persistencia, transacciones e idempotencia de todas las operaciones que modifican datos.
-- Actualizar los contratos de componentes y el UML para el protocolo REST.
-- Diseñar casos de solicitudes simultáneas, respuestas perdidas, reintentos, vistas antiguas y cortes durante el guardado.
-- Planificar pruebas en dos computadoras y revisión de compañero. Su ejecución técnica corresponde a una etapa autorizada; no está realizada.
+1. En `esperandoInicio`, el operador inicia solo con ambas plazas presentes y seis personajes válidos como mínimo. El servidor copia el catálogo activo para la partida, mezcla, reparte tres personajes por jugador y abre `esperandoElector` con J1 como mano de la primera ronda.
+2. Una elección válida del elector reserva su carta y atributo y cambia a `esperandoRival`. La elección rival resuelve el combate, retira ambas cartas y publica el resultado. Un historial persistido permite que los clientes muestren cada resultado una vez, sin exigir confirmación para avanzar.
+3. Si continúa la ronda, alterna el elector. Al alcanzar dos combates ganados se suma la ronda, se recupera el mazo completo y se alterna la mano para el nuevo reparto. Al alcanzar quince rondas se pasa a `finalizada`, sin repartir de nuevo.
+4. El cliente consulta cada segundo mientras espera y renueva presencia cada cinco segundos, incluso durante la lectura del teclado. El plazo de sesión es de quince segundos desde la última renovación. Estos valores son iniciales para la prueba de red. Si falta alguna sesión durante el juego, se pausa la admisión de nuevas elecciones y se conserva la solicitud vigente. Las consultas siguen disponibles para el participante presente.
+5. Tras un reinicio del servidor se invalidan las sesiones activas y se restaura la partida desde SQLite. Los dos participantes se reincorporan con sus credenciales y la partida retoma su fase y mano guardadas. Cerrar un cliente o perder la conexión conserva la partida. El abandono explícito finaliza por abandono sin sumar una victoria de juego. El operador puede cancelar una partida detenida.
+6. La revisión aumenta al iniciar, aceptar cada elección o finalizar. Renovar presencia, pausar o reincorporarse conserva la revisión. Una operación pendiente conserva su identificador y puede retomarse tras la pausa si la solicitud y revisión siguen vigentes.
 
-## Referencias técnicas
+## Persistencia, concurrencia y catálogo
 
-- [Diseño de APIs REST — Microsoft](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design).
-- [APIs con ASP.NET Core](https://dotnet.microsoft.com/en-us/apps/aspnet/apis).
-- [Proveedor SQLite para EF Core](https://learn.microsoft.com/es-es/ef/core/providers/sqlite/).
+| Tabla | Identidad, relaciones e información persistida |
+|---|---|
+| PersonajeCatalogo | ID entero, datos completos, seis puntajes y estado activo |
+| Partida | UUID, fase, revisión, ronda/combate actuales, motivo de fin y ganador |
+| Participante | Clave partida y plaza, hash de credencial, nombre y marcador de rondas |
+| PersonajePartida | Clave partida e ID de personaje, copia inmutable de los datos y estado de ubicación (mazo, mano J1/J2 o jugada), con orden de mazo |
+| Ronda | Clave partida y número, mano inicial, victorias por jugador y ganador |
+| Combate | Clave partida, ronda y número, elector, cartas, atributo, puntajes y ganador |
+| Solicitud | UUID, partida, participante, combate, tipo y estado vigente o consumida |
+| Operacion | Clave partida, participante e ID de operación, datos normalizados de la elección y recibo |
 
-Estas referencias describen capacidades tecnológicas; no acreditan que el diseño propuesto esté implementado o probado.
+El operador carga o actualiza el catálogo mediante importación local del formato DataBases definido en la actividad 5. Se valida todo el lote antes de confirmar altas y cambios por ID en una sola transacción. Un error deja intacto el catálogo vigente y se informa el registro inválido. El operador retira personajes desactivándolos por ID. Las partidas iniciadas usan únicamente su copia, incluso después de reiniciar o desactivar un personaje. La conversión al CSV conserva el pendiente acordado en la actividad 5.
+
+Cada escritura de juego usa una transacción SQLite con adquisición del turno de escritura antes de leer el estado para validar. Se comprueba primero si existe el recibo propio. Si los campos normalizados coinciden se devuelve el recibo guardado sin aplicar otra transición. Si difieren, se rechaza con `operacionIncompatible`. Para una operación nueva se comprueban presencia, fase, revisión, titular, solicitud, carta y atributo. Se confirman juntos estado, solicitud consumida, revisión y recibo. Si la escritura no está disponible se devuelve `503`; el cliente reutiliza el identificador original. Los recibos se conservan junto con la partida, incluso finalizada. Inicio y cancelación locales validan la transición desde la fase persistida antes de modificarla.
+
+## Verificación en dos equipos
+
+1. En ambos equipos registrar `dotnet --info` y `dotnet --list-runtimes`. En el servidor registrar la IPv4 local con `ipconfig` y comprobar que TCP 5000 esté libre antes de iniciar y en escucha en la interfaz de red después.
+2. Desde el segundo equipo ejecutar `Test-NetConnection <IPv4-del-servidor> -Port 5000`. Si falla, comprobar primero la IP, la escucha y las condiciones de red indicadas en el apartado de conexión.
+3. Iniciar J1 y J2 con sus credenciales y direcciones configuradas. Comprobar incorporación, manos privadas, secuencia de combate y presentación de resultados desde cada equipo. Registrar fecha, equipos, dirección, versión probada, resultado por paso y evidencia.
+4. Usar los escenarios de fallos de la [actividad 7](Plan.md#actividad-7--casos-de-prueba) para cubrir indisponibilidad, desconexión, reintento y elecciones concurrentes. La ejecución queda pendiente hasta disponer del servidor y ambos equipos.

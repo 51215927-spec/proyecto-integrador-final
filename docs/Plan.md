@@ -121,8 +121,8 @@ El [PR #7](https://github.com/51215927-spec/Proyecto-Integrador-Final/pull/7) de
 
 **Completada por confirmación del usuario.** El UML y su justificación están revisados. No hay implementación. El detalle vigente está en [Arquitectura](Arquitectura.md). Las tareas de modelado e integración de comunicación se trasladan a la actividad 6.
 
-- [x] Representar , Mazo, Jugador, Partida, Ronda y Combate con atributos privados, firmas tipadas y relaciones.
-- [x] Adaptar todas las referencias al concepto unificado de .
+- [x] Representar Personaje, Mazo, Jugador, Partida, Ronda y Combate con atributos privados, firmas tipadas y relaciones.
+- [x] Adaptar todas las referencias al concepto unificado de Personaje.
 - [x] Asignar coordinación del dominio al servidor y presentación a los clientes, sin comunicación directa entre rivales.
 - [x] Incorporar Datos estática y las dependencias de DataBases sin duplicar la lectura CSV.
 - [x] Definir en Datos constantes de rutas y Configurar(TipoProceso), con identidad fija de servidor, cliente J1 o cliente J2 antes de Iniciar.
@@ -173,18 +173,14 @@ No se elaboraron ejemplos propios válidos e inválidos; el cierre confirmado no
 - [x] Documentar responsabilidades, despliegue y la secuencia propuesta de combate.
 
 - [x] **Definir versiones y distribución de ejecución.** Terminado por confirmación del usuario: net8.0; ASP.NET Core y EF Core estables de la línea 8.0 (referencia 8.0.34); ambas computadoras Windows; servidor y cliente J1 en la primera y cliente J2 en la segunda. Primero se abre el servidor y después los clientes. La comprobación de instalaciones queda pendiente en las verificaciones, sin reabrir esta tarea.
-- [ ] **Definir conexión y disponibilidad del servidor.** Decisiones redactadas: HTTP en red local, TCP 5000 y dirección configurable. Ante indisponibilidad se informa y se permite reintentar o salir, conservando una elección pendiente sin tratarla como una jugada nueva. Pruebas entre equipos pendientes.
-- [ ] **Definir administración, incorporación, J1/J2, credenciales y reincorporación.** Pendiente.
-- [ ] **Completar rutas, DTO, respuestas HTTP y transiciones del juego.** Pendiente.
-- [ ] **Definir consultas, presencia, pausa, abandono y recuperación.** Pendiente.
-- [ ] **Diseñar idempotencia, revisiones y concurrencia.** Pendiente.
-- [ ] **Diseñar tablas, relaciones y transacciones de personajes y partidas.** Pendiente. SQLite conserva permanentemente el catálogo, además del estado de partidas.
-- [ ] **Definir incorporación y mantenimiento de personajes.** Pendiente.
-- [ ] **Preservar datos de personajes en partidas iniciadas ante cambios del catálogo.** Pendiente.
-- [ ] **Completar UML y contratos de integración REST.** La arquitectura ya identifica los componentes y sus responsabilidades. Las firmas y relaciones de detalle dependen de los contratos todavía en diseño.
-- [ ] **Diseñar casos de prueba y vincularlos con la actividad 7.** Pendiente.
-- [ ] **Planificar y registrar la verificación en dos computadoras.** Pendiente; las verificaciones concretas se mantienen debajo.
-- [ ] **Conciliar documentos y completar revisión antes de integrar.** Pendiente.
+- [x] Definir conexión, disponibilidad, administración, sesiones y reincorporación.
+- [x] Especificar rutas, DTO, errores, estados, presencia, pausa y abandono.
+- [x] Diseñar revisiones, idempotencia, concurrencia y persistencia transaccional.
+- [x] Diseñar importación y mantenimiento del catálogo y copias para partidas iniciadas.
+- [x] Documentar contratos de integración y UML de componentes web.
+- [x] Documentar el procedimiento de verificación en dos equipos.
+- [ ] Completar el vínculo con los casos detallados de la actividad 7 cuando se incorporen.
+- [ ] Obtener revisión del PR por un compañero e integrar el diseño.
 
 **Evidencia disponible:** el usuario informó comunicación correcta entre dos procesos mediante localhost. No aportó una ejecución reproducible del proyecto ni una prueba entre computadoras; no se presenta como implementación del juego o validación de la red escolar. No tiene los equipos disponibles para ejecutar las comprobaciones ahora.
 

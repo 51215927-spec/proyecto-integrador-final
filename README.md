@@ -8,7 +8,7 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 El trabajo actual se limita a **TI: análisis y diseño**. La implementación en Taller de Programación queda para una etapa posterior.
 
-Las actividades 1 a 5 de TI están completadas en su documentación por confirmación del usuario. La actividad 6 conserva la propuesta por archivos y agrega un borrador alternativo REST, ambos pendientes de revisión; la actividad 7 sigue pendiente.
+Las actividades 1 a 5 de TI están completadas en su documentación por confirmación del usuario. La actividad 6 documenta el protocolo REST aprobado para la entrega y queda pendiente de revisión y verificación entre equipos. La actividad 7 sigue pendiente.
 
 El punto de entrada todavía contiene `Hello, World!`. El repositorio contiene clases de dominio y una prueba vacía. HTTP en red local está aprobado para la entrega y la actividad 6 especifica su diseño. Consultá el [plan de trabajo](docs/Plan.md) para conocer los avances y pendientes.
 
