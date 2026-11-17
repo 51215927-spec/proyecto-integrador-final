@@ -1,8 +1,8 @@
-# Tecnologías de la alternativa REST
+# Tecnologías del protocolo REST
 
 ## Decisión y alcance
 
-El usuario confirmó la selección tecnológica durante la discusión del 13 de noviembre de 2026 y precisó que la base de datos también conserva permanentemente los personajes. Esta decisión corresponde a TI: no autoriza implementación, instalación de dependencias ni migración del proyecto. Complementa el [protocolo REST](Protocolo-partidad-web.md) de esta misma rama; no aprueba todos sus contratos ni sustituye el requisito académico de archivo compartido.
+El usuario confirmó la selección tecnológica durante la discusión del 13 de noviembre de 2026 y precisó que la base de datos también conserva permanentemente los personajes. Esta decisión corresponde a TI: no autoriza implementación, instalación de dependencias ni migración del proyecto. Complementa el [protocolo REST](Protocolo-partida-web.md) de la actividad 6. El 17 de noviembre de 2026 el usuario informó la aprobación de HTTP para la entrega. Los contratos detallados siguen pendientes de revisión.
 
 ## Tecnologías seleccionadas
 
@@ -44,7 +44,7 @@ La distribución oficial ofrece SDK 8.0.428 y 8.0.134 con esos runtimes; falta c
 
 Se ejecutan un servidor y dos clientes como procesos separados. Primero se abre el servidor y se espera a que esté preparado para aceptar conexiones; después se abren los clientes. El arranque del servidor no inicia automáticamente una partida. La comprobación concreta de disponibilidad y el tratamiento de un cliente abierto sin servidor quedan pendientes del contrato de conexión. Solo el servidor accede a SQLite.
 
-El usuario confirmó el paso 2: dos equipos Windows, servidor y cliente J1 en el primero y cliente J2 en el segundo. Las comprobaciones de instalaciones siguen pendientes hasta disponer de los equipos. En el paso 3 se acordaron HTTP local, TCP 5000 y dirección configurable; las pruebas entre equipos, permisos y firewall siguen pendientes. El detalle vigente está en [Conexión acordada](Protocolo-partidad-web.md#conexión-acordada--paso-3). La consulta periódica del estado sigue siendo una propuesta; su intervalo y la presencia de clientes no quedan aprobados por elegir las bibliotecas.
+El usuario confirmó el paso 2: dos equipos Windows, servidor y cliente J1 en el primero y cliente J2 en el segundo. Las comprobaciones de instalaciones siguen pendientes hasta disponer de los equipos. En el paso 3 se acordaron HTTP local, TCP 5000 y dirección configurable; las pruebas entre equipos, permisos y firewall siguen pendientes. El detalle vigente está en [Conexión acordada](Protocolo-partida-web.md#conexión-acordada--paso-3). La consulta periódica del estado sigue siendo una propuesta; su intervalo y la presencia de clientes no quedan aprobados por elegir las bibliotecas.
 
 ## Referencias consultadas durante la discusión
 

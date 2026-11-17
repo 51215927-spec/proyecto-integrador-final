@@ -2,9 +2,9 @@
 
 ## Estado y alcance
 
-Borrador de TI iniciado el 13 de noviembre de 2026. El usuario eligió REST para explorar la comunicación web. No hay implementación REST del juego ni verificaciones entre computadoras. El usuario confirmó net8.0, ASP.NET Core con Minimal APIs, HttpClient, System.Text.Json, SQLite, EF Core y xUnit; la referencia estable acordada para ASP.NET Core y EF Core es 8.0.34. La selección no implica dependencias instaladas ni contratos completos.
+Borrador de TI iniciado el 13 de noviembre de 2026. El 17 de noviembre de 2026 el usuario informó el visto bueno para usar HTTP en red local en la entrega. La comunicación se diseña como una API REST. No hay implementación REST del juego ni verificaciones entre computadoras. El usuario confirmó net8.0, ASP.NET Core con Minimal APIs, HttpClient, System.Text.Json, SQLite, EF Core y xUnit; la referencia estable acordada para ASP.NET Core y EF Core es 8.0.34. La selección no implica dependencias instaladas ni contratos completos.
 
-Se conserva el [protocolo por archivos](Protocolo-partida-archivos.md) como alternativa independiente. Sus locks, historiales y reglas de continuidad no se trasladan automáticamente al diseño web. La [consigna](Consigna.md) exige un archivo compartido: adoptar REST como sustituto para la entrega requiere resolver esa diferencia con el docente. Este borrador no modifica la consigna ni autoriza Taller.
+La aprobación resuelve el medio de comunicación de la [actividad 6](Consigna.md). La especificación de contratos, la revisión y las verificaciones quedan pendientes en TI.
 
 ## Organización propuesta
 
@@ -30,7 +30,7 @@ HTTP no cifra el intercambio. Su elección se limita al entorno local de prueba 
 
 El usuario informó que dos procesos se comunican correctamente mediante localhost. Es una observación aportada por el usuario, sin comprobación reproducida por el agente; no acredita REST implementado en este repositorio ni conectividad entre equipos.
 
-Por falta de acceso a las computadoras, quedan pendientes: verificar SDK y runtimes, IP real, disponibilidad de TCP 5000, escucha en red, conexión entre equipos, permisos y posibles bloqueos del firewall/red escolar. También se deben probar servidor ausente, pérdida de conexión y reintentos sin duplicación. Se conservan como tareas de verificación del plan, sin reabrir el cierre confirmado del paso 2. Los pasos REST mantienen su numeración 1 a 14.
+Por falta de acceso a las computadoras, quedan pendientes: verificar SDK y runtimes, IP real, disponibilidad de TCP 5000, escucha en red, conexión entre equipos, permisos y posibles bloqueos del firewall/red escolar. También se deben probar servidor ausente, pérdida de conexión y reintentos sin duplicación. Se conservan como tareas de verificación del plan, sin reabrir el cierre confirmado del paso 2.
 
 ## Identidad y sesiones
 
@@ -118,11 +118,11 @@ Se propone un cuerpo uniforme con `codigo`, `mensaje` e identificador de seguimi
 
 ## Pendientes de diseño y verificación
 
-- Resolver la compatibilidad con la entrega; la pila tecnológica y net8.0 ya están confirmados. Verificar las instalaciones y las condiciones reales de ejecución cuando estén disponibles los equipos.
+- Verificar las instalaciones y las condiciones reales de ejecución cuando estén disponibles los equipos.
 - Definir administración, identidad, incorporación, presencia, abandono y recuperación.
 - Precisar DTO, rutas, respuestas, estados y transiciones, incluyendo inicio y fin de ronda/partida.
 - Diseñar persistencia, transacciones e idempotencia de todas las operaciones que modifican datos.
-- Actualizar los contratos de componentes y el UML para la alternativa web, sin presentar el UML de archivos como diseño REST.
+- Actualizar los contratos de componentes y el UML para el protocolo REST.
 - Diseñar casos de solicitudes simultáneas, respuestas perdidas, reintentos, vistas antiguas y cortes durante el guardado.
 - Planificar pruebas en dos computadoras y revisión de compañero. Su ejecución técnica corresponde a una etapa autorizada; no está realizada.
 

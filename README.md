@@ -10,7 +10,7 @@ El trabajo actual se limita a **TI: análisis y diseño**. La implementación en
 
 Las actividades 1 a 5 de TI están completadas en su documentación por confirmación del usuario. La actividad 6 conserva la propuesta por archivos y agrega un borrador alternativo REST, ambos pendientes de revisión; la actividad 7 sigue pendiente.
 
-La aplicación todavía muestra `Hello, World!`. Existen implementaciones parciales de Personaje y Mazo y una única prueba vacía, sin comprobaciones de comportamiento. El juego aún no está integrado. El plan registra también los diseños de comunicación disponibles en ramas pendientes de revisión e integración. Consultá el [plan de trabajo](docs/Plan.md) para conocer los avances y pendientes.
+El punto de entrada todavía contiene `Hello, World!`. El repositorio contiene clases de dominio y una prueba vacía. HTTP en red local está aprobado para la entrega y la actividad 6 especifica su diseño. Consultá el [plan de trabajo](docs/Plan.md) para conocer los avances y pendientes.
 
 ## Contenido del repositorio
 
@@ -26,11 +26,10 @@ La aplicación todavía muestra `Hello, World!`. Existen implementaciones parcia
 - [Consigna](docs/Consigna.md): requisitos y entregables del proyecto.
 - [Reglas del juego](docs/Reglas-del-juego.md): funcionamiento esperado del sistema.
 - [Plan de trabajo](docs/Plan.md): estado de las actividades y próximos pasos.
-- [Protocolo de partida por archivos](docs/Protocolo-partida-archivos.md): acciones JSON, DTO Estado completo, recuperación y verificaciones pendientes.
-- [Protocolo de partida web](docs/Protocolo-partidad-web.md): borrador REST, operaciones HTTP, concurrencia y decisiones pendientes.
-- [UML de comunicación](docs/diagramas/Comunicacion.uxf): ampliación propuesta para la actividad 6.
+- [Protocolo de partida web](docs/Protocolo-partida-web.md): diseño aprobado de comunicación HTTP, contratos REST en revisión y verificaciones pendientes.
+- [Diagrama de comunicación HTTP](docs/Arquitectura.md#comunicación-http--actividad-6): clientes, API, dominio y persistencia.
 - [Arquitectura](docs/Arquitectura.md): decisiones de diseño y especificaciones por clase y método, con características, contratos y justificación.
-- [Tecnologías REST](docs/Tecnologias-rest.md): selección acordada para la alternativa web, alcance de persistencia y decisiones pendientes.
+- [Tecnologías REST](docs/Tecnologias-rest.md): selección acordada para el protocolo HTTP, alcance de persistencia y decisiones pendientes.
 - [Diagrama UML](docs/diagramas/UML.uxf): modelo de dominio actualizado para abrir con UMLet; integración del protocolo pendiente de la actividad 6.
 - [Guía de colaboración](CONTRIBUTING.md): organización del trabajo, ramas, commits, revisión de cambios y [metodología TDD](CONTRIBUTING.md#desarrollo-guiado-por-pruebas-tdd).
 
@@ -108,7 +107,7 @@ dotnet test Proyecto-Integrador-Final.sln
 dotnet run --project src/Proyecto-Integrador-Final
 ```
 
-La compilación debe terminar sin errores. Actualmente existe una única prueba vacía y el programa muestra `Hello, World!`: estos resultados comprueban la preparación básica, no el funcionamiento del juego.
+La revisión de `main` en `d6d81c1` encontró dos errores de compilación en `Partida.cs`: `Mazo` carece de `GetCantidadCartas` y `RecibirCartas`. Las pruebas quedan bloqueadas hasta resolverlos. El punto de entrada contiene `Hello, World!`.
 
 ### Dependencias previstas para REST
 

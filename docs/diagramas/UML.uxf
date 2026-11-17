@@ -174,9 +174,6 @@ _+ Configurar(entidad: ConstructorEntidad&lt;Personaje&gt;): void_</panel_attrib
     <panel_attributes>Datos
 --
 _+ RUTA_PERSONAJES: string {readOnly}_
-_+ RUTA_ELECCIONES_J1: string {readOnly}_
-_+ RUTA_ELECCIONES_J2: string {readOnly}_
-_+ RUTA_PUBLICACIONES_SERVIDOR: string {readOnly}_
 _- tipoProceso: TipoProceso [0..1]_
 --
 _+ Configurar(tipo: TipoProceso): void_
@@ -260,7 +257,8 @@ _+ Configurar(entidad: ConstructorEntidad&lt;Personaje&gt;): void_</panel_attrib
     <panel_attributes>Distribucion por procesos:
 Servidor: dominio y CoordinadorServidor.
 Clientes: CoordinadorCliente e InterfazConsola.
-DataBases: catalogo CSV. Accion y Estado: JSON.
+DataBases: formato del catalogo CSV.
+Comunicacion HTTP: ver Arquitectura.
 Ampliacion propuesta: Comunicacion.uxf y Protocolo-partida.md.
 Sin implementacion; red Windows pendiente de verificar.</panel_attributes>
     <additional_attributes />

@@ -1,24 +1,30 @@
 # Arquitectura
 
-Modelo de análisis y diseño de TI, actualizado el 9 de noviembre de 2026 a partir de las decisiones del usuario. El modelo del [UML](diagramas/UML.uxf) no está implementado por completo; la aplicación conserva `Hello, World!`. La revisión del 13 de noviembre encontró código parcial de Personaje y Mazo, sin pruebas de comportamiento; Personaje aún no incluye descripcion ni configura su persistencia. Los requisitos están en [Reglas del juego](Reglas-del-juego.md) y el seguimiento en [Plan](Plan.md).
+Modelo de análisis y diseño de TI, actualizado el 17 de noviembre de 2026. El [UML](diagramas/UML.uxf) describe el dominio. El código existente y sus pendientes se registran en el [plan](Plan.md). Los requisitos vigentes están en [Reglas del juego](Reglas-del-juego.md).
 
 Las bibliotecas DataBases y Utilidades existen en el submódulo `Mis-Librerias/`, están referenciadas por la aplicación e incluidas en la solución principal. No hay flujo ejecutable de carga o comunicación conectado a ellas. Las llamadas descritas a continuación siguen siendo contratos del diseño.
 
-El [Plan](Plan.md#actividad-6--archivo-de-partida-compartida) registra los avances posteriores de las ramas de protocolos por archivos y web, aún no integrados. Las secciones de comunicación de este documento describen la base de main: su política de cierre y el uso de DataBases para intercambio deberán conciliarse con el diseño JSON y la recuperación documentados en esas ramas, antes de integrar. No se adopta REST como sustituto del requisito académico por registrar su borrador.
+## Comunicación HTTP — actividad 6
 
-## Alternativa REST — 13 de noviembre de 2026
+El usuario informó el 17 de noviembre de 2026 que se aprobó usar HTTP en la red local para la entrega. El [protocolo REST](Protocolo-partida-web.md) detalla el flujo y las operaciones propuestas. El [plan](Plan.md#actividad-6--comunicación-http-en-red-local) registra las decisiones y verificaciones pendientes.
 
-El usuario eligió REST para el diseño de comunicación web. El [borrador web](Protocolo-partidad-web.md) propone dos consolas, una API ASP.NET Core y persistencia local mediante EF Core/SQLite; la pila tecnológica ya fue confirmada, mientras los contratos detallados siguen en evaluación. Se mantiene net8.0 con ASP.NET Core y EF Core estables de la línea 8.0 (referencia 8.0.34). SQLite conservará personajes y partidas. El paso 2 se cerró por confirmación del usuario: dos computadoras Windows, servidor y J1 en la primera, J2 en la segunda; primero se abre el servidor y después los clientes. El paso 3 acuerda HTTP local, TCP 5000 y dirección configurable. Las comprobaciones de instalaciones y de conectividad entre equipos siguen pendientes; solo se informó una prueba local entre procesos mediante localhost. Se conserva el [protocolo por archivos](Protocolo-partida-archivos.md) como alternativa independiente. Las secciones y el UML de comunicación existentes describen esa alternativa por archivos; no representan una implementación REST. La integración web en componentes, métodos y UML está pendiente. La consigna exige archivo compartido y su sustitución para la entrega requiere definición con el docente. No se autoriza Taller.
+```mermaid
+flowchart LR
+    J1["Cliente de consola J1"] -->|"HTTP / JSON"| API["API ASP.NET Core"]
+    J2["Cliente de consola J2"] -->|"HTTP / JSON"| API
+    API --> Dominio["Dominio de partida"]
+    API --> Persistencia["Persistencia EF Core / SQLite"]
+```
 
-## Actualización de comunicación — 13 de noviembre de 2026
+Servidor y cliente J1 se ejecutan en el primer equipo Windows. El cliente J2 se ejecuta en el segundo. Cada cliente usa una dirección configurable y el puerto acordado es TCP 5000. El servidor inicia primero.
 
-El [protocolo](Protocolo-partida-archivos.md) y su [UML de comunicación](diagramas/Comunicacion.uxf) especifican el diseño vigente: Personaje en CSV mediante DataBases; Accion en historiales JSON y Estado como fotografía completa en estado.json. El servidor concentra la lógica y recupera desde Estado; los clientes solo muestran presentaciones y envían respuestas. Se sustituyen las propuestas anteriores de Accion CSV, diecisiete mensajes y reconstrucción por logs. El diseño detallado de tres mensajes y guardado con publicaciones pendientes está propuesto para revisión. La recuperación se permite mientras sobreviva algún proceso; si todos se cierran la partida finaliza. Sin implementación ni verificación en red.
+La API identifica al participante, valida el intercambio y prepara una presentación por jugador. El dominio mantiene la partida y aplica las reglas. El servidor confirma el estado y los recibos de las operaciones mediante persistencia local. SQLite también conserva el catálogo permanente. Los DTO delimitan los datos visibles en cada cliente. La integración de estos componentes y los contratos de identidad, concurrencia y recuperación siguen en diseño. La prueba local informada por el usuario no acredita conectividad entre los equipos.
 
-La selección tecnológica y sus responsabilidades se detallan en [Tecnologías REST](Tecnologias-rest.md); las dependencias no se instalaron en esta tarea.
+El [UML de dominio](diagramas/UML.uxf) y las firmas de la actividad 4 sirven como base de diseño. La adaptación de las interfaces de ejecución y consola a DTO y los detalles de clases de la API quedan en la actividad 6.
 
 ## Distribución y responsabilidades
 
-El servidor coordina la partida y analiza los enfrentamientos. Los dos clientes solicitan elecciones y presentan los resultados. Cada proceso dispone de su propio `Datos.Modelo` en memoria: compartir archivos no comparte objetos ni actualiza automáticamente las tablas.
+El servidor coordina la partida y analiza los enfrentamientos. Los clientes capturan elecciones y presentan los resultados a partir de vistas HTTP.
 
 | Clase | Datos encapsulados | Responsabilidad y delegación |
 |---|---|---|
@@ -29,7 +35,7 @@ El servidor coordina la partida y analiza los enfrentamientos. Los dos clientes 
 | Ronda | Jugador mano, rival y combates registrados. | Determinar el siguiente elector y el ganador de ronda. Calcula las victorias desde los combates, evitando contadores duplicados. |
 | Combate | Participantes, atributo, elecciones y ganador. | Registrar las elecciones y resolver la comparación. Los campos aún no elegidos y el ganador pendiente son anulables. |
 | InterfazConsola | Sin estado de dominio propio obligatorio. | Construir las pantallas del juego y solicitar opciones usando Utilidades. No determina ganadores. |
-| Datos (estática) | Constantes de rutas, tipo de proceso y Modelo con escritura privada. | Configurar la identidad del proceso, inicializar su modelo y ofrecer acceso a sus tablas. No aplica las reglas del juego. |
+| Datos (estática) | Configuración y modelo del catálogo CSV en el diseño base. | Sirve de referencia para la carga inicial de la actividad 5. La importación al servidor sigue en diseño. |
 
 El jugador mano pertenece exclusivamente a Ronda y permanece fijo durante sus combates. Partida numera las rondas desde 1 y calcula los argumentos al construirlas: J1 es mano en las impares y J2 en las pares. No conserva otra referencia de jugador mano ni necesita un método para alternarla. Jugador tampoco conserva una copia de ese rol. Las entidades del juego se conservan porque representan conceptos propios del problema y permiten explicar sus reglas.
 
@@ -51,7 +57,7 @@ El diagrama se exportó con UMLet 15.1 y se revisó visualmente. Se separaron lo
 
 ## Especificación de clases y métodos — actividad 4
 
-Las firmas indican parámetros y retornos. Salvo donde se indica estático, los métodos son de instancia. Las condiciones que garantiza el flujo se describen como precondiciones, sin exigir que cada método vuelva a comprobarlas. Los datos externos se validan al recibirlos: las opciones en la entrada, las reglas numéricas al construir Personaje y la disponibilidad de la carta en Combate.SetCarta. Los controles de los mensajes compartidos se definirán en la actividad 6. Los errores técnicos de entrada o archivos llegan al punto de ejecución para informar y finalizar.
+Las firmas indican parámetros y retornos. Salvo donde se indica estático, los métodos son de instancia. Las condiciones que garantiza el flujo se describen como precondiciones, sin exigir que cada método vuelva a comprobarlas. Los datos externos se validan al recibirlos: las opciones en la entrada, las reglas numéricas al construir Personaje y la disponibilidad de la carta en Combate.SetCarta. Los controles de las solicitudes HTTP se definirán en la actividad 6. Los errores técnicos de entrada o archivos llegan al punto de ejecución para informar y finalizar.
 
 ### Personaje
 
@@ -338,19 +344,19 @@ Es privado y devuelve al jugador que llegó a 15 rondas ganadas. Jugar lo llama 
 
 ### Datos
 
-Clase estática, sin instancias. Conserva tipoProceso privado opcional y las rutas públicas constantes del UML. Modelo permite lectura pública y escritura privada y no está disponible hasta completar Iniciar. Las constantes son datos de configuración, no métodos; su valor real se fijará con SSI.
+Clase estática, sin instancias. Conserva tipoProceso privado opcional y la ruta del catálogo CSV en el diseño base. Modelo permite lectura pública y escritura privada y no está disponible hasta completar Iniciar. La ubicación y el ciclo de carga al servidor siguen pendientes.
 
 #### `Configurar(tipo: TipoProceso): void`
 
-Es público y estático. Recibe el rol elegido y validado al iniciar la aplicación: Servidor, ClienteJ1 o ClienteJ2. Lo guarda para seleccionar las responsabilidades y rutas del proceso. El punto de entrada lo llama una sola vez, antes de Iniciar.
+Es público y estático. Recibe el rol elegido y validado al iniciar la aplicación: Servidor, ClienteJ1 o ClienteJ2. Lo guarda como identidad de ejecución en el diseño base. El punto de entrada lo llama una sola vez, antes de Iniciar.
 
 #### `GetTipoProceso(): TipoProceso`
 
-Es público y estático. Devuelve el rol guardado por Configurar para que las entidades puedan elegir sus rutas. Se consulta después de configurar el proceso.
+Es público y estático. Devuelve el rol guardado por Configurar en el diseño base de ejecución. Se consulta después de configurar el proceso.
 
 #### `Iniciar(): void`
 
-Es público y estático. Se llama una vez, después de Configurar. Registra las entidades con ConstructorModelo, construye el modelo y carga las tablas iniciales, exigiendo que exista el catálogo de personajes. Asigna Modelo cuando la preparación termina correctamente. Los errores de configuración, datos o archivos se propagan al punto de ejecución, que los informa y finaliza. Las tablas de intercambio se completarán en la actividad 6.
+Es público y estático. Se llama una vez, después de Configurar. Registra las entidades con ConstructorModelo, construye el modelo y carga las tablas iniciales, exigiendo que exista el catálogo de personajes. Asigna Modelo cuando la preparación termina correctamente. Los errores de configuración, datos o archivos se propagan al punto de ejecución, que los informa y finaliza. El contrato de importación a SQLite se completará en la actividad 6.
 
 ### InterfazConsola
 
@@ -374,7 +380,7 @@ Recibe a los dos jugadores y el número de ronda. Muestra sus nombres, las ronda
 
 #### `MostrarEsperando(mensaje: string): void`
 
-Recibe un mensaje de espera y lo muestra mediante MyConsole. La consulta de archivos y la espera de respuestas corresponden al flujo del cliente.
+Recibe un mensaje de espera y lo muestra mediante MyConsole. La consulta HTTP y la espera de respuestas corresponden al flujo del cliente.
 
 #### `MostrarCombate(combate: Combate): void`
 
@@ -398,7 +404,7 @@ Pertenece a la biblioteca y no se reimplementa. Cada proceso tiene su instancia 
 
 #### `Cargar<T>(exigirArchivo: bool = false): Tabla<T>`
 
-Es público y genérico. Carga desde el archivo la tabla de la entidad T registrada en el modelo y la devuelve. Con exigirArchivo en true, un archivo ausente produce FileNotFoundException; con false permite una tabla vacía. Al recargar, conserva la instancia de Tabla y reemplaza sus elementos; si falla la lectura conserva el contenido anterior. Los errores de formato, construcción o acceso a archivos se propagan. El catálogo se carga al iniciar; la recarga de mensajes se definirá en la actividad 6.
+Es público y genérico. Carga desde el archivo la tabla de la entidad T registrada en el modelo y la devuelve. Con exigirArchivo en true, un archivo ausente produce FileNotFoundException; con false permite una tabla vacía. Al recargar, conserva la instancia de Tabla y reemplaza sus elementos; si falla la lectura conserva el contenido anterior. Los errores de formato, construcción o acceso a archivos se propagan.
 
 #### `Tabla<T>(): Tabla<T>`
 
@@ -406,7 +412,7 @@ Es público y genérico. Devuelve la tabla de T previamente cargada, con sus dat
 
 #### `Guardar<T>(): void`
 
-Es público y genérico. Escribe en el archivo todo el contenido de la tabla cargada de T. Si detecta cambios externos desde la carga, DataBases lanza CsvConcurrenciaException; los errores de acceso también se propagan. El punto de ejecución informa el fallo y finaliza. Cada proceso guarda solo sus propias tablas; no hay una transacción entre archivos.
+Es público y genérico. Escribe en el archivo todo el contenido de la tabla cargada de T. Si detecta cambios externos desde la carga, DataBases lanza CsvConcurrenciaException; los errores de acceso también se propagan. El punto de ejecución informa el fallo y finaliza.
 
 ### DataBases::IEntidad<Personaje>
 
@@ -424,23 +430,9 @@ Utilidades es un paquete externo que agrupa Funciones, DecoracionConsola, MyCons
 
 ## Datos y persistencia
 
-Se usa la API pública de [DataBases](../Mis-Librerias/DataBases/README.md). Todos los miembros de Datos son estáticos. Modelo mantiene lectura pública y escritura privada y se representa exclusivamente mediante una asociación en el UML, con multiplicidad 0..1 porque no existe antes de una inicialización correcta. El uso de sus tablas requiere Iniciar completado; si falla el inicio no se continúa ni se publica un modelo parcial.
+[DataBases](../Mis-Librerias/DataBases/README.md) documenta el formato del catálogo CSV de la actividad 5. El diseño REST usa SQLite mediante EF Core para conservar los personajes y las partidas en el servidor. Los clientes reciben las vistas de la API.
 
-Datos declara las constantes públicas de tipo string `RUTA_PERSONAJES`, `RUTA_ELECCIONES_J1`, `RUTA_ELECCIONES_J2` y `RUTA_PUBLICACIONES_SERVIDOR`. Las clases persistidas pueden utilizarlas desde su Configurar para declarar Archivo. Son rutas absolutas al recurso compartido, iguales en todos los procesos que accedan al mismo archivo. Sus valores concretos se fijarán con la ubicación real de SSI; no se inventa aquí un servidor o una carpeta de red. Las cuatro constantes identifican destinos lógicos iniciales; el protocolo de la actividad 6 determinará si se necesitan más archivos o rutas.
-
-`Configurar(tipo: TipoProceso): void` identifica al proceso como Servidor, ClienteJ1 o ClienteJ2 y conserva ese valor en el miembro privado tipoProceso. `GetTipoProceso(): TipoProceso` permite consultar esa identidad al seleccionar archivos en la configuración de las entidades. Antes de configurarse, tipoProceso está ausente (`[0..1]`); no se asume un servidor por defecto. El punto de entrada valida el rol y configura el proceso una sola vez, antes de inicializar el modelo. La identidad se conserva durante toda la ejecución.
-
-El punto de entrada determina el rol y llama primero a Configurar y después a `Iniciar(): void`. Configurar no solicita entradas de consola ni accede a disco. Iniciar registra las entidades mediante ConstructorModelo, construye el modelo y carga las tablas iniciales requeridas; publica Modelo después de que todas esas operaciones tengan éxito. Solo se inicializa una vez. Esto permite conocer la identidad antes de que Agregar<T> invoque el Configurar de cada entidad. El rol identifica permisos previstos, pero no reemplaza los permisos del recurso compartido.
-
-El servidor solo publicará sus resultados y cada cliente solo sus elecciones; todos usan RUTA_PERSONAJES como origen de lectura. La configuración concreta de las tablas, selección de rutas por entidad y sus relaciones se completará en la actividad 6. No se asignan dos entidades al mismo archivo en un Modelo, restricción de DataBases.
-
-Las llamadas `Datos.Modelo.Cargar<T>(exigirArchivo)`, `Tabla<T>()` y `Guardar<T>()` permiten recargar, consultar/modificar y publicar datos. No se agregan métodos que solo reenvíen estas operaciones. Los archivos obligatorios, como el catálogo inicial, se cargan exigiendo su existencia. Las tablas de intercambio necesitarán una política explícita de creación inicial en la actividad 6.
-
-La biblioteca reconstruye objetos por sus constructores, interpreta tipos y permite configurar miembros privados. Las listas y objetos no se guardan como columnas: las relaciones usan claves configuradas y se resuelven mediante Uno/ Muchos. No se presupone que todo el grafo de Partida se pueda guardar automáticamente ni que todas las entidades del juego necesiten persistirse.
-
-Cada proceso guarda únicamente sus propias tablas y carga las publicadas por otros; no se utiliza GuardarTodo indiscriminadamente. Guardar reemplaza la tabla completa del archivo. Las actualizaciones requieren Cargar explícito; las referencias a objetos anteriores pueden quedar desactualizadas tras una recarga. El catálogo se carga al iniciar y no se recarga en medio de una partida; la estrategia para incorporar mensajes al estado vivo se definirá en la actividad 6.
-
-DataBases ya proporciona bloqueo por archivo, archivo temporal y reemplazo, además de detección de cambios. No ofrece transacciones entre archivos ni decide qué mensaje ya fue procesado. Su documentación no acredita pruebas en carpetas de red: la verificación en el recurso compartido de SSI sigue pendiente.
+La actividad 6 definirá la importación inicial, el esquema, la conservación de los datos usados en partidas activas y las transacciones que confirman una elección. Las reglas de validación de atributos siguen en Personaje. Consultá [Tecnologías del protocolo REST](Tecnologias-rest.md) y [Concurrencia, reintentos y persistencia](Protocolo-partida-web.md#concurrencia-reintentos-y-persistencia).
 
 ## Formato de archivos de personajes — actividad 5
 
@@ -448,7 +440,7 @@ DataBases ya proporciona bloqueo por archivo, archivo temporal y reemplazo, adem
 
 ### Entidades persistentes y columnas
 
-La decisión vigente conserva únicamente Personaje en DataBases. Accion y Estado se serializan como JSON. Las columnas siguientes corresponden a Personaje. Cada miembro persistente debe declararse mediante Columna en la configuración de su entidad; DataBases no descubre ni guarda automáticamente todos los miembros. El contrato JSON de Accion y Estado se encuentra en [Protocolo de partida](Protocolo-partida-archivos.md); la recuperación completa sigue pendiente.
+El formato definido mediante DataBases corresponde al CSV de Personaje. Cada columna se declara en la configuración de la entidad. El diseño del catálogo permanente en SQLite y su carga desde el CSV se completarán en la actividad 6.
 
 Personaje tiene actualmente los siguientes campos en el modelo, sin agregar otros por inferencia:
 
@@ -487,7 +479,7 @@ La conversión de la información de los personajes al catálogo CSV se definir�
 
 - Descripción: presentación en consola. Su contenido es opcional, no tiene límite de longitud y su ausencia se representa con texto vacío ("").
 
-El usuario confirmó el cierre de la actividad 5 con la especificación actual. No se agregaron ejemplos propios de personajes válidos e inválidos; no se presentan como realizados ni se mantienen como condición para reabrir la actividad. La conversión al CSV permanece postergada por indicación del usuario. Las rutas reales del recurso compartido y el protocolo de Accion siguen pendientes de la actividad 6.
+El usuario confirmó el cierre de la actividad 5 con la especificación actual. No se agregaron ejemplos propios de personajes válidos e inválidos; no se presentan como realizados ni se mantienen como condición para reabrir la actividad. La conversión al CSV permanece postergada por indicación del usuario. La ubicación del CSV y el mecanismo de importación al catálogo permanente siguen pendientes de la actividad 6.
 
 ## Presentación con Utilidades
 
@@ -505,22 +497,18 @@ El usuario confirmó el cierre de la actividad 5 con la especificación actual. 
 | `MostrarGanadorPartida(ganador: Jugador): void` | Presenta el resultado final. |
 | `MostrarError(mensaje: string): void` | Mensaje de error de la biblioteca. |
 
-El menú con FormatoMenu y flechas limpia la pantalla e historial. Para conservar la mano visible se puede usar SeleccionNumerica o incorporar el contexto al propio menú. La escritura de pantalla se hace mediante MyConsole para respetar su historial. La validación de opciones de entrada pertenece al cliente; una opción de teclado inválida se vuelve a pedir. Los fallos de lectura, persistencia o ejecución siguen la política de cierre completo sin recuperación.
+El menú con FormatoMenu y flechas limpia la pantalla e historial. Para conservar la mano visible se puede usar SeleccionNumerica o incorporar el contexto al propio menú. La escritura de pantalla se hace mediante MyConsole para respetar su historial. La validación de opciones de entrada pertenece al cliente; una opción de teclado inválida se vuelve a pedir. El manejo de conexión, reintentos y recuperación de partida se define en la actividad 6.
 
 ## Decisiones pendientes y límites de cierre
 
 - Actividad 4: completada por confirmación del usuario el 9 de noviembre de 2026. Las 58 especificaciones se revisaron para mejorar la lectura y evitar validaciones repetidas. Los detalles de formatos e integración siguen en las actividades 5 y 6.
 - Actividad 5: completada por confirmación del usuario. Columnas, descripción, ASCII y lectura especificados; conversión al CSV postergada. Las rutas reales corresponden a la actividad 6.
-- Actividad 6: definir registros de elecciones y publicaciones, identificación de partida/ronda/combate, referencias a personajes, permisos, secuencia, mensajes procesados y cierre coordinado ante fallos. Después completar sus entidades y relaciones en el UML y la integración de Partida y clientes. No se inventan aquí sus firmas.
-La representación unificada y el intercambio mediante varios archivos son las decisiones vigentes del usuario. La consigna original se conserva sin modificar como referencia; Taller continúa fuera de alcance y la verificación técnica en red se mantiene en la actividad 6.
+- Actividad 6: completar los contratos HTTP, la integración de Partida y los clientes, y el UML de detalle. Revisar identidad, transiciones, persistencia y recuperación.
+La [consigna](Consigna.md) conserva el texto original y registra la aprobación de HTTP para la entrega.
 La actividad 3 está completada por confirmación del usuario: modelo de dominio y justificación revisados. Las entidades, relaciones, configuración en Datos y firmas de integración que resulten del protocolo son tareas de la actividad 6 y no condicionan este cierre. El modelo y las especificaciones quedaron integrados mediante los PR #9 y #10. Los nuevos PR mantienen la revisión de un compañero exigida por CONTRIBUTING; no se confunde con una tarea de modelado.
 
 Las cajas se ajustaron a las medidas del texto exportado por UMLet, con margen mínimo de lectura. Tras ampliar Datos y agregar TipoProceso se recalcularon las asociaciones y se verificó la ausencia de tramos dentro de cajas; la exportación SVG se comprobó para asegurar que los textos no excedan sus límites.
 
 ## Resultado de la revisión final del dominio
 
-Se corrigió la pertenencia del jugador mano a Ronda, se explicitó la consulta de participantes de Combate para la presentación y se ajustó la multiplicidad de Modelo a su ciclo de inicialización. Se precisaron los contratos de incorporación de combates, resolución y recuperación completa de personajes. No se agregaron clases ni implementación. La incorporación posterior de la descripción a Personaje, su constructor, GetDescripcion y la columna descripcion se documenta en la actividad 5 por indicación del usuario. La descripción es opcional y no tiene límite de longitud; su ausencia se representa con texto vacío ("") y su presentación sigue pendiente. Posteriormente el usuario aprobó agregar id: int al catálogo y GetId a Personaje; las entidades de intercambio y el estado compartido corresponden a la actividad 6 y deberán reflejarse después en este modelo.
-
-## Accion y Estado — actividad 6
-
-Accion transporta mensajes JSON. Estado conserva todos los datos de partida, ronda, combate, mazo, jugadores y coordinación mediante DTO sin referencias cíclicas, E/S ni lógica. No implementan IEntidad ni usan Configurar de DataBases. Los campos, DTO anidados y contratos de captura, restauración, publicación y almacenamiento se especifican en [Protocolo](Protocolo-partida-archivos.md). Estado incluye el catálogo con IDs estables y las acciones procesadas/publicaciones pendientes; no incluye objetos técnicos. La recuperación se hace cargando estado.json, sin reconstruir la partida recorriendo los historiales.
+Se corrigió la pertenencia del jugador mano a Ronda, se explicitó la consulta de participantes de Combate para la presentación y se ajustó la multiplicidad de Modelo a su ciclo de inicialización. Se precisaron los contratos de incorporación de combates, resolución y recuperación completa de personajes. No se agregaron clases ni implementación. La incorporación posterior de la descripción a Personaje, su constructor, GetDescripcion y la columna descripcion se documenta en la actividad 5 por indicación del usuario. La descripción es opcional y no tiene límite de longitud; su ausencia se representa con texto vacío ("") y su presentación sigue pendiente. Posteriormente el usuario aprobó agregar id: int al catálogo y GetId a Personaje; los DTO HTTP y el estado persistido corresponden a la actividad 6 y deberán reflejarse después en este modelo.
