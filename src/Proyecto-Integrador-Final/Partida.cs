@@ -59,7 +59,7 @@ namespace Proyecto_Integrador_Final
 
         private void Iniciar()
         {
-            if (this.mazo.GetCantidadCartas() < 6)
+            if (this.mazo.GetCantidad() < 6)
                 throw new InvalidOperationException(
                     "No se puede jugar porque no hay suficientes cartas."
                 );
@@ -122,7 +122,7 @@ namespace Proyecto_Integrador_Final
             cartas.AddRange(this.j1.EntregarCartas());
             cartas.AddRange(this.j2.EntregarCartas());
 
-            this.mazo.RecibirCartas(cartas.ToArray());
+            this.mazo.Devolver(cartas.ToArray());
         }
 
         private bool EstaTerminada()
