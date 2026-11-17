@@ -340,6 +340,8 @@ Es público y estático. Se llama una vez, después de Configurar. Registra las 
 
 ### InterfazConsola
 
+El [diseño de la interfaz](Interfaz.md) reúne los estados de presentación, las limitaciones de consola y las decisiones pendientes.
+
 Presentación de los clientes, sin decidir ganadores ni modificar marcadores. Todos sus métodos son públicos y de instancia, como indica el UML. Usa Utilidades y MyConsole. El flujo del cliente controla qué información puede presentarse.
 
 #### `MostrarMano(jugador: Jugador): void`

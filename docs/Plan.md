@@ -270,6 +270,8 @@ Etapas conservadas como referencia futura. No se implementarán en el alcance ac
 
 ### Etapa 3 — Jugador e interacción de consola
 
+El [diseño de la interfaz](Interfaz.md) registra el inventario inicial preparado en TI y las decisiones pendientes antes de implementar la interacción.
+
 - [ ] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
 - [ ] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
 - [ ] Implementar InterfazConsola utilizando Funciones, DecoracionConsola y MyConsole de Utilidades.
