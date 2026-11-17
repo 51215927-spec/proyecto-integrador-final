@@ -229,10 +229,12 @@ Etapas conservadas como referencia futura. No se implementarán en el alcance ac
 
 ### Etapa 3 — Jugador e interacción de consola
 
+El [diseño de la interfaz](Interfaz.md) registra el inventario inicial preparado en TI y las decisiones pendientes antes de implementar la interacción.
+
 - [ ] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
 - [ ] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
-- [ ] Implementar InterfazConsola utilizando Funciones, DecoracionConsola y MyConsole de Utilidades.
-- [ ] Seleccionar un Personaje de la mano disponible mediante PedirOpcionMenu y el atributo mediante PedirEnum<TipoAtributo>.
+- [ ] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](Interfaz.md), con reutilización puntual de Utilidades.
+- [ ] Validar la carta elegida contra la mano disponible y el atributo contra las opciones del combate.
 - [ ] Presentar mano, marcador, esperas, resultados y errores según los contratos de TI.
 - [ ] Comprobar que la interfaz no revele las elecciones rivales hasta completar ambas elecciones.
 

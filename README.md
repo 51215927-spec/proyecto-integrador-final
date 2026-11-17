@@ -26,6 +26,7 @@ El punto de entrada todavía contiene `Hello, World!`. El repositorio contiene c
 - [Consigna](docs/Consigna.md): requisitos y entregables del proyecto.
 - [Reglas del juego](docs/Reglas-del-juego.md): funcionamiento esperado del sistema.
 - [Plan de trabajo](docs/Plan.md): estado de las actividades y próximos pasos.
+- [Diseño de la interfaz](docs/Interfaz.md). Inventario de estados, fallos de consola y decisiones pendientes.
 - [Protocolo de partida web](docs/Protocolo-partida-web.md): diseño aprobado de comunicación HTTP, contratos REST en revisión y verificaciones pendientes.
 - [Diagrama de comunicación HTTP](docs/Arquitectura.md#comunicación-http--actividad-6): clientes, API, dominio y persistencia.
 - [Arquitectura](docs/Arquitectura.md): decisiones de diseño y especificaciones por clase y método, con características, contratos y justificación.
