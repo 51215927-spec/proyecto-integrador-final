@@ -231,18 +231,12 @@ Las tareas se presentan con casillas, sin numeración. Las decisiones del protoc
 
 ### Actividad 7 — Casos de prueba
 
-- [ ] Definir condiciones iniciales, datos y resultado esperado para cada caso de prueba.
-- [ ] Diseñar casos para un personaje válido y para un total distinto de 3000.
-- [ ] Diseñar casos para los límites 250 y 750 y para valores fuera de rango.
-- [ ] Diseñar casos que comprueben los umbrales 650 y 350 y rechacen distribuciones sin especialización.
-- [ ] Diseñar casos de archivos de personajes incompletos, duplicados, incorrectos e ilegibles.
-- [ ] Diseñar casos para un mazo vacío y para las operaciones de mezcla y reparto.
-- [ ] Diseñar casos de ronda ganada, empate y cambio de turno.
-- [ ] Diseñar un caso de jugador sin cartas y finalización de partida.
-- [ ] Diseñar casos de archivo compartido inaccesible y acceso concurrente.
-- [ ] Diseñar un caso de información que no corresponde al turno esperado.
-- [ ] Indicar qué pruebas usan caja negra y cuáles requieren caja blanca.
-- [ ] Revisar y entregar el plan de pruebas con sus resultados esperados.
+- [x] Documentar condiciones iniciales, datos, acción y resultados esperados de caja negra y blanca en el [plan de pruebas](posibles-fallos.md).
+- [x] Cubrir personajes, formato del catálogo, mazo, reglas de combate y finalización.
+- [x] Cubrir indisponibilidad, turno incorrecto, pausa, recuperación y concurrencia según el contrato HTTP de la actividad 6.
+- [ ] Completar la revisión del plan por un compañero antes de integrarlo.
+
+La ejecución y la evidencia de resultados quedan para Taller de Programación.
 
 ## Taller de Programación — C#
 

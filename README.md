@@ -28,6 +28,7 @@ La aplicación todavía muestra `Hello, World!`. Existen implementaciones parcia
 - [Plan de trabajo](docs/Plan.md): estado de las actividades y próximos pasos.
 - [Arquitectura](docs/Arquitectura.md): decisiones de diseño y especificaciones por clase y método, con características, contratos y justificación.
 - [Diagrama UML](docs/diagramas/UML.uxf): modelo de dominio actualizado para abrir con UMLet; integración del protocolo pendiente de la actividad 6.
+- [Plan de pruebas de TI](docs/posibles-fallos.md) con escenarios y resultados esperados.
 - [Guía de colaboración](CONTRIBUTING.md): organización del trabajo, ramas, commits, revisión de cambios y [metodología TDD](CONTRIBUTING.md#desarrollo-guiado-por-pruebas-tdd).
 
 ## Instalación de herramientas y dependencias
