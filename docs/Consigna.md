@@ -1,5 +1,7 @@
 # Proyecto integrador: Juego Guerra
 
+> **Aclaración para la entrega del proyecto (17 de noviembre de 2026).** El usuario informó que se aprobó sustituir el archivo compartido de la actividad 6 por comunicación HTTP en red local mediante una API REST. La actividad 6 debe especificar ese intercambio y la actividad 7 debe contemplar sus casos de comunicación y concurrencia. El [protocolo HTTP](Protocolo-partida-web.md) y el [plan vigente](Plan.md) recogen la decisión.
+
 ## TI — Análisis de Sistemas
 
 ### 1. Propósito

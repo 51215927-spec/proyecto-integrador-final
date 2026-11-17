@@ -21,7 +21,7 @@ Participan dos jugadores, J1 y J2. Gana la partida quien alcanza primero 15 rond
 
 Carta y personaje son el mismo elemento. Cada personaje tiene nombre, representación ASCII y seis atributos: Fuerza, Velocidad, Resistencia, Inteligencia, Energía y Habilidad. Los atributos deben sumar exactamente 3000 puntos; cada uno debe estar entre 250 y 750, al menos uno debe ser de 650 o más y al menos uno de 350 o menos. No se permiten seis valores de 500.
 
-Un sistema externo carga los personajes en un CSV compartido y garantiza que no haya duplicados. El juego obtiene de ese archivo los personajes del mazo inicial. La carga y administración del catálogo quedan fuera del cliente de los jugadores.
+El formato CSV de la actividad 5 se conserva para los datos iniciales de personajes. El diseño prevé un catálogo permanente en SQLite administrado por el servidor. La importación inicial y el mantenimiento del catálogo quedan por definir.
 
 Se reparten tres cartas a cada jugador desde el mazo común. J1 es el jugador mano de la primera ronda. Al terminar cada ronda, ese rol pasa al otro jugador, independientemente del ganador: J1, J2, J1, J2, hasta finalizar la partida.
 
@@ -33,7 +33,7 @@ Se reparten tres cartas a cada jugador desde el mazo común. J1 es el jugador ma
 4. Gana el combate quien tenga el valor más alto en ese atributo. Si hay empate, gana quien no eligió el atributo. Se suma un combate ganado al vencedor.
 5. Si la ronda continúa, quien no eligió el atributo pasa a elegir carta y atributo en el siguiente combate, independientemente del resultado anterior.
 
-Las cartas jugadas no vuelven a utilizarse durante la misma ronda. La elección del atributo se alterna en cada combate y no cambia quién es el jugador mano de esa ronda. Se acepta que un jugador pueda consultar las elecciones manualmente en los archivos compartidos; no se garantiza su secreto frente a ese acceso.
+Las cartas jugadas no vuelven a utilizarse durante la misma ronda. La elección del atributo se alterna en cada combate y no cambia quién es el jugador mano de esa ronda. La API entrega a cada jugador su propia mano y reserva la carta y el atributo rivales hasta que ambos hayan elegido.
 
 ### Finalización de ronda y partida
 
@@ -57,24 +57,22 @@ Cuando un jugador alcanza 15 rondas ganadas, se comunica el ganador y finaliza l
 
 ### Comunicación y validación
 
-Cada cliente publica sus elecciones en sus propios archivos. El servidor lee esas elecciones, analiza el combate y escribe mensajes con los resultados. Los clientes leen los mensajes del servidor y muestran las cartas y el atributo cuando ambos jugadores han elegido.
-
-Los clientes son responsables de que los datos enviados al servidor sean válidos. El servidor realiza las comprobaciones al iniciar la partida. El CSV de personajes proporciona los datos iniciales y cumple una función distinta de los archivos que intercambian elecciones y resultados durante el juego.
+Dos clientes de consola se conectan al servidor mediante HTTP en la red local e intercambian datos JSON. Cada cliente muestra la presentación de su jugador y envía las elecciones solicitadas. El servidor valida el participante, la solicitud, la carta y el atributo, aplica las reglas y publica el resultado para ambos después de completar las elecciones.
 
 ### Situaciones de error
 
-| Situación | Respuesta |
+| Situación | Respuesta prevista |
 |---|---|
-| Menos de seis cartas válidas para repartir | Mostrar «No se puede jugar porque no hay suficientes cartas» y terminar la ejecución sin iniciar la partida. |
-| CSV inexistente, ilegible o con datos inválidos | Terminar la ejecución del juego. |
-| Fallo de acceso, lectura o escritura de los archivos de comunicación | Terminar la ejecución del juego. |
-| El servidor no puede continuar | Finalizar la partida y la ejecución de los clientes y del servidor. |
-| Cualquier otro error al iniciar o durante la partida | Terminar la ejecución del juego completo, sin recuperación ni continuación de la partida. |
+| Menos de seis cartas válidas | Informar «No se puede jugar porque no hay suficientes cartas» e impedir el inicio de la partida. |
+| CSV inicial inexistente, ilegible o inválido | Informar el error de carga. El formato y sus validaciones se describen en [Arquitectura](Arquitectura.md#formato-de-archivos-de-personajes--actividad-5). |
+| Servidor inaccesible o conexión interrumpida | Informar y ofrecer reintentar o salir. Si hay una elección pendiente, conservar su identificación para el reintento. |
+| Elección inválida, solicitud consumida o estado incompatible | Rechazar sin modificar el juego. Los códigos HTTP y la actualización de la presentación se detallan en la propuesta de protocolo. |
+| Cliente ausente o proceso reiniciado | Aplicar la política de presencia, pausa, abandono y recuperación del [protocolo HTTP](Protocolo-partida-web.md#estados-presencia-y-recuperación). |
 
 ## Condiciones técnicas de ejecución
 
-- Aplicación de consola desarrollada en C# y .NET 8.
-- Dos clientes, uno por jugador en cada una de las dos computadoras, y un proceso servidor.
-- Conexión mediante una red local y acceso a los archivos compartidos necesarios.
-- CSV de personajes preparado por el sistema externo de carga.
-- Cada proceso escribe exclusivamente sus propios archivos y solo lee los archivos de los demás. Esta separación evita que distintos procesos sobrescriban un mismo archivo.
+- Dos computadoras Windows en la red local. La primera ejecuta servidor y cliente J1 y la segunda ejecuta cliente J2.
+- Se inicia el servidor antes de abrir los clientes de consola. La dirección HTTP es configurable y se acordó TCP 5000.
+- El servidor administra las partidas y el catálogo en SQLite. Los clientes consultan la API.
+
+Los contratos de intercambio y sus pendientes están en el [protocolo HTTP](Protocolo-partida-web.md).
