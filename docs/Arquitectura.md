@@ -151,51 +151,126 @@ Es público y devuelve el nombre del jugador para identificarlo en pantalla.
 
 ### Combate
 
-Conserva participantes, elector, atributo, cartas y ganador. Las elecciones y el ganador empiezan ausentes. No suma rondas al marcador.
+Es una clase interna (`internal`) que representa un enfrentamiento entre dos jugadores. Conserva los participantes, el atributo elegido, las cartas seleccionadas y el ganador.
+
+El atributo, las cartas y el ganador comienzan ausentes. No modifica el marcador de rondas.
 
 #### Constructor `Combate(quienElige: Jugador, rival: Jugador)`
 
-Es público y recibe al jugador que elige el atributo y a su rival, determinados por Ronda. Guarda ambos participantes y deja pendientes el atributo, las cartas y el ganador.
+Es público y recibe al jugador que elige el atributo y a su rival, determinados por `Ronda`.
+
+Guarda ambos participantes y deja pendientes el atributo, las cartas y el ganador.
+
+Valida que ninguno de los participantes sea `null` y que ambos jugadores sean distintos. Si alguna condición no se cumple, lanza una excepción.
 
 #### `SetAtributo(tipo: TipoAtributo): void`
 
-Es público y guarda el atributo elegido para el combate. Recibe una opción ya validada en la entrada y se llama una sola vez, antes de resolver el enfrentamiento. La coordinación del turno corresponde al flujo de la partida.
+Es público y guarda el atributo elegido para el combate.
+
+Recibe una opción ya validada en la entrada. Comprueba que todavía no se haya registrado otro atributo y que el valor pertenezca al enum `TipoAtributo`.
+
+Si alguna condición no se cumple, rechaza la operación sin modificar el estado.
+
+Se llama una sola vez, antes de resolver el enfrentamiento. La coordinación del turno corresponde al flujo de la partida.
 
 #### `SetCarta(jugador: Jugador, personaje: Personaje): void`
 
-Es público y recibe al jugador y su carta elegida. Comprueba que el jugador participe en el combate, que todavía no haya registrado su carta y que esta siga en su mano. Si la elección no cumple esas condiciones, la rechaza sin cambiar el estado. Si es válida, llama a QuitarCarta y guarda la referencia en el combate. Esta es la comprobación de la elección; QuitarCarta no la repite. La recepción y validación de mensajes se definirán en la actividad 6.
+Es público y recibe al jugador y su carta elegida.
 
-#### `EstaCompleto(): bool`
+Coordina la validación y el registro de la carta mediante los siguientes pasos:
 
-Es público y devuelve true cuando ya están registrados el atributo y las dos cartas; mientras falte alguno devuelve false. Permite al coordinador saber cuándo puede resolver el combate.
+1. Comprueba que el jugador y el personaje no sean `null`.
+2. Llama a `ValidarParticipante` para comprobar que el jugador participe en el combate.
+3. Llama a `ValidarCartaDisponible` para comprobar que todavía no haya registrado una carta y que el personaje siga en su mano.
+4. Llama a `QuitarCarta` para retirar el personaje de la mano.
+5. Llama a `RegistrarCarta` para guardar la referencia correspondiente al jugador.
+
+Si alguna validación falla, rechaza la elección sin modificar el estado ni retirar la carta.
+
+Esta es la comprobación de la elección; `QuitarCarta` no repite las validaciones que ya realiza `Combate`. La recepción y validación de mensajes se definirán en la actividad 6.
+
+## `EstaCompleto(): bool`
+
+Es público y devuelve `true` cuando ya están registrados el atributo y las dos cartas. Mientras falte alguno, devuelve `false`.
+
+Permite al coordinador saber cuándo puede resolver el combate.
 
 #### `Resolver(): Jugador`
 
-Es público y se llama cuando EstaCompleto devuelve true. Compara el atributo elegido de ambas cartas: gana quien eligió solo si su valor es mayor; en caso contrario gana el rival, incluido el empate. Guarda y devuelve el ganador. No modifica el marcador de rondas.
+Es público y se llama cuando `EstaCompleto()` devuelve `true`.
 
-Ejemplo ilustrativo del núcleo de comparación, después de comprobar y extraer las elecciones completas. No es código implementado en la aplicación:
+Comprueba que el combate esté completo y que todavía no haya sido resuelto.
+
+Compara el atributo elegido de ambas cartas: gana quien eligió solamente si su valor es mayor; en caso contrario gana el rival, incluido el empate.
+
+Guarda y devuelve el ganador. No modifica el marcador de rondas.
+
+Ejemplo ilustrativo del núcleo de comparación:
 
 ```csharp
 int valorElector = cartaQueElige.GetAtributo(atributoElegido);
 int valorRival = cartaRival.GetAtributo(atributoElegido);
-ganador = valorElector > valorRival ? jugadorQueElige : jugadorRival;
+
+ganador = valorElector > valorRival
+    ? jugadorQueElige
+    : jugadorRival;
 ```
 
-#### `GetGanador(): Jugador`
+## `GetGanador(): Jugador`
 
-Es público y devuelve el ganador guardado por Resolver. Se consulta después de resolver el combate, para contar las victorias o mostrar el resultado.
+Es público y devuelve el ganador guardado por `Resolver()`.
+
+Si el combate todavía no fue resuelto, lanza una excepción.
+
+Se consulta después de resolver el combate, para contar las victorias o mostrar el resultado.
 
 #### `GetAtributo(): TipoAtributo`
 
-Es público y devuelve el atributo registrado. InterfazConsola lo consulta al presentar el resultado completo del combate.
+Es público y devuelve el atributo registrado.
+
+Si todavía no se eligió un atributo, lanza una excepción.
+
+`InterfazConsola` lo consulta al presentar el resultado completo del combate.
 
 #### `GetCarta(jugador: Jugador): Personaje`
 
-Es público y recibe uno de los participantes para devolver su carta registrada. Se usa después de completar el combate, tanto para mostrar el resultado como para recuperar las cartas al cerrar la ronda. No retira ni devuelve cartas por sí mismo.
+Es público y recibe uno de los participantes para devolver su carta registrada.
+
+Comprueba que el jugador no sea `null` y que el combate esté completo. Si el jugador no participa, rechaza la consulta.
+
+Se usa después de completar el combate, tanto para mostrar el resultado como para recuperar las cartas al cerrar la ronda.
+
+No retira ni devuelve cartas por sí mismo.
 
 #### `GetParticipantes(): Jugador[]`
 
-Es público y devuelve un arreglo con los dos participantes, primero quien elige y después su rival. Permite consultar sus nombres y cartas sin modificar los roles del combate.
+Es público y devuelve un arreglo con los dos participantes, primero quien elige y después su rival.
+
+Permite consultar sus nombres y cartas sin modificar los roles del combate.
+
+#### `ValidarParticipante(jugador: Jugador): void`
+
+Comprueba que el jugador recibido sea uno de los dos participantes del combate.
+
+Utiliza la identidad de los objetos para comparar los participantes.
+
+Si el jugador no pertenece al combate, lanza una excepción. No modifica el estado.
+
+#### `ValidarCartaDisponible(jugador: Jugador, personaje: Personaje): void`
+
+Comprueba que el jugador todavía no haya registrado una carta y que el personaje elegido siga en su mano.
+
+Determina qué espacio de carta corresponde al jugador y verifica ambas condiciones.
+
+Si alguna falla, rechaza la elección sin modificar el estado ni retirar la carta.
+
+#### `RegistrarCarta(jugador: Jugador, personaje: Personaje): void`
+
+Guarda la referencia del personaje en el espacio correspondiente al jugador.
+
+Si el jugador es quien elige, guarda la carta en `cartaQueElige`. En caso contrario, la guarda en `cartaRival`.
+
+No realiza validaciones porque estas ya fueron efectuadas por `SetCarta`.
 
 ### Ronda
 
