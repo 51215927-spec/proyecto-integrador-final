@@ -14,9 +14,15 @@ Diseño de TI basado en las [reglas del juego](reglas-del-juego.md) y el [diagra
 |---|---|
 | `src/cliente` | Punto de entrada de consola. La interacción con la API está pendiente. |
 | `src/servidor` | Dominio y reglas de la partida. La API HTTP y la persistencia están pendientes. |
-| `src/subir-personajes` | Proyecto base para cargar personajes al catálogo. La importación está pendiente. |
+| `src/subir-personajes` | Herramienta de consola prevista para dar de alta personajes mediante la API del servidor. |
 
 Las pruebas de dominio viven en `test/` y referencian `servidor`.
+
+### Alta de personajes desde consola
+
+1. `subir-personajes` pide el nombre, la descripción y el arte ASCII con `Funciones.PedirString` de Utilidades. Pide los seis atributos con `Funciones.PedirInt`, con valores entre 250 y 750 inclusive.
+2. La herramienta envía los datos del personaje a la API del servidor. El servidor valida el personaje según las reglas del dominio y guarda el alta en el catálogo cuando los datos son válidos.
+3. Cuando el servidor confirma el alta, la consola pregunta «¿Deseás cargar otro personaje?». Si la respuesta es afirmativa, vuelve a pedir los datos. Si es negativa, termina.
 
 ## Comunicación HTTP — actividad 6
 
