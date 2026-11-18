@@ -65,9 +65,9 @@ internal sealed class InterfazConsola
 
     public void MostrarMano(IReadOnlyList<CartaVisible> mano) => MostrarMano(mano, foco: null);
 
-    private void MostrarMano(IReadOnlyList<CartaVisible> mano, int? foco)
+    private void MostrarMano(IReadOnlyList<CartaVisible> mano, int? foco, string titulo = "Tu mano")
     {
-        Escribir($"Tu mano · {mano.Count} {(mano.Count == 1 ? "carta" : "cartas")}", Titulo);
+        Escribir($"{titulo} · {mano.Count} {(mano.Count == 1 ? "carta" : "cartas")}", Titulo);
         if (mano.Count == 0)
         {
             Escribir("No hay cartas disponibles.");
@@ -101,19 +101,12 @@ internal sealed class InterfazConsola
         CartaVisible[] opciones = CopiarOpciones(cartas);
         int elegida = Elegir(opciones.Length, foco =>
         {
-            if (abre)
-            {
-                Encabezado(mesa, $"Rondas ganadas · {Rondas(mesa)}");
-                MostrarMano(opciones, foco);
-                Pie($"Tu turno\nDespués elegís el atributo.\n{Controles}");
-            }
-            else
-            {
-                Encabezado(mesa, "Te toca responder");
-                var lista = ListaOpciones(opciones.Select(carta => carta.Nombre), foco);
-                Paneles(PanelInfo("Cartas disponibles", lista), PanelInfo("Marcador", Marcador(mesa)));
-                Pie(Controles);
-            }
+            string estado = abre
+                ? $"Rondas ganadas · {Rondas(mesa)}"
+                : $"Te toca responder · Marcador · Combates {Combates(mesa)} · Rondas {Rondas(mesa)}";
+            Encabezado(mesa, estado);
+            MostrarMano(opciones, foco, abre ? "Tu mano" : "Cartas disponibles");
+            Pie(abre ? $"Tu turno\nDespués elegís el atributo.\n{Controles}" : Controles);
         });
         return opciones[elegida];
     }

@@ -64,9 +64,13 @@ public class PantallasConsolaTests
         Assert.Contains("Mateo está eligiendo", salida);
         Assert.Contains("Esperá la solicitud para responder", salida);
         Assert.Contains("Cartas disponibles", salida);
+        Assert.Contains("Fuerza", salida);
+        Assert.Contains("Velocidad", salida);
+        Assert.Contains("> Lysander", salida);
         Assert.Contains("Te toca responder", salida);
         Assert.Contains("Marcador", salida);
-        Assert.DoesNotContain("atributo", salida, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Atributo del combate", salida);
+        Assert.DoesNotContain("Después elegís el atributo", salida);
     }
 
     [Fact]
