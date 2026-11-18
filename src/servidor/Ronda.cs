@@ -8,6 +8,8 @@ namespace Proyecto_Integrador_Final
 {
     internal class Ronda
     {
+        internal const int CombatesParaGanar = 2;
+
         private readonly Jugador mano;
         private readonly Jugador rival;
         private readonly List<Combate> combates;
@@ -57,7 +59,7 @@ namespace Proyecto_Integrador_Final
                     victoriasRival++;
             }
 
-            return victoriasMano >= 2 || victoriasRival >= 2;
+            return victoriasMano >= CombatesParaGanar || victoriasRival >= CombatesParaGanar;
         }
 
         public Jugador GetGanador()
@@ -75,7 +77,7 @@ namespace Proyecto_Integrador_Final
                     victoriasMano++;
             }
 
-            return victoriasMano >= 2
+            return victoriasMano >= CombatesParaGanar
                 ? this.mano
                 : this.rival;
         }
