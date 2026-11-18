@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DataBases;
 
 namespace Proyecto_Integrador_Final
 {
@@ -17,7 +16,7 @@ namespace Proyecto_Integrador_Final
         Habilidad
     }
 
-    internal class Personaje : IEntidad<Personaje>
+    internal class Personaje
     {
         private string nombre;
         private string ascii;
@@ -115,11 +114,5 @@ namespace Proyecto_Integrador_Final
                 _ => throw new ArgumentOutOfRangeException(nameof(tipo))
             };
         }
-
-        public static void Configurar(ConstructorEntidad<Personaje> entidad)
-        {
-            // Pendiente: configuración mediante la API de DataBases.
-        }
     }
 }
-

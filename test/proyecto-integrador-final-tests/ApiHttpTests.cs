@@ -234,7 +234,7 @@ public class ApiHttpTests
             await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:"]);
             var juego = app.Services.GetRequiredService<RepositorioJuego>();
             await File.WriteAllLinesAsync(ruta, [encabezado, valida, valida.Replace("17,", "18,").Replace("750", "751")]);
-            Assert.Throws<DataBases.CsvException>(() => juego.Importar(ruta));
+            Assert.Throws<FormatException>(() => juego.Importar(ruta));
             Assert.Throws<ErrorApi>(() => juego.Desactivar(17));
 
             await File.WriteAllLinesAsync(ruta, [encabezado, valida]);

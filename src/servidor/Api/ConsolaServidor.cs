@@ -1,4 +1,3 @@
-using DataBases;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +18,7 @@ internal static class ConsolaServidor
             {
                 Comando(juego, linea.Trim(), salida);
             }
-            catch (Exception error) when (error is ErrorApi or CsvException or IOException or UnauthorizedAccessException)
+            catch (Exception error) when (error is ErrorApi or FormatException or IOException or UnauthorizedAccessException)
             {
                 salida.WriteLine(error.Message);
             }

@@ -63,7 +63,7 @@ internal sealed partial class RepositorioJuego : IDisposable
 
     internal int Importar(string ruta)
     {
-        var lote = FilaCatalogo.Leer(ruta);
+        var lote = CatalogoCsv.Leer(ruta);
         return Ejecutar(true, db =>
         {
             foreach (var personaje in lote)

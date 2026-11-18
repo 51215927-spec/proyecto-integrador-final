@@ -1,68 +1,125 @@
-using DataBases;
+using System.Globalization;
+using System.Text;
 
 namespace Proyecto_Integrador_Final.Api;
 
-internal sealed record FilaCatalogo(
-    int Id, string Nombre, string Descripcion, string Ascii, int Fuerza,
-    int Velocidad, int Resistencia, int Inteligencia, int Energia, int Habilidad)
-    : IEntidad<FilaCatalogo>
+internal static class CatalogoCsv
 {
-    // ConstructorModelo invoca Configurar sin argumentos. La ruta se usa solo
-    // al construir el modelo y queda fijada en esa instancia.
-    private static readonly object configuracion = new();
-    private static string? rutaDeCarga;
+    private static readonly string[] Columnas =
+    [
+        "id", "nombre", "descripcion", "ascii", "fuerza", "velocidad",
+        "resistencia", "inteligencia", "energia", "habilidad"
+    ];
 
     internal static PersonajeCatalogo[] Leer(string ruta)
     {
-        Modelo modelo;
-        lock (configuracion)
+        using var archivo = File.OpenText(ruta);
+        int numeroLinea = 0;
+        string? linea;
+        do
         {
-            rutaDeCarga = ruta;
-            try
-            {
-                modelo = new ConstructorModelo().Agregar<FilaCatalogo>().Construir();
-            }
-            finally
-            {
-                rutaDeCarga = null;
-            }
-        }
+            linea = archivo.ReadLine();
+            numeroLinea++;
+        } while (linea is not null && string.IsNullOrWhiteSpace(linea));
+
+        if (linea is null)
+            return [];
+
+        var encabezado = LeerCeldas(linea, numeroLinea)
+            .Select(celda => celda?.Trim()).ToArray();
+        var indices = Columnas.Select(columna => Array.IndexOf(encabezado, columna)).ToArray();
+        if (encabezado.Length != Columnas.Length || indices.Contains(-1))
+            throw new FormatException($"Línea {numeroLinea}: el encabezado debe contener una vez cada columna del catálogo.");
 
         var lote = new List<PersonajeCatalogo>();
         var ids = new HashSet<int>();
-        int registro = 0;
-        foreach (var fila in modelo.Cargar<FilaCatalogo>(exigirArchivo: true))
+        while ((linea = archivo.ReadLine()) is not null)
         {
-            registro++;
-            if (!ids.Add(fila.Id))
-                throw new CsvException($"Registro {registro}: ID duplicado ({fila.Id}).");
+            numeroLinea++;
+            if (string.IsNullOrWhiteSpace(linea))
+                continue;
 
+            var celdas = LeerCeldas(linea, numeroLinea);
+            if (celdas.Count != Columnas.Length)
+                throw new FormatException($"Línea {numeroLinea}: se esperaban {Columnas.Length} celdas y se encontraron {celdas.Count}.");
+
+            string? Celda(int columna) => celdas[indices[columna]];
+            int Entero(int columna)
+            {
+                if (int.TryParse(Celda(columna), NumberStyles.Integer, CultureInfo.InvariantCulture, out int valor))
+                    return valor;
+                throw new FormatException($"Línea {numeroLinea}: la columna {Columnas[columna]} requiere un entero.");
+            }
+
+            int id = Entero(0);
+            if (!ids.Add(id))
+                throw new FormatException($"Línea {numeroLinea}: ID duplicado ({id}).");
+
+            var datos = new AltaPersonaje(Celda(1), Celda(2), Celda(3),
+                Entero(4), Entero(5), Entero(6), Entero(7), Entero(8), Entero(9));
             try
             {
-                var datos = new AltaPersonaje(fila.Nombre, fila.Descripcion, fila.Ascii,
-                    fila.Fuerza, fila.Velocidad, fila.Resistencia, fila.Inteligencia, fila.Energia, fila.Habilidad);
                 var personaje = datos.Validar();
-                personaje.Id = fila.Id;
+                personaje.Id = id;
                 lote.Add(personaje);
             }
             catch (ErrorApi error)
             {
-                throw new CsvException($"Registro {registro}: personaje inválido (ID {fila.Id}).", error);
+                throw new FormatException($"Línea {numeroLinea}: personaje inválido (ID {id}).", error);
             }
         }
+
         return lote.ToArray();
     }
 
-    public static void Configurar(ConstructorEntidad<FilaCatalogo> entidad) => entidad
-        .Archivo(rutaDeCarga ?? throw new InvalidOperationException("Falta la ruta del catálogo."))
-        .Columna(p => p.Id, "id")
-        .Columna(p => p.Nombre, "nombre")
-        .Columna(p => p.Descripcion, "descripcion")
-        .Columna(p => p.Ascii, "ascii")
-        .Columna(p => p.Fuerza, "fuerza")
-        .Columna(p => p.Velocidad, "velocidad")
-        .Columna(p => p.Resistencia, "resistencia")
-        .Columna(p => p.Inteligencia, "inteligencia")
-        .Columna(p => p.Energia, "energia")
-        .Columna(p => p.Habilidad, "habilidad");
+    private static List<string?> LeerCeldas(string linea, int numeroLinea)
+    {
+        var celdas = new List<string?>();
+        var texto = new StringBuilder();
+        bool comillasAbiertas = false;
+        bool tuvoComillas = false;
+
+        void AgregarCelda()
+        {
+            var valor = texto.ToString();
+            celdas.Add(!tuvoComillas && valor is ("" or "null") ? null : valor);
+            texto.Clear();
+            tuvoComillas = false;
+        }
+
+        for (int i = 0; i < linea.Length; i++)
+        {
+            char caracter = linea[i];
+            switch (caracter)
+            {
+                case '\\':
+                    if (++i == linea.Length)
+                        throw new FormatException($"Línea {numeroLinea}: escape incompleto.");
+                    texto.Append(linea[i] switch
+                    {
+                        'n' => '\n',
+                        'r' => '\r',
+                        't' => '\t',
+                        char literal => literal
+                    });
+                    break;
+                case '"':
+                    comillasAbiertas = !comillasAbiertas;
+                    tuvoComillas = true;
+                    break;
+                case ',' when !comillasAbiertas:
+                    AgregarCelda();
+                    break;
+                default:
+                    texto.Append(caracter);
+                    break;
+            }
+        }
+
+        if (comillasAbiertas)
+            throw new FormatException($"Línea {numeroLinea}: hay comillas sin cerrar.");
+
+        AgregarCelda();
+        return celdas;
+    }
 }
