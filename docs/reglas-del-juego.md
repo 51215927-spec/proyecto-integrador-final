@@ -21,7 +21,7 @@ Participan dos jugadores, J1 y J2. Gana la partida quien alcanza primero 15 rond
 
 Carta y personaje son el mismo elemento. Cada personaje tiene nombre, representación ASCII y seis atributos: Fuerza, Velocidad, Resistencia, Inteligencia, Energía y Habilidad. Los atributos deben sumar exactamente 3000 puntos; cada uno debe estar entre 250 y 750, al menos uno debe ser de 650 o más y al menos uno de 350 o menos. No se permiten seis valores de 500.
 
-El formato CSV de la actividad 5 se conserva para los datos iniciales de personajes. El diseño prevé un catálogo permanente en SQLite administrado por el servidor. La importación inicial y el mantenimiento del catálogo quedan por definir.
+El servidor conserva en SQLite el catálogo de personajes dados de alta manualmente con `subir-personajes`.
 
 Se reparten tres cartas a cada jugador desde el mazo común. J1 es el jugador mano de la primera ronda. Al terminar cada ronda, ese rol pasa al otro jugador, independientemente del ganador: J1, J2, J1, J2, hasta finalizar la partida.
 
@@ -64,7 +64,7 @@ Dos clientes de consola se conectan al servidor mediante HTTP en la red local e 
 | Situación | Respuesta prevista |
 |---|---|
 | Menos de seis cartas válidas | Informar «No se puede jugar porque no hay suficientes cartas» e impedir el inicio de la partida. |
-| CSV inicial inexistente, ilegible o inválido | Informar el error de carga. El formato y sus validaciones se describen en [Arquitectura](arquitectura.md#formato-de-archivos-de-personajes--actividad-5). |
+| Datos inválidos al dar de alta un personaje | Informar el rechazo sin guardar el personaje. |
 | Servidor inaccesible o conexión interrumpida | Informar y ofrecer reintentar o salir. Si hay una elección pendiente, conservar su identificación para el reintento. |
 | Elección inválida, solicitud consumida o estado incompatible | Rechazar sin modificar el juego. Los códigos HTTP y la actualización de la presentación se detallan en la propuesta de protocolo. |
 | Cliente ausente o proceso reiniciado | Aplicar la política de presencia, pausa, abandono y recuperación del [protocolo HTTP](protocolo-partida-web.md#estados-presencia-y-recuperación). |

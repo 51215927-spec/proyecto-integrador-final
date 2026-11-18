@@ -5,7 +5,7 @@ Diseño de TI basado en las [reglas del juego](reglas-del-juego.md) y el [diagra
 - [Componentes HTTP](#comunicación-http--actividad-6)
 - [Responsabilidades del dominio](#distribución-y-responsabilidades)
 - [Contratos por clase](#especificación-de-clases-y-métodos--actividad-4)
-- [Formato del catálogo](#formato-de-archivos-de-personajes--actividad-5)
+- [Datos y validación de personajes](#datos-y-validación-de-personajes--actividad-5)
 - [Presentación de consola](#presentación-de-consola)
 
 ## Proyectos de la solución
@@ -14,14 +14,14 @@ Diseño de TI basado en las [reglas del juego](reglas-del-juego.md) y el [diagra
 |---|---|
 | `src/cliente` | Punto de entrada de consola. La interacción con la API está pendiente. |
 | `src/servidor` | Dominio y reglas de la partida. Incluye la API HTTP, la consola del operador y la persistencia. |
-| `src/subir-personajes` | Herramienta de consola prevista para dar de alta personajes mediante la API del servidor. |
+| `src/subir-personajes` | Herramienta de consola para dar de alta personajes mediante la API del servidor. |
 
 Las pruebas de dominio e integración HTTP viven en `test/` y referencian `servidor`.
 
 ### Alta de personajes desde consola
 
 1. `subir-personajes` pide el nombre, la descripción y el arte ASCII. Pide los seis atributos, con valores entre 250 y 750 inclusive.
-2. La herramienta enviará los datos mediante el [alta individual de personajes](protocolo-partida-web.md#alta-individual-de-personajes). El servidor valida el personaje según las reglas del dominio y guarda el alta en el catálogo cuando los datos son válidos.
+2. La herramienta envía los datos mediante el [alta individual de personajes](protocolo-partida-web.md#alta-individual-de-personajes). El servidor valida el personaje según las reglas del dominio y guarda el alta en el catálogo cuando los datos son válidos.
 3. Cuando el servidor confirma el alta, la consola pregunta «¿Deseás cargar otro personaje?». Si la respuesta es afirmativa, vuelve a pedir los datos. Si es negativa, termina.
 
 ## Comunicación HTTP — actividad 6
@@ -48,8 +48,7 @@ classDiagram
     ServidorHttp --> RepositorioJuego
     RepositorioJuego --> BaseJuego
     RepositorioJuego --> Combate
-    RepositorioJuego --> CatalogoCsv
-    CatalogoCsv ..> Personaje
+    RepositorioJuego ..> Personaje
     class ServidorHttp {
         Crear(args) WebApplication
     }
@@ -66,14 +65,14 @@ classDiagram
         CerrarSesion(id, rol)
         ReemplazarCredencial(id, rol) string
         DarDeAlta(datos) int
-        Importar(ruta) int
+        DarDeAlta(datos) int
         Desactivar(id)
     }
 ```
 
 `ServidorHttp` registra las rutas y convierte las respuestas y errores al formato acordado. `RepositorioJuego` identifica a cada participante, proyecta su vista y aplica las transiciones del protocolo mediante `BaseJuego`. Para resolver un combate reconstruye las cartas y los participantes necesarios y delega la comparación a `Combate.Resolver`. El servidor usa los umbrales de `Ronda` y `Partida` y conserva la progresión en SQLite entre solicitudes. El estado y el recibo se confirman juntos en una transacción de escritura.
 
-`CatalogoCsv` lee las diez columnas CSV por nombre y valida el lote antes de guardarlo. El catálogo persistido guarda el ID y la descripción, y usa el constructor de `Personaje` para validar los puntajes. Las operaciones de la consola y la protección del alta se detallan en el [protocolo](protocolo-partida-web.md#operación-del-servidor).
+El catálogo persistido guarda el ID y la descripción, y usa el constructor de `Personaje` para validar los puntajes. Las operaciones de la consola y la protección del alta se detallan en el [protocolo](protocolo-partida-web.md#operación-del-servidor).
 
 ## Distribución y responsabilidades
 
@@ -88,7 +87,6 @@ El servidor coordina la partida y analiza los enfrentamientos. Los clientes capt
 | Ronda | Jugador mano, rival y combates registrados. | Determinar el siguiente elector y el ganador de ronda. Calcula las victorias desde los combates, evitando contadores duplicados. |
 | Combate | Participantes, atributo, elecciones y ganador. | Registrar las elecciones y resolver la comparación. Los campos aún no elegidos y el ganador pendiente son anulables. |
 | InterfazConsola | Sin estado de dominio propio obligatorio. | Componer las pantallas del juego y solicitar opciones. No determina ganadores. |
-| Datos (estática) | Configuración y modelo del catálogo CSV en el diseño base. | Sirve de referencia para la carga inicial de la actividad 5. El protocolo HTTP especifica su importación al servidor. |
 
 El jugador mano pertenece exclusivamente a Ronda y permanece fijo durante sus combates. Partida numera las rondas desde 1 y calcula los argumentos al construirlas: J1 es mano en las impares y J2 en las pares. No conserva otra referencia de jugador mano ni necesita un método para alternarla. Jugador tampoco conserva una copia de ese rol. Las entidades del juego se conservan porque representan conceptos propios del problema y permiten explicar sus reglas.
 
@@ -96,7 +94,7 @@ El jugador mano pertenece exclusivamente a Ronda y permanece fijo durante sus co
 
 Las referencias a objetos y colecciones de entidades se representan exclusivamente mediante asociaciones, sin duplicarlas en el compartimento de atributos. Cada extremo navegable indica el nombre del rol, su multiplicidad y su visibilidad: `-` privado y `+` público. Por ejemplo, Ronda se relaciona con Jugador mediante los roles privados `- jugadorMano` y `- jugadorRival`, cada uno con multiplicidad 1.
 
-Los roles diferentes se dibujan como asociaciones distintas, incluso si apuntan a la misma clase. El ganador de Combate tiene multiplicidad 0..1 mientras no se resuelva; sus dos cartas también tienen 0..1 durante la elección. Datos tiene la asociación pública estática `+ Modelo`, con multiplicidad 0..1 hasta inicializarse, lectura pública y escritura privada. Las dependencias de uso y la realización de interfaces no representan atributos y no llevan visibilidad de miembro. Los valores simples y enumeraciones permanecen en el compartimento de atributos.
+Los roles diferentes se dibujan como asociaciones distintas, incluso si apuntan a la misma clase. El ganador de Combate tiene multiplicidad 0..1 mientras no se resuelva; sus dos cartas también tienen 0..1 durante la elección. Las dependencias de uso y la realización de interfaces no representan atributos y no llevan visibilidad de miembro. Los valores simples y enumeraciones permanecen en el compartimento de atributos.
 
 ### Convenciones de representación
 
@@ -112,7 +110,7 @@ Las firmas indican parámetros y retornos. Salvo donde se indica estático, los 
 
 ### Personaje
 
-Representa una carta válida con ID, nombre, descripción, ASCII y seis atributos privados. No ofrece modificación pública de esos valores. La lectura de archivos corresponde a CatalogoCsv.
+Representa una carta válida con ID, nombre, descripción, ASCII y seis atributos privados. No ofrece modificación pública de esos valores.
 
 #### Constructor `Personaje(id: int, nombre: string, descripcion: string, ascii: string, fuerza: int, velocidad: int, resistencia: int, inteligencia: int, energia: int, habilidad: int)`
 
@@ -389,22 +387,6 @@ Es privado y devuelve true si alguno de los jugadores alcanzó RONDAS_PARA_GANAR
 
 Es privado y devuelve al jugador que llegó a 15 rondas ganadas. Jugar lo llama después de que EstaTerminada devuelve true. Como cada ronda suma una victoria a un solo jugador y la partida termina al alcanzar el umbral, no es necesario volver a comprobar si ambos o ninguno ganaron.
 
-### Datos
-
-Clase estática, sin instancias. Conserva tipoProceso privado opcional y la ruta del catálogo CSV en el diseño base. El operador del servidor indica la ruta al ejecutar la [importación local](protocolo-partida-web.md#importación-local).
-
-#### `Configurar(tipo: TipoProceso): void`
-
-Es público y estático. Recibe el rol elegido y validado al iniciar la aplicación: Servidor, ClienteJ1 o ClienteJ2. Lo guarda como identidad de ejecución en el diseño base. El punto de entrada lo llama una sola vez, antes de Iniciar.
-
-#### `GetTipoProceso(): TipoProceso`
-
-Es público y estático. Devuelve el rol guardado por Configurar en el diseño base de ejecución. Se consulta después de configurar el proceso.
-
-#### `Iniciar(): void`
-
-En el servidor REST, la preparación del catálogo se realiza mediante la [importación local](protocolo-partida-web.md#importación-local).
-
 ### InterfazConsola
 
 La [interfaz de consola](interfaz.md) compone las pantallas con datos que recibe del flujo cliente. Los métodos son de instancia. Las firmas de implementación en `src/cliente` adaptan las del UML a vistas de presentación locales. `CartaVisible` lleva el identificador, el nombre y los atributos de una carta propia. `JugadorVisible` contiene el nombre y las rondas ganadas. `CombateVisible` contiene las dos jugadas reveladas, el atributo comparado, el ganador confirmado, el marcador de combates y el próximo elector si corresponde. `MesaVisible` aporta la identidad local, la ronda, el combate y los marcadores de ambos jugadores. El flujo cliente prepara estas vistas a partir de los datos del protocolo. Puede identificar la plaza ganadora de un combate mediante `GanaJ1` cuando dos jugadores comparten nombre.
@@ -465,54 +447,15 @@ TipoAtributo contiene Fuerza, Velocidad, Resistencia, Inteligencia, Energia y Ha
 
 ## Datos y persistencia
 
-La actividad 5 especifica el formato del catálogo CSV. El diseño REST usa SQLite mediante EF Core para conservar los personajes y las partidas en el servidor. Los clientes reciben las vistas de la API.
+El diseño REST usa SQLite mediante EF Core para conservar los personajes y las partidas en el servidor. Los clientes reciben las vistas de la API.
 
-El protocolo HTTP define la importación, el esquema, las copias para cada partida y las transacciones de elección. Las reglas de validación de atributos siguen en Personaje. Consultá [Tecnologías del protocolo REST](tecnologias-rest.md) y [Persistencia, concurrencia y catálogo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
+El protocolo HTTP define el alta, el esquema, las copias para cada partida y las transacciones de elección. Las reglas de validación de atributos siguen en Personaje. Consultá [Tecnologías del protocolo REST](tecnologias-rest.md) y [Persistencia, concurrencia y catálogo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
 
-## Formato de archivos de personajes — actividad 5
+## Datos y validación de personajes — actividad 5
 
-**Completada por confirmación del usuario.** Se documentan las definiciones acordadas. El cierre corresponde al análisis y diseño; no implica implementación.
+La carga vigente se realiza manualmente con `subir-personajes`. Esta decisión sustituye la lectura de archivos de personajes indicada en la consigna original. La herramienta envía los datos mediante el [alta individual HTTP](protocolo-partida-web.md#alta-individual-de-personajes).
 
-### Entidades persistentes y columnas
-
-El CSV contiene los datos de los personajes. El lector asocia cada columna por su nombre. La persistencia en SQLite y la carga desde el CSV se describen en el [protocolo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
-
-Personaje tiene actualmente los siguientes campos en el modelo, sin agregar otros por inferencia:
-
-| Campo / columna | Tipo | Condición ya definida |
-|---|---|---|
-| id | int | Identificador único y estable proporcionado por el sistema externo; no cambia durante una partida. |
-| nombre | string | No nulo, vacío ni compuesto solo por espacios. |
-| descripcion | string | Opcional y sin límite de longitud. La ausencia se representa con texto vacío (""), no con null. |
-| ascii | string | No nulo; máximo 25 líneas y 120 caracteres por línea; sin tabulaciones. Se entrega con contenido, pero no se valida si está vacío. |
-| fuerza | int | Entre 250 y 750, inclusive. |
-| velocidad | int | Entre 250 y 750, inclusive. |
-| resistencia | int | Entre 250 y 750, inclusive. |
-| inteligencia | int | Entre 250 y 750, inclusive. |
-| energia | int | Entre 250 y 750, inclusive. |
-| habilidad | int | Entre 250 y 750, inclusive. |
-
-Los seis atributos numéricos deben sumar exactamente 3000, incluir al menos uno mayor o igual a 650 y al menos uno menor o igual a 350. La validación pertenece al constructor de Personaje mediante Validar, según el contrato de la actividad 4.
-
-### Reglas del formato CSV
-
-El archivo CSV tiene esta estructura: encabezado con los nombres de columnas, separador coma y un objeto por línea física. El lector asocia las columnas por nombre al leer, por lo que admite reordenarlas. Los archivos se preparan en UTF-8 sin BOM y con los textos entre comillas.
-
-Dentro de los textos, las barras, comillas, saltos de línea, retornos de carro y tabulaciones se representan con los escapes `\\`, `\"`, `\n`, `\r` y `\t` respectivamente. Un ASCII con varios renglones puede almacenarse como texto en una sola línea física usando saltos escapados. El límite confirmado es de 25 líneas de contenido y 120 caracteres por línea; los saltos escapados permiten representar esas líneas dentro del registro. No se permiten caracteres de tabulación en el ASCII, incluidas las tabulaciones escapadas. El usuario garantiza que el ASCII tendrá contenido y pidió no validar si está vacío; esta decisión no elimina el rechazo de null ya establecido en el constructor. La descripción se incorpora como texto en la columna descripcion y utiliza los mismos escapes. Cuando no hay descripción, la celda se escribe como ""; la columna permanece en el encabezado y en cada registro.
-
-La palabra null sin comillas representa ausencia de valor; las comillas vacías representan texto vacío y la palabra null entre comillas representa texto literal. Las restricciones del personaje determinan qué valores se admiten.
-
-### Lectura y errores ya especificados
-
-El servidor abre el CSV al ejecutar la importación local. Un archivo ausente produce FileNotFoundException. Los errores de formato o validación producen FormatException e indican la línea afectada. Los errores de acceso se propagan al comando, que informa el fallo y permite reintentar.
-
-El ID es único y estable. El lector rechaza los IDs repetidos dentro del mismo archivo antes de aplicar cambios al catálogo.
-
-La conversión de la información de los personajes al catálogo CSV se definirá posteriormente. El usuario considera como posibilidades un script o solicitar la generación del CSV a partir de los datos, sin haber elegido todavía una alternativa. No se exige por ahora que cada alumno entregue un CSV individual ni se define un formato de conversión.
-
-### Importación y presentación
-
-La conversión al CSV está postergada. El operador indica la ubicación del archivo en el comando de [importación local](protocolo-partida-web.md#importación-local). La presentación de la descripción sigue abierta en el [diseño de interfaz](interfaz.md#decisiones-pendientes).
+El servidor asigna un ID positivo y estable. El nombre debe tener contenido y la descripción admite texto vacío. El arte ASCII admite hasta 25 líneas de 120 caracteres como máximo, sin tabulaciones. Los seis atributos son enteros entre 250 y 750 inclusive, suman 3000 y deben incluir al menos un valor igual o superior a 650 y otro igual o inferior a 350.
 
 ## Presentación de consola
 

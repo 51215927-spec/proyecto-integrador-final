@@ -47,11 +47,10 @@ Por defecto el servidor crea `guerra.db` en el directorio de ejecución. Se pued
 | `cancelar <idPartida>` | Finaliza una partida pendiente o activa con motivo `cancelacion`. |
 | `cerrar-sesion <idPartida> <J1|J2>` | Libera la plaza para otra sesión y conserva su estado de juego. |
 | `reemplazar-credencial <idPartida> <J1|J2>` | Revoca el acceso anterior y muestra una credencial nueva para la misma plaza. |
-| `importar <rutaCsv>` | Lee un CSV y aplica el lote completo. La ruta puede ser absoluta o relativa al directorio de ejecución. |
 | `desactivar <idPersonaje>` | Excluye el personaje de futuros repartos de partidas nuevas. |
 | `ayuda` | Muestra los comandos disponibles. |
 
-Para iniciar una partida, importar el catálogo o cargar personajes mediante el alta HTTP. Ejecutar `crear`, incorporar a ambos jugadores y luego ejecutar `iniciar` con el UUID. El servidor conserva los datos de juego al reiniciar. Para seguir una partida, ambos jugadores se reincorporan con sus credenciales.
+Para iniciar una partida, cargar al menos seis personajes activos con `subir-personajes`. Ejecutar `crear`, incorporar a ambos jugadores y luego ejecutar `iniciar` con el UUID. El servidor conserva los datos de juego al reiniciar. Para seguir una partida, ambos jugadores se reincorporan con sus credenciales.
 
 ### Prueba del servidor en una sola computadora
 
@@ -63,7 +62,7 @@ dotnet run --project src/servidor/servidor.csproj -- --urls http://127.0.0.1:500
 ```
 
 - Esperá el mensaje de escucha en `http://127.0.0.1:5000`. En esa misma terminal, escribí `crear`. La consola imprime el UUID de la partida y una credencial para cada plaza.
-- Mantené abierta esa terminal mientras probás la API desde otra. Para iniciar el juego, importá primero un catálogo con al menos seis personajes activos mediante `importar <rutaCsv>`. Una importación correcta informa cuántos personajes procesó.
+- Mantené abierta esa terminal mientras probás la API desde otra. Para iniciar el juego, cargá primero al menos seis personajes activos con [subir-personajes](../README.md#cargar-personajes-manualmente).
 - Incorporá ambos participantes mediante `PUT /participantes/me/sesion` según el contrato de abajo. Usá un UUID de sesión diferente por jugador y renová la presencia con `PUT /participantes/me/presencia` mientras realizás la prueba. Después, escribí `iniciar <idPartida>` en la consola del servidor. El resultado esperado es `Partida iniciada.`.
 - Consultá `GET /presentacion` con la credencial y sesión de cada plaza. Al inicio, ambas vistas muestran tres cartas propias. La vista de J1 incluye una solicitud `cartaYAtributo` y la de J2 tiene `solicitud: null` hasta que J1 juegue.
 
@@ -130,9 +129,9 @@ El error incluye `codigo`, `mensaje` e `idSeguimiento`; sus campos excluyen elec
 
 ### Alta individual de personajes
 
-`POST /api/v1/personajes` recibe JSON UTF-8 con `nombre`, `descripcion`, `ascii`, `fuerza`, `velocidad`, `resistencia`, `inteligencia`, `energia` y `habilidad`. La descripción admite texto vacío. Los puntajes son enteros y el servidor aplica las [validaciones de Personaje](arquitectura.md#formato-de-archivos-de-personajes--actividad-5). El ASCII admite hasta 25 líneas, con un máximo de 120 caracteres por línea y sin tabulaciones.
+`POST /api/v1/personajes` recibe JSON UTF-8 con `nombre`, `descripcion`, `ascii`, `fuerza`, `velocidad`, `resistencia`, `inteligencia`, `energia` y `habilidad`. La descripción admite texto vacío. Los puntajes son enteros y el servidor aplica las [validaciones de Personaje](arquitectura.md#datos-y-validación-de-personajes--actividad-5). El ASCII admite hasta 25 líneas, con un máximo de 120 caracteres por línea y sin tabulaciones.
 
-El operador configura una credencial de catálogo en el entorno del servidor mediante `Catalogo__Credencial`. El cliente la envía en `Authorization: Bearer`. El alta devuelve `401 credencialInvalida` si falta la configuración o la credencial recibida no coincide. Las credenciales de las plazas se usan para la partida. El cliente [`subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola) se conectará a esta ruta.
+El operador configura una credencial de catálogo en el entorno del servidor mediante `Catalogo__Credencial`. El cliente la envía en `Authorization: Bearer`. El alta devuelve `401 credencialInvalida` si falta la configuración o la credencial recibida no coincide. Las credenciales de las plazas se usan para la partida. El cliente [`subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola) usa esta ruta.
 
 | Respuesta | Significado |
 |---|---|
@@ -144,9 +143,9 @@ El operador configura una credencial de catálogo en el entorno del servidor med
 
 Cada solicitud de alta válida crea un personaje. La idempotencia por `idOperacion` se aplica a las elecciones de partida.
 
-### Importación local
+### Mantenimiento del catálogo
 
-Para la carga por lotes, el operador carga o actualiza el catálogo mediante importación local del formato CSV definido en la actividad 5. Se valida todo el lote antes de confirmar altas y cambios por ID en una sola transacción. Los IDs repetidos dentro del lote se rechazan. Una actualización por ID conserva la condición activa o inactiva registrada. Un error deja intacto el catálogo vigente y se informa el registro inválido. El operador puede corregir el archivo y volver a importar. El operador retira personajes desactivándolos por ID. Las partidas iniciadas usan únicamente su copia, incluso después de reiniciar o desactivar un personaje. La conversión al CSV conserva el pendiente acordado en la actividad 5.
+El operador retira personajes desactivándolos por ID. Las partidas iniciadas conservan su copia de los personajes después de reiniciar o desactivar un personaje.
 
 Cada escritura de juego usa una transacción SQLite con adquisición del turno de escritura antes de leer el estado para validar. Se comprueba primero si existe el recibo propio. Si los campos normalizados coinciden se devuelve el recibo guardado sin aplicar otra transición. Si difieren, se rechaza con `operacionIncompatible`. Para una operación nueva se comprueban presencia, fase, revisión, titular, solicitud, carta y atributo. Se confirman juntos estado, solicitud consumida, revisión y recibo. Si la escritura no está disponible se devuelve `503`; el cliente reutiliza el identificador original. Los recibos se conservan junto con la partida, incluso finalizada. Inicio y cancelación locales validan la transición desde la fase persistida antes de modificarla.
 

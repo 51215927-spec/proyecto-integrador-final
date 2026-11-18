@@ -103,3 +103,13 @@ Las dependencias y los comandos del servidor están en [Tecnologías REST](docs/
 - [51215927-spec](https://github.com/51215927-spec)
 - [50509098-JC](https://github.com/50509098-JC)
 - [Chino18cm](https://github.com/Chino18cm)
+
+## Cargar personajes manualmente
+
+Configurá `Catalogo__Credencial` con la misma credencial de catálogo en el entorno del servidor y en la terminal de carga. Con el servidor en ejecución, iniciá la consola desde la raíz del repositorio.
+
+```sh
+dotnet run --project src/subir-personajes
+```
+
+La consola usa `http://localhost:5000` por defecto. Si el servidor está en otra computadora, pasá su URL después de `--`. Indicá cuántas líneas de arte ASCII vas a ingresar. Tras validar y guardar el personaje, el servidor devuelve su ID. Cargá al menos seis personajes activos antes de iniciar una partida.

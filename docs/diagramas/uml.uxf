@@ -165,24 +165,6 @@ _- RONDAS_PARA_GANAR: int = 15 {readOnly}_
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>600</x>
-      <y>820</y>
-      <w>390</w>
-      <h>170</h>
-    </coordinates>
-    <panel_attributes>Datos
---
-_+ RUTA_PERSONAJES: string {readOnly}_
-_- tipoProceso: TipoProceso [0..1]_
---
-_+ Configurar(tipo: TipoProceso): void_
-_+ GetTipoProceso(): TipoProceso_
-_+ Iniciar(): void_</panel_attributes>
-    <additional_attributes />
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
       <x>1130</x>
       <y>780</y>
       <w>110</w>
@@ -210,7 +192,7 @@ TipoAtributo
     <panel_attributes>Distribucion por procesos:
 Servidor: dominio y CoordinadorServidor.
 Clientes: CoordinadorCliente e InterfazConsola.
-Catalogo CSV: formato definido en Arquitectura.
+Catalogo: alta manual mediante la API.
 Comunicacion HTTP: ver Arquitectura.
 Ampliacion propuesta: Comunicacion.uxf y Protocolo-partida.md.
 Sin implementacion; red Windows pendiente de verificar.</panel_attributes>
