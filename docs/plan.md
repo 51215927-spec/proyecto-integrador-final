@@ -1,12 +1,12 @@
 # Plan de trabajo — Juego Guerra
 
-Plan basado en la [consigna](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Consigna). Las casillas registran entregables de diseño en TI y trabajo futuro en Taller.
+Plan basado en la [consigna](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Consigna). El usuario confirmó la entrega de TI. Las casillas registran los entregables de diseño y el estado del trabajo de Taller.
 
 | Actividades de TI | Estado |
 |---|---|
 | Personajes, requisitos, modelo, métodos y archivos | Actividades 1 a 5 completadas en TI. |
-| Comunicación HTTP | Diseño documentado. Verificación entre computadoras pendiente. |
-| Casos de prueba | Escenarios y resultados esperados documentados. Ejecución prevista en Taller. |
+| Comunicación HTTP | Diseño entregado en TI. Verificación entre computadoras pendiente en Taller. |
+| Casos de prueba | Escenarios y resultados esperados entregados en TI. El estado de ejecución se registra en Taller. |
 
 ## TI — Análisis de Sistemas
 
@@ -50,11 +50,11 @@ Para este proyecto se acordó documentar cada método por escrito, sin diagramas
 - [x] Definir los [datos de los personajes](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura#datos-y-validación-de-personajes--actividad-5) y sus validaciones.
 - [x] Incorporar ID, descripción y ASCII al catálogo y a los contratos de Personaje.
 
-La decisión vigente es cargar los personajes manualmente mediante `subir-personajes`. Esta decisión sustituye la lectura de archivos de personajes prevista en la consigna original. La presentación de la descripción se trata en [Interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz#decisiones-pendientes).
+La decisión vigente es cargar los personajes manualmente mediante `subir-personajes`. Esta decisión sustituye la lectura de archivos de personajes prevista en la consigna original. El catálogo conserva el arte ASCII y la descripción. El juego prescinde de ambos durante la partida. La decisión se registra en [Interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz#arte-y-descripción-de-personajes).
 
 ### Actividad 6 — Comunicación HTTP en red local
 
-**En curso.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
+**Diseño entregado en TI.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
 
 - [x] Documentar tecnologías, despliegue, sesiones y reincorporación en el [protocolo](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida).
 - [x] Especificar rutas, DTO, errores, estados, presencia, pausa y abandono.
@@ -67,7 +67,7 @@ La decisión vigente es cargar los personajes manualmente mediante `subir-person
 - [x] Cubrir personajes, formato del catálogo, mazo, reglas de combate y finalización.
 - [x] Cubrir indisponibilidad, turno incorrecto, pausa, recuperación y concurrencia según el contrato HTTP de la actividad 6.
 
-La ejecución y la evidencia de resultados quedan para Taller de Programación.
+La ejecución y la evidencia de resultados se registran en Taller de Programación.
 
 ## Taller de Programación — C#
 
@@ -79,7 +79,7 @@ El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado 
 - [x] Implementar el constructor con nombre, seis atributos y ASCII Art.
 - [x] Implementar las validaciones de los atributos según los contratos de TI.
 - [x] Implementar GetNombre, GetAscii y GetAtributo conservando el encapsulamiento. GetDescripcion permanece pendiente en la tarea de completar Personaje.
-- [ ] Agregar en `test/` pruebas de personajes válidos y de cada restricción de puntajes.
+- [x] Agregar en `test/` pruebas de personajes válidos y de cada restricción de puntajes.
 
 ### Etapa 2 — Carga manual de personajes
 
@@ -92,8 +92,8 @@ El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado 
 
 El [diseño de la interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz) registra las pantallas, los controles implementados en el cliente y las decisiones pendientes del flujo cliente.
 
-- [ ] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
-- [ ] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
+- [x] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
+- [x] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
 - [x] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz), con renderizado mediante Spectre.Console.
 - [x] Validar la carta elegida contra las opciones de mano recibidas y el atributo contra las opciones de la solicitud.
 - [x] Presentar mano, marcador, esperas, resultados y errores según los contratos de TI.
@@ -103,23 +103,24 @@ El [diseño de la interfaz](https://github.com/51215927-spec/proyecto-integrador
 
 - [x] Crear Mazo con su colección privada de Personaje.
 - [x] Implementar Mezclar, Repartir, Devolver y GetCantidad conforme a las firmas del UML.
-- [ ] Comprobar que el reparto retire los elementos entregados y respete su disponibilidad.
+- [x] Comprobar que el reparto retire los elementos entregados y respete su disponibilidad.
 - [ ] Restaurar el mazo completo al cerrar cada ronda, incluyendo personajes jugados y no jugados, sin pérdidas ni repeticiones.
 - [ ] Impedir iniciar una partida con menos de seis personajes válidos y mostrar el mensaje acordado.
 - [ ] Probar mazo vacío, reparto insuficiente, mezcla y recuperación completa.
 
 ### Etapa 5 — Implementación de las reglas
 
-- [ ] Implementar Partida, Ronda y Combate con los contratos acordados en TI.
+- [x] Implementar `Ronda` y `Combate` y probar sus reglas en el dominio.
+- [ ] Revisar el contrato de `Partida` frente al flujo REST. El servidor ejecuta la partida mediante sus transiciones y `Partida.Jugar()` aún carece del paso de selección de cartas y atributo.
 - [ ] Iniciar con J1 como jugador mano y repartir tres personajes a cada jugador.
 - [ ] Registrar carta y atributo del elector y después la carta del rival según la secuencia definida.
-- [ ] Resolver cada combate por el atributo elegido; ante empate gana quien no eligió el atributo.
-- [ ] Retirar de la mano los personajes jugados para impedir reutilizarlos durante la ronda.
-- [ ] Alternar el elector de atributo entre combates, independientemente del ganador.
+- [x] Resolver cada combate por el atributo elegido; ante empate gana quien no eligió el atributo.
+- [x] Retirar de la mano los personajes jugados para impedir reutilizarlos durante la ronda.
+- [x] Alternar el elector de atributo entre combates, independientemente del ganador.
 - [ ] Cerrar la ronda al alcanzar dos combates ganados y sumar una ronda al marcador del vencedor.
 - [ ] Recuperar todos los personajes y alternar el jugador mano al terminar cada ronda.
-- [ ] Finalizar al alcanzar 15 rondas ganadas, sin iniciar otra ronda.
-- [ ] Ejecutar las pruebas de combates, empates, alternancia, cierre anticipado de ronda y fin de partida.
+- [x] Verificar que el servidor finalice al alcanzar 15 rondas ganadas y omita el reparto de otra ronda.
+- [x] Ejecutar las pruebas automatizadas de combates, empates, alternancia, cierre anticipado de ronda y fin de partida.
 
 ### Etapa 6 — Comunicación HTTP entre computadoras
 
@@ -135,13 +136,14 @@ El [diseño de la interfaz](https://github.com/51215927-spec/proyecto-integrador
 - [ ] Integrar la carga de personajes, mazo, jugadores, reglas, consola y comunicación en la aplicación de consola.
 - [ ] Comprobar que las firmas y responsabilidades implementadas coincidan con los contratos de TI.
 - [ ] Resolver con los Analistas las diferencias detectadas y actualizar la documentación afectada.
-- [ ] Ejecutar `dotnet build proyecto-integrador-final.sln` y corregir los errores de compilación.
-- [ ] Ejecutar `dotnet test proyecto-integrador-final.sln` y corregir los fallos de las pruebas.
+- [x] Verificar en `main` (`eac766b`) que la solución compila sin advertencias ni errores y que las 85 pruebas automatizadas pasan al habilitar las pruebas de contrato.
+- [ ] Repetir la compilación y las pruebas después de integrar el cliente REST.
 - [ ] Iniciar la aplicación en ambas computadoras con los personajes entregados por los alumnos.
 - [ ] Completar una partida en red local y comprobar su resultado en ambas computadoras.
 - [ ] Registrar los resultados del plan de pruebas y resolver los fallos pendientes.
 - [ ] Revisar que el código esté en `src/`, las pruebas en `test/` y la documentación en la [wiki](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Home).
-- [ ] Comprobar que estén disponibles todos los entregables de TI y el código fuente integrado.
+- [x] Registrar la entrega de TI confirmada por el usuario.
+- [ ] Verificar los entregables y el código fuente integrado para Taller.
 - [ ] Preparar la defensa de las decisiones de diseño, estrategias de personajes, clases y métodos de cada integrante.
 
 Los Analistas coordinan los entregables y comunican los cambios a Taller. El flujo de GitHub está en la [guía de colaboración](../CONTRIBUTING.md).
