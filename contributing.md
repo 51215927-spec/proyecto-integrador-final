@@ -53,7 +53,7 @@ En GitHub, abrí **Pull requests → New pull request**. Seleccioná `main` como
 
 ### Sincronizar después de integrar
 
-Actualizá `main` con `git fetch origin` y `git merge --ff-only origin/main` desde esa rama. Incorporá el nuevo `main` mediante merge en las ramas vigentes y actualizá las que ya estén publicadas. Si aparecen conflictos, revisá ambos cambios y coordiná la resolución con el compañero. Aplicá el [procedimiento de worktrees](agents.md#trabajo-en-paralelo-con-worktrees) para conservar el trabajo y limpiar las ramas de tareas cerradas.
+Actualizá `main` con `git fetch origin` y `git merge --ff-only origin/main` desde esa rama. Incorporá el nuevo `main` mediante merge en las ramas vigentes y actualizá las que ya estén publicadas. Si aparecen conflictos, revisá ambos cambios y coordiná la resolución con el compañero. Aplicá el [procedimiento de worktrees](AGENTS.md#trabajo-en-paralelo-con-worktrees) para conservar el trabajo y limpiar las ramas de tareas cerradas.
 
 ## Desarrollo guiado por pruebas (TDD)
 
@@ -105,7 +105,7 @@ No des por terminado el desarrollo con pruebas fallidas ni reemplaces las prueba
 | `docs/` | Documentación del proyecto, consignas, arquitectura, planificación y guías. |
 | `mis-librerias/` | Submódulo independiente. La aplicación referencia DataBases y Utilidades. |
 | `contributing.md` | Guía de colaboración de este repositorio. |
-| `agents.md` | Instrucciones de trabajo para agentes. |
+| `AGENTS.md` | Instrucciones de trabajo para agentes. |
 | `.gitignore` | Archivos y carpetas que Git debe ignorar. |
 | `.sln` | Solución de Visual Studio que agrupa los proyectos. |
 | `readme.md` | Presentación del proyecto e índice de documentación. |
@@ -114,7 +114,7 @@ No des por terminado el desarrollo con pruebas fallidas ni reemplaces las prueba
 
 - Guardar el código de la aplicación dentro de `src/`, no directamente en la raíz del repositorio.
 - Guardar las pruebas dentro de `test/`.
-- Guardar la documentación del proyecto en `docs/`. En la raíz se mantienen `readme.md`, `contributing.md` y `agents.md`; las bibliotecas del submódulo conservan sus propios README.
+- Guardar la documentación del proyecto en `docs/`. En la raíz se mantienen `readme.md`, `contributing.md` y `AGENTS.md`; las bibliotecas del submódulo conservan sus propios README.
 - No subir carpetas generadas automáticamente, como `bin/` y `obj/`.
 - Si se agrega un nuevo proyecto de código, ubicarlo dentro de `src/` o `test/`, según corresponda.
 - Si se agrega documentación, incluir un enlace a ella en el `readme.md`.

@@ -31,7 +31,7 @@ Aplicar el skill `desarrollo-documentado` durante el trabajo en este proyecto:
 
 ### Separación de cambios documentales
 
-- Modificar documentación únicamente desde ramas cuyo nombre comience con `docs/`. Esta regla incluye `agents.md`, `readme.md`, `contributing.md` y los documentos de `docs/`.
+- Modificar documentación únicamente desde ramas cuyo nombre comience con `docs/`. Esta regla incluye `AGENTS.md`, `readme.md`, `contributing.md` y los documentos de `docs/`.
 - No modificar `docs/plan.md` ni marcar o tachar tareas completadas desde ramas de código o pruebas.
 - Realizar las actualizaciones documentales derivadas de una tarea en una rama `docs/` independiente, con commits exclusivamente documentales. No mezclar código y documentación en un mismo commit o PR.
 - Si una tarea de código requiere actualizar el plan, la arquitectura u otro documento, informar el pendiente al usuario y realizar la actualización en la tarea documental separada.
