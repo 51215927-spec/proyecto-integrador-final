@@ -49,11 +49,15 @@ Las siguientes respuestas son propuestas de diseño.
 - **Espera.** Distinguir ausencia del rival, servidor inaccesible, estado desactualizado y respuesta inválida cuando el protocolo permita identificarlos.
 - **Cierre.** Distinguir victoria, salida solicitada, abandono y fallo fatal. El [protocolo HTTP](protocolo-partida-web.md#estados-presencia-y-recuperación) define pausa, abandono y cancelación.
 
+## Controles de la implementación
+
+Se elige una opción por solicitud con números y Enter. Se admiten flujos de entrada por líneas, incluso redirigidos. Una línea vacía vuelve a pedir la opción. El fin de entrada termina la solicitud mediante `EndOfStreamException`. En una salida redirigida, o si el ancho disponible resulta insuficiente o desconocido, las fichas se presentan en bloques verticales. La consola conserva los resultados impresos junto a la siguiente acción.
+
+El flujo cliente debe comprobar que la solicitud siga vigente antes de enviar una opción. También debe gestionar el cambio de estado durante la escritura, la entrada sobrante entre solicitudes, las confirmaciones, la recuperación y la salida.
+
 ## Decisiones pendientes
 
-- Confirmar números y Enter como control principal y decidir si también se admitirán flechas.
-- Decidir si se admite entrada redirigida para jugar y probar.
-- Definir si los resultados avanzan automáticamente, requieren confirmación local o permanecen visibles junto a la siguiente acción.
+- Decidir si también se admitirán flechas y cómo se descarta la entrada interactiva sobrante entre solicitudes.
 - Definir cuándo mostrar el arte y la descripción. La propuesta es consultarlos en una ficha separada.
 - Definir cómo se presentan la incorporación, el rol asignado, la recuperación y la confirmación de salida. Decidir si el diseño visual abarca la consola del servidor.
 

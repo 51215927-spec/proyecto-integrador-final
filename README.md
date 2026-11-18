@@ -8,7 +8,7 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. La implementación de red y su validación entre dos computadoras corresponden al trabajo pendiente del [plan](docs/plan.md).
 
-La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, con pruebas de dominio en xUnit. La aplicación de consola todavía imprime `Hello, World!`.
+La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, con pruebas de dominio en xUnit. La interfaz de consola está implementada en `feature/interfaz-consola`. La conexión a una partida continúa pendiente.
 
 ## Contenido del repositorio
 
@@ -104,7 +104,7 @@ dotnet test proyecto-integrador-final.sln
 dotnet run --project src/cliente
 ```
 
-El programa de consola muestra `Hello, World!`. Las pruebas automatizadas cubren la base de código de dominio.
+Con `feature/interfaz-consola`, el programa muestra el encabezado de Juego Guerra y el estado de la conexión. Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
 
 Las dependencias y los comandos del futuro servidor están en [Tecnologías REST](docs/tecnologias-rest.md#instalación-prevista-en-taller).
 
