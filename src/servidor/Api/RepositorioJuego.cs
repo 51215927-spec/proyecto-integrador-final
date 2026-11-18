@@ -61,26 +61,6 @@ internal sealed partial class RepositorioJuego : IDisposable
     }
 
 
-    internal int Importar(string ruta)
-    {
-        var lote = CatalogoCsv.Leer(ruta);
-        return Ejecutar(true, db =>
-        {
-            foreach (var personaje in lote)
-            {
-                var anterior = db.Catalogo.Find(personaje.Id);
-                if (anterior is null)
-                    db.Catalogo.Add(personaje);
-                else
-                {
-                    personaje.Activo = anterior.Activo;
-                    db.Entry(anterior).CurrentValues.SetValues(personaje);
-                }
-            }
-            return lote.Length;
-        });
-    }
-
     internal void Desactivar(int id) => Ejecutar(true, db =>
     {
         var personaje = db.Catalogo.Find(id) ?? throw ErrorApi.NoEncontrado();

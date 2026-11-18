@@ -223,31 +223,6 @@ public class ApiHttpTests
     }
 
     [Fact]
-    public async Task ImportacionValidaElLoteCompletoAntesDeGuardar()
-    {
-        var directorio = Directory.CreateTempSubdirectory();
-        try
-        {
-            string ruta = Path.Combine(directorio.FullName, "personajes.csv");
-            const string encabezado = "id,nombre,descripcion,ascii,fuerza,velocidad,resistencia,inteligencia,energia,habilidad";
-            const string valida = "17,\"Ada\",\"\",\"*\",750,550,500,250,500,450";
-            await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            await File.WriteAllLinesAsync(ruta, [encabezado, valida, valida.Replace("17,", "18,").Replace("750", "751")]);
-            Assert.Throws<FormatException>(() => juego.Importar(ruta));
-            Assert.Throws<ErrorApi>(() => juego.Desactivar(17));
-
-            await File.WriteAllLinesAsync(ruta, [encabezado, valida]);
-            Assert.Equal(1, juego.Importar(ruta));
-            juego.Desactivar(17);
-        }
-        finally
-        {
-            directorio.Delete(recursive: true);
-        }
-    }
-
-    [Fact]
     public async Task UnaEleccionConFalloDeEscrituraNoDejaCambiosParciales()
     {
         var directorio = Directory.CreateTempSubdirectory();
