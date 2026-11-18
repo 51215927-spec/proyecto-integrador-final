@@ -41,7 +41,7 @@ Comprobá el diff, ejecutá las verificaciones pertinentes y agregá únicamente
 
 ```bash
 git diff
-git add docs/Plan.md
+git add docs/plan.md
 git diff --cached
 git commit -m "docs: actualizar plan de trabajo"
 git push -u origin HEAD
@@ -61,7 +61,7 @@ TDD (*Test-Driven Development*) consiste en escribir una prueba antes de impleme
 
 ### Preparar la estructura
 
-Respetá los contratos de [Arquitectura](docs/Arquitectura.md). Creá las clases, atributos, constructores y firmas necesarios antes de implementar la lógica. Los métodos pendientes deben lanzar `NotImplementedException`, sin lógica de producción. Esta estructura no reemplaza la escritura previa de pruebas para cada comportamiento.
+Respetá los contratos de [Arquitectura](docs/arquitectura.md). Creá las clases, atributos, constructores y firmas necesarios antes de implementar la lógica. Los métodos pendientes deben lanzar `NotImplementedException`, sin lógica de producción. Esta estructura no reemplaza la escritura previa de pruebas para cada comportamiento.
 
 ### Ciclo rojo–verde–refactorización
 
@@ -88,8 +88,8 @@ Agregá pruebas para aceptar esa distribución y rechazar, por separado, un tota
 - Antes de finalizar una tarea de desarrollo, compilá y ejecutá la suite completa:
 
 ```bash
-dotnet build Proyecto-Integrador-Final.sln
-dotnet test Proyecto-Integrador-Final.sln
+dotnet build proyecto-integrador-final.sln
+dotnet test proyecto-integrador-final.sln
 ```
 
 No des por terminado el desarrollo con pruebas fallidas ni reemplaces las pruebas automatizadas por comprobaciones manuales. En el Pull Request, indicá los comportamientos verificados y los resultados de los comandos para que un compañero pueda revisarlos.
@@ -103,7 +103,7 @@ No des por terminado el desarrollo con pruebas fallidas ni reemplaces las prueba
 | `src/` | Código fuente de la aplicación. |
 | `test/` | Proyectos de pruebas automatizadas. |
 | `docs/` | Documentación del proyecto, consignas, arquitectura, planificación y guías. |
-| `Mis-Librerias/` | Submódulo independiente. La aplicación referencia DataBases y Utilidades. |
+| `mis-librerias/` | Submódulo independiente. La aplicación referencia DataBases y Utilidades. |
 | `CONTRIBUTING.md` | Guía de colaboración de este repositorio. |
 | `AGENTS.md` | Instrucciones de trabajo para agentes. |
 | `.gitignore` | Archivos y carpetas que Git debe ignorar. |

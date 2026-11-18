@@ -1,6 +1,6 @@
 # Protocolo de partida web — API REST
 
-HTTP en red local está aprobado para la entrega de la [actividad 6](Consigna.md). Este documento especifica el diseño REST. La implementación y las comprobaciones en dos computadoras siguen pendientes.
+HTTP en red local está aprobado para la entrega de la [actividad 6](consigna.md). Este documento especifica el diseño REST. La implementación y las comprobaciones en dos computadoras siguen pendientes.
 
 - [Despliegue y conexión](#organización-propuesta)
 - [Identidad y sesiones](#administración-e-identidad)
@@ -15,7 +15,7 @@ Dos clientes de consola se comunican con una API ASP.NET Core mediante HTTP y JS
 
 EF Core administrará la persistencia en una base SQLite local al servidor, tanto del catálogo permanente de personajes (nombre, descripción, ASCII y seis atributos) como de los datos de partidas. Los clientes acceden exclusivamente a la API. El esquema y las transacciones se definen en este documento.
 
-En el primer equipo Windows se ejecutan el servidor y el cliente J1 como procesos separados. En el segundo se ejecuta el cliente J2. Se abre primero el servidor y después ambos clientes. Las versiones acordadas están en [Tecnologías REST](Tecnologias-rest.md).
+En el primer equipo Windows se ejecutan el servidor y el cliente J1 como procesos separados. En el segundo se ejecuta el cliente J2. Se abre primero el servidor y después ambos clientes. Las versiones acordadas están en [Tecnologías REST](tecnologias-rest.md).
 
 La API y el dominio tienen responsabilidades distintas: la API identifica al jugador y valida el contrato recibido; el dominio decide si la elección es válida y resuelve el juego; la persistencia confirma los cambios. Los DTO de red no son entidades EF ni objetos vivos de Partida.
 
@@ -98,4 +98,4 @@ El usuario informó que dos procesos se comunicaron por localhost. La prueba ent
 1. En ambos equipos registrar `dotnet --info` y `dotnet --list-runtimes`. En el servidor registrar la IPv4 local con `ipconfig` y comprobar que TCP 5000 esté libre antes de iniciar y en escucha en la interfaz de red después.
 2. Desde el segundo equipo ejecutar `Test-NetConnection <IPv4-del-servidor> -Port 5000`. Si falla, comprobar primero la IP, la escucha y las condiciones de red indicadas en el apartado de conexión.
 3. Iniciar J1 y J2 con sus credenciales y direcciones configuradas. Comprobar incorporación, manos privadas, secuencia de combate y presentación de resultados desde cada equipo. Registrar fecha, equipos, dirección, versión probada, resultado por paso y evidencia.
-4. Usar los escenarios de fallos de la [actividad 7](Plan.md#actividad-7--casos-de-prueba) para cubrir indisponibilidad, desconexión, reintento y elecciones concurrentes. La ejecución queda pendiente hasta disponer del servidor y ambos equipos.
+4. Usar los escenarios de fallos de la [actividad 7](plan.md#actividad-7--casos-de-prueba) para cubrir indisponibilidad, desconexión, reintento y elecciones concurrentes. La ejecución queda pendiente hasta disponer del servidor y ambos equipos.

@@ -2,11 +2,11 @@
 
 Repositorio de un proyecto académico de juego de cartas para dos jugadores, previsto como aplicación de consola en C# y .NET 8. Reúne los requisitos, el diseño y la base de código para organizar el trabajo del equipo y su futura implementación.
 
-El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador recibe tres cartas por ronda; gana la ronda quien consigue dos combates y la partida quien alcanza 15 rondas ganadas. Las reglas completas están en [Reglas del juego](docs/Reglas-del-juego.md).
+El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador recibe tres cartas por ronda; gana la ronda quien consigue dos combates y la partida quien alcanza 15 rondas ganadas. Las reglas completas están en [Reglas del juego](docs/reglas-del-juego.md).
 
 ## Estado actual
 
-El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. La implementación de red y su validación entre dos computadoras corresponden al trabajo pendiente del [plan](docs/Plan.md).
+El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. La implementación de red y su validación entre dos computadoras corresponden al trabajo pendiente del [plan](docs/plan.md).
 
 La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, con pruebas de dominio en xUnit. La aplicación de consola todavía imprime `Hello, World!`.
 
@@ -17,17 +17,17 @@ La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, c
 | [`src/`](src/) | Código de la aplicación de consola. |
 | [`test/`](test/) | Proyecto de pruebas automatizadas. |
 | [`docs/`](docs/) | Requisitos, reglas, planificación y diseño. |
-| [`Mis-Librerias/`](Mis-Librerias/) | Submódulo de bibliotecas auxiliares independientes, con documentación propia. |
+| [`mis-librerias/`](mis-librerias/) | Submódulo de bibliotecas auxiliares independientes, con documentación propia. |
 
 ## Documentación
 
 | Tema | Documentos |
 |---|---|
-| Qué debe hacer el juego | [Consigna](docs/Consigna.md) y [reglas](docs/Reglas-del-juego.md) |
-| Entregables y pendientes | [Plan de trabajo](docs/Plan.md) |
-| Dominio y catálogo de personajes | [Arquitectura](docs/Arquitectura.md) y [diagrama UML](docs/diagramas/UML.uxf) |
-| Comunicación entre equipos | [Protocolo HTTP](docs/Protocolo-partida-web.md) y [tecnologías REST](docs/Tecnologias-rest.md) |
-| Pantallas y controles | [Diseño de consola](docs/Interfaz.md) y [maquetas](docs/juego-guerra-propuestas.html) |
+| Qué debe hacer el juego | [Consigna](docs/consigna.md) y [reglas](docs/reglas-del-juego.md) |
+| Entregables y pendientes | [Plan de trabajo](docs/plan.md) |
+| Dominio y catálogo de personajes | [Arquitectura](docs/arquitectura.md) y [diagrama UML](docs/diagramas/uml.uxf) |
+| Comunicación entre equipos | [Protocolo HTTP](docs/protocolo-partida-web.md) y [tecnologías REST](docs/tecnologias-rest.md) |
+| Pantallas y controles | [Diseño de consola](docs/interfaz.md) y [maquetas](docs/diagramas/juego-guerra-propuestas.html) |
 | Validación y colaboración | [Plan de pruebas](docs/posibles-fallos.md) y [guía de colaboración](CONTRIBUTING.md) |
 
 ## Instalación de herramientas y dependencias
@@ -82,14 +82,14 @@ Set-Location "C:\ruta\a\proyecto-integrador-final"
 git submodule update --init --recursive
 ```
 
-Esto recupera DataBases y Utilidades en `Mis-Librerias/`, usando la versión registrada por el proyecto. Son bibliotecas del repositorio; no se instalan mediante NuGet.
+Esto recupera DataBases y Utilidades en `mis-librerias/`, usando la versión registrada por el proyecto. Son bibliotecas del repositorio; no se instalan mediante NuGet.
 
 ### 4. Restaurar los paquetes
 
-Desde la carpeta que contiene `Proyecto-Integrador-Final.sln`, ejecutá:
+Desde la carpeta que contiene `proyecto-integrador-final.sln`, ejecutá:
 
 ```powershell
-dotnet restore Proyecto-Integrador-Final.sln
+dotnet restore proyecto-integrador-final.sln
 ```
 
 Este comando descarga las versiones de los paquetes declaradas en los archivos de proyecto, incluyendo xUnit y las herramientas de pruebas. Necesitás conexión a Internet si todavía no están descargados. No hace falta instalar esos paquetes uno por uno. Consultá la [documentación de dotnet restore](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-restore) si falla la descarga.
@@ -99,14 +99,14 @@ Este comando descarga las versiones de los paquetes declaradas en los archivos d
 Ejecutá estos comandos uno después del otro:
 
 ```powershell
-dotnet build Proyecto-Integrador-Final.sln
-dotnet test Proyecto-Integrador-Final.sln
-dotnet run --project src/Proyecto-Integrador-Final
+dotnet build proyecto-integrador-final.sln
+dotnet test proyecto-integrador-final.sln
+dotnet run --project src/proyecto-integrador-final
 ```
 
 El programa de consola muestra `Hello, World!`. Las pruebas automatizadas cubren la base de código de dominio.
 
-Las dependencias y los comandos del futuro servidor están en [Tecnologías REST](docs/Tecnologias-rest.md#instalación-prevista-en-taller).
+Las dependencias y los comandos del futuro servidor están en [Tecnologías REST](docs/tecnologias-rest.md#instalación-prevista-en-taller).
 
 ## Autores
 

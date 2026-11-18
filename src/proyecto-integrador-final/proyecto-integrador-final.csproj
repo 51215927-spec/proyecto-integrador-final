@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Proyecto-Integrador-Final</AssemblyName>
     <RootNamespace>Proyecto_Integrador_Final</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -10,8 +11,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Proyecto-Integrador-Final.Tests" />
-    <ProjectReference Include="..\..\Mis-Librerias\DataBases\DataBases.csproj" />
-    <ProjectReference Include="..\..\Mis-Librerias\Utilidades\Utilidades.csproj" />
+    <ProjectReference Include="..\..\mis-librerias\DataBases\DataBases.csproj" />
+    <ProjectReference Include="..\..\mis-librerias\Utilidades\Utilidades.csproj" />
   </ItemGroup>
 
 </Project>
