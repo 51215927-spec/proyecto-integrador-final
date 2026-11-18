@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Proyecto-Integrador-Final.Tests</AssemblyName>
     <RootNamespace>Proyecto_Integrador_Final.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -22,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Proyecto-Integrador-Final\Proyecto-Integrador-Final.csproj" />
+    <ProjectReference Include="..\..\src\proyecto-integrador-final\proyecto-integrador-final.csproj" />
   </ItemGroup>
 
 </Project>

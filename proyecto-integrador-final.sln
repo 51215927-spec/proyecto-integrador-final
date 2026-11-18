@@ -4,13 +4,13 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B2B224F0-318A-4758-BF82-B6D35E030300}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proyecto-Integrador-Final", "src\Proyecto-Integrador-Final\Proyecto-Integrador-Final.csproj", "{99378C58-6CD6-46E8-8CC6-60717A460E03}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "proyecto-integrador-final", "src\proyecto-integrador-final\proyecto-integrador-final.csproj", "{99378C58-6CD6-46E8-8CC6-60717A460E03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proyecto-Integrador-Final.Tests", "test\Proyecto-Integrador-Final.Tests\Proyecto-Integrador-Final.Tests.csproj", "{1E878B74-31EA-66AE-1AAA-2AF1E8F22313}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "proyecto-integrador-final-tests", "test\proyecto-integrador-final-tests\proyecto-integrador-final-tests.csproj", "{1E878B74-31EA-66AE-1AAA-2AF1E8F22313}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBases", "Mis-Librerias\DataBases\DataBases.csproj", "{D1C6E30F-C6E0-F4AE-9557-069C12E46016}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBases", "mis-librerias\DataBases\DataBases.csproj", "{D1C6E30F-C6E0-F4AE-9557-069C12E46016}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilidades", "Mis-Librerias\Utilidades\Utilidades.csproj", "{FE47999A-5418-9876-9D47-93E5AF62DD6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilidades", "mis-librerias\Utilidades\Utilidades.csproj", "{FE47999A-5418-9876-9D47-93E5AF62DD6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
