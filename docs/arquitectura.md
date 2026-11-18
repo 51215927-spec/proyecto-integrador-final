@@ -8,6 +8,16 @@ Diseño de TI basado en las [reglas del juego](reglas-del-juego.md) y el [diagra
 - [Formato del catálogo](#formato-de-archivos-de-personajes--actividad-5)
 - [Presentación de consola](#presentación-de-consola)
 
+## Proyectos de la solución
+
+| Proyecto | Responsabilidad |
+|---|---|
+| `src/cliente` | Punto de entrada de consola. La interacción con la API está pendiente. |
+| `src/servidor` | Dominio y reglas de la partida. La API HTTP y la persistencia están pendientes. |
+| `src/subir-personajes` | Proyecto base para cargar personajes al catálogo. La importación está pendiente. |
+
+Las pruebas de dominio viven en `test/` y referencian `servidor`.
+
 ## Comunicación HTTP — actividad 6
 
 El usuario informó el 17 de noviembre de 2026 que se aprobó usar HTTP en la red local para la entrega. El [protocolo REST](protocolo-partida-web.md) detalla el flujo y las operaciones HTTP. El [plan](plan.md#actividad-6--comunicación-http-en-red-local) registra las decisiones y verificaciones pendientes.

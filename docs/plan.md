@@ -85,7 +85,7 @@ Etapas conservadas como referencia futura. No se implementarán en el alcance ac
 
 - [x] Referenciar DataBases y Utilidades desde la aplicación e incluir sus proyectos en la solución.
 - [ ] Implementar Personaje.Configurar con el formato definido en TI: el método existe, pero su cuerpo está vacío.
-- [ ] Preparar la carga inicial de personajes en el servidor de acuerdo con el contrato de importación que se defina.
+- [ ] Implementar en `subir-personajes` la carga inicial de personajes al catálogo del servidor según el contrato de importación que se defina.
 - [ ] Definir la ubicación del CSV de origen y en qué momento se importa al catálogo SQLite.
 - [ ] Cargar el catálogo obligatorio mediante Modelo.Cargar<Personaje>(exigirArchivo: true).
 - [ ] Obtener los personajes de la tabla cargada para construir el mazo inicial.
