@@ -12,7 +12,7 @@ La solución incluye el dominio del juego, el servidor REST y una interfaz de co
 
 ## Documentación
 
-- [Wiki del proyecto](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Home) con el libro, la consigna, la arquitectura y las guías.
+- [Wiki del proyecto](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Home) con la consigna, la arquitectura y las guías.
 - [Instalación y uso](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Instalacion-y-uso).
 - [Plan de trabajo](docs/plan.md).
 - [Colaboración con Git y GitHub](CONTRIBUTING.md).
