@@ -34,7 +34,7 @@ Valores en orden: Fuerza, Velocidad, Resistencia, Inteligencia, Energía y Habil
 
 ### Actividad 3 — Modelo de clases
 
-- [x] Definir responsabilidades, encapsulamiento, dependencias y relaciones del dominio en [Arquitectura](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura) y el [diagrama UML](https://raw.githubusercontent.com/wiki/51215927-spec/proyecto-integrador-final/diagramas/uml.uxf).
+- [x] Definir responsabilidades, encapsulamiento, dependencias y relaciones del dominio en [Arquitectura](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura) y el [diagrama UML incluido en los descargables](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Home).
 - [x] Modelar la carga del catálogo, la coordinación de la partida y la presentación de consola.
 
 La integración HTTP se documenta en la actividad 6.
