@@ -103,7 +103,6 @@ No des por terminado el desarrollo con pruebas fallidas ni reemplaces las prueba
 | `src/` | Código fuente de la aplicación. |
 | `test/` | Proyectos de pruebas automatizadas. |
 | `docs/` | Documentación del proyecto, consignas, arquitectura, planificación y guías. |
-| `mis-librerias/` | Submódulo independiente. La aplicación referencia DataBases y Utilidades. |
 | `CONTRIBUTING.md` | Guía de colaboración de este repositorio. |
 | `AGENTS.md` | Instrucciones de trabajo para agentes. |
 | `.gitignore` | Archivos y carpetas que Git debe ignorar. |
@@ -114,7 +113,7 @@ No des por terminado el desarrollo con pruebas fallidas ni reemplaces las prueba
 
 - Guardar el código de la aplicación dentro de `src/`, no directamente en la raíz del repositorio.
 - Guardar las pruebas dentro de `test/`.
-- Guardar la documentación del proyecto en `docs/`. En la raíz se mantienen `README.md`, `CONTRIBUTING.md` y `AGENTS.md`; las bibliotecas del submódulo conservan sus propios README.
+- Guardar la documentación del proyecto en `docs/`. En la raíz se mantienen `README.md`, `CONTRIBUTING.md` y `AGENTS.md`.
 - No subir carpetas generadas automáticamente, como `bin/` y `obj/`.
 - Si se agrega un nuevo proyecto de código, ubicarlo dentro de `src/` o `test/`, según corresponda.
 - Si se agrega documentación, incluir un enlace a ella en el `README.md`.

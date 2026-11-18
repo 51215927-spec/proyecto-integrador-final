@@ -17,7 +17,6 @@ La solución incluye el dominio del juego, el servidor REST y una interfaz de co
 | [`src/`](src/) | Proyectos `cliente`, `servidor` y `subir-personajes`. |
 | [`test/`](test/) | Proyecto de pruebas automatizadas. |
 | [`docs/`](docs/) | Requisitos, reglas, planificación y diseño. |
-| [`mis-librerias/`](mis-librerias/) | Submódulo de bibliotecas auxiliares independientes, con documentación propia. |
 
 ## Documentación
 
@@ -64,25 +63,16 @@ dotnet --list-runtimes
 
 Debe aparecer una versión de Git, un SDK `8.0.xxx` y los runtimes `Microsoft.NETCore.App 8.0.x` y `Microsoft.AspNetCore.App 8.0.x`. El proyecto mantiene `net8.0` por decisión del equipo. Los números de versión del SDK y del runtime son distintos; pueden coexistir con otras versiones.
 
-### 3. Descargar el proyecto con sus bibliotecas
+### 3. Descargar el proyecto
 
-En la nueva ventana de PowerShell, estos comandos crean una carpeta `proyectos` dentro de tu carpeta personal y descargan el repositorio allí. Si ya lo descargaste, usá la alternativa de abajo:
+En la nueva ventana de PowerShell, estos comandos crean una carpeta `proyectos` dentro de tu carpeta personal y descargan el repositorio allí. Si ya lo descargaste, abrí la carpeta de tu copia:
 
 ```powershell
 New-Item -ItemType Directory -Path "$env:USERPROFILE\proyectos" -Force | Out-Null
 Set-Location "$env:USERPROFILE\proyectos"
-git clone --recurse-submodules https://github.com/51215927-spec/proyecto-integrador-final.git
+git clone https://github.com/51215927-spec/proyecto-integrador-final.git
 Set-Location .\proyecto-integrador-final
 ```
-
-Si ya habías descargado el repositorio, ejecutá lo siguiente reemplazando la ruta del ejemplo por la ubicación real de tu copia:
-
-```powershell
-Set-Location "C:\ruta\a\proyecto-integrador-final"
-git submodule update --init --recursive
-```
-
-Esto recupera DataBases y Utilidades en `mis-librerias/`, usando la versión registrada por el proyecto. Son bibliotecas del repositorio; no se instalan mediante NuGet.
 
 ### 4. Restaurar los paquetes
 

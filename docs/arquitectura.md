@@ -495,7 +495,7 @@ Utilidades es un paquete externo que agrupa Funciones, DecoracionConsola, MyCons
 
 ## Datos y persistencia
 
-[DataBases](../mis-librerias/DataBases/README.md) documenta el formato del catálogo CSV de la actividad 5. El diseño REST usa SQLite mediante EF Core para conservar los personajes y las partidas en el servidor. Los clientes reciben las vistas de la API.
+La actividad 5 especifica el formato del catálogo CSV. El diseño REST usa SQLite mediante EF Core para conservar los personajes y las partidas en el servidor. Los clientes reciben las vistas de la API.
 
 El protocolo HTTP define la importación, el esquema, las copias para cada partida y las transacciones de elección. Las reglas de validación de atributos siguen en Personaje. Consultá [Tecnologías del protocolo REST](tecnologias-rest.md) y [Persistencia, concurrencia y catálogo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
 
@@ -526,7 +526,7 @@ Los seis atributos numéricos deben sumar exactamente 3000, incluir al menos uno
 
 ### Reglas del formato proporcionadas por DataBases
 
-El archivo usa el formato propio descrito en el [README de DataBases](../mis-librerias/DataBases/README.md#3-el-formato-del-archivo-csv): encabezado con los nombres de columnas, separador coma y un objeto por línea física. La biblioteca asocia las columnas por nombre al leer, por lo que admite reordenarlas. Al guardar utiliza UTF-8 sin BOM y escribe los textos entre comillas.
+El archivo CSV tiene esta estructura: encabezado con los nombres de columnas, separador coma y un objeto por línea física. La biblioteca asocia las columnas por nombre al leer, por lo que admite reordenarlas. Al guardar utiliza UTF-8 sin BOM y escribe los textos entre comillas.
 
 Dentro de los textos, las barras, comillas, saltos de línea, retornos de carro y tabulaciones se representan mediante los escapes de DataBases. Un ASCII con varios renglones puede almacenarse como texto en una sola línea física usando saltos escapados. El límite confirmado es de 25 líneas de contenido y 120 caracteres por línea; los saltos escapados permiten representar esas líneas dentro del registro. No se permiten caracteres de tabulación en el ASCII, aunque DataBases pueda representarlos mediante su escape. El usuario garantiza que el ASCII tendrá contenido y pidió no validar si está vacío; esta decisión no elimina el rechazo de null ya establecido en el constructor. La descripción se incorpora como texto en la columna descripcion y utiliza los mismos escapes de DataBases. Cuando no hay descripción, la celda se escribe como ""; la columna permanece en el encabezado y en cada registro.
 

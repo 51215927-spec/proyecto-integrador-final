@@ -83,7 +83,7 @@ El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado 
 
 ### Etapa 2 — Carga de personajes con Datos y DataBases
 
-- [x] Referenciar DataBases y Utilidades desde la aplicación e incluir sus proyectos en la solución.
+- [ ] Resolver la dependencia del código de importación respecto de DataBases tras retirar el submódulo.
 - [ ] Implementar Personaje.Configurar con el formato definido en TI: el método existe, pero su cuerpo está vacío.
 - [x] Definir el [contrato de alta individual de personajes](protocolo-partida-web.md#alta-individual-de-personajes).
 - [ ] Implementar el [alta por consola en `subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola). Pedir los datos con `PedirString` y `PedirInt`, enviarlos por la API y preguntar si se desea cargar otro personaje tras la confirmación.
