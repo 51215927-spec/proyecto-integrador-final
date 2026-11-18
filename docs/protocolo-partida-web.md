@@ -1,8 +1,9 @@
 # Protocolo de partida web — API REST
 
-HTTP en red local está aprobado para la entrega de la [actividad 6](consigna.md). Este documento especifica el diseño REST. La implementación y las comprobaciones en dos computadoras siguen pendientes.
+HTTP en red local está aprobado para la entrega de la [actividad 6](consigna.md). Este documento describe el contrato REST y la operación del servidor de la rama `feature/api-rest-partida`. Los clientes de consola y la comprobación en dos computadoras siguen pendientes.
 
 - [Despliegue y conexión](#organización-propuesta)
+- [Operación del servidor](#operación-del-servidor)
 - [Identidad y sesiones](#administración-e-identidad)
 - [Operaciones, datos y errores HTTP](#contrato-http)
 - [Estados y recuperación](#estados-presencia-y-recuperación)
@@ -13,7 +14,7 @@ HTTP en red local está aprobado para la entrega de la [actividad 6](consigna.md
 
 Dos clientes de consola se comunican con una API ASP.NET Core mediante HTTP y JSON. El servidor dirige el juego y es la única autoridad sobre cartas, turnos, resultados y marcadores. Cada cliente recibe exclusivamente la información que puede ver y devuelve las elecciones solicitadas.
 
-EF Core administrará la persistencia en una base SQLite local al servidor, tanto del catálogo permanente de personajes (nombre, descripción, ASCII y seis atributos) como de los datos de partidas. Los clientes acceden exclusivamente a la API. El esquema y las transacciones se definen en este documento.
+EF Core administra la persistencia en una base SQLite local al servidor, tanto del catálogo permanente de personajes (nombre, descripción, ASCII y seis atributos) como de los datos de partidas. Los clientes acceden exclusivamente a la API. El esquema y las transacciones se definen en este documento.
 
 En el primer equipo Windows se ejecutan el servidor y el cliente J1 como procesos separados. En el segundo se ejecuta el cliente J2. Se abre primero el servidor y después ambos clientes. Las versiones acordadas están en [Tecnologías REST](tecnologias-rest.md).
 
@@ -23,11 +24,34 @@ La API y el dominio tienen responsabilidades distintas: la API identifica al jug
 
 Para las pruebas en la red local se utiliza HTTP, puerto TCP 5000 y dirección del servidor configurable en cada cliente. Ejemplo ilustrativo: `http://192.168.1.20:5000`; la IP no está asignada ni comprobada. Cada cliente lee la dirección base de su archivo local de configuración al iniciar.
 
-Localhost identifica la computadora del propio proceso: sirve para probar clientes y servidor en el mismo equipo. El cliente de otra computadora debe usar la dirección de red del servidor. Este debe aceptar conexiones en una interfaz accesible desde esa red, no limitarse a localhost; no hay configuración implementada que lo acredite.
+Localhost identifica la computadora del propio proceso: sirve para probar clientes y servidor en el mismo equipo. El cliente de otra computadora debe usar la dirección de red del servidor. Este debe aceptar conexiones en una interfaz accesible desde esa red, no limitarse a localhost; El servidor escucha por defecto en `0.0.0.0:5000`. La opción `--urls` permite elegir otra dirección de escucha.
 
 Si el servidor no está disponible, el cliente informa y ofrece reintentar o salir. Conserva una elección pendiente y no la transforma en una operación nueva al reintentar. La confirmación de una elección cuya respuesta se perdió se resolverá mediante los contratos de operaciones e idempotencia de este documento; no se asume que falló por un error de conexión.
 
 HTTP no cifra el intercambio. Su elección se limita al entorno local de prueba acordado; no se define publicación en Internet. Primero se probará la comunicación para determinar si existe un bloqueo, sin asumir que sea necesario abrir el firewall. De requerirse una excepción en un equipo escolar, se coordinará con el responsable y se limitará al servicio, puerto y equipos participantes. No se requiere desactivar el firewall ni abrir puertos del router hacia Internet.
+
+## Operación del servidor
+
+El siguiente comando inicia el servidor desde la raíz del worktree de la API.
+
+```powershell
+dotnet run --project src/servidor/servidor.csproj
+```
+
+Por defecto el servidor crea `guerra.db` en el directorio de ejecución. Se puede cambiar con `ConnectionStrings__Juego`, por ejemplo `Data Source=C:/datos/guerra.db;Default Timeout=1`. Si se elige otro directorio, debe existir y permitir escritura al proceso.
+
+| Comando en la consola del servidor | Efecto |
+|---|---|
+| `crear` | Crea una partida y muestra su UUID y las dos credenciales. Entregar cada credencial solo al jugador de su plaza. |
+| `iniciar <idPartida>` | Inicia cuando ambas sesiones están presentes y hay al menos seis personajes activos. |
+| `cancelar <idPartida>` | Finaliza una partida pendiente o activa con motivo `cancelacion`. |
+| `cerrar-sesion <idPartida> <J1|J2>` | Libera la plaza para otra sesión y conserva su estado de juego. |
+| `reemplazar-credencial <idPartida> <J1|J2>` | Revoca el acceso anterior y muestra una credencial nueva para la misma plaza. |
+| `importar <rutaCsv>` | Lee un CSV DataBases y aplica el lote completo. La ruta puede ser absoluta o relativa al directorio de ejecución. |
+| `desactivar <idPersonaje>` | Excluye el personaje de futuros repartos de partidas nuevas. |
+| `ayuda` | Muestra los comandos disponibles. |
+
+Para iniciar una partida, importar el catálogo o cargar personajes mediante el alta HTTP. Ejecutar `crear`, incorporar a ambos jugadores y luego ejecutar `iniciar` con el UUID. El servidor conserva los datos de juego al reiniciar. Para seguir una partida, ambos jugadores se reincorporan con sus credenciales.
 
 ## Administración e identidad
 
@@ -49,7 +73,7 @@ Las rutas llevan el prefijo `/api/v1/partidas/{id}`. Los cuerpos son JSON UTF-8 
 | `PUT /participantes/me/abandono` | Sin cuerpo | `204`. Finaliza la partida y repetirlo para el mismo participante conserva el resultado |
 
 - **Presentación** contiene `idPartida`, `revision`, `fase`, `pausada`, `rolPropio`, nombres de ambas plazas cuando estén registradas, `numeroRonda`, `numeroCombate`, `marcador` por plaza, `mano`, `solicitud` y `resultados`. Los números de ronda y combate son nulos antes del juego. Cada elemento de mano contiene `idPersonaje`, `nombre`, `descripcion`, `ascii` y los seis atributos como mapa de nombres canónicos a puntajes.
-- **Solicitud** es nula si el jugador debe esperar o la partida está pausada o terminada. Si existe, contiene `idSolicitud`, `tipo` (`cartaYAtributo` o `carta`), `idsPersonajePermitidos` y `atributosPermitidos`, vacío para `carta`. Los atributos usan los nombres de la consigna. El rival desconoce carta y atributo hasta la resolución.
+- **Solicitud** es nula si el jugador debe esperar o la partida está pausada o terminada. Si existe, contiene `idSolicitud`, `tipo` (`cartaYAtributo` o `carta`), `idsPersonajePermitidos` y `atributosPermitidos`, vacío para `carta`. Los nombres publicados de los atributos son `Fuerza`, `Velocidad`, `Resistencia`, `Inteligencia`, `Energía` y `Habilidad`. Al recibir una elección se aceptan diferencias de mayúsculas, espacios exteriores y la variante `Energia`. Para `carta`, omitir `atributo` o enviarlo como `null`. El rival desconoce carta y atributo hasta la resolución.
 - **Recibo** contiene `idOperacion`, `idSolicitud` y `revisionConfirmada`. **Resultados** es el historial ordenado de combates ya resueltos, con ronda, combate, cartas reveladas por plaza, atributo, puntajes y ganadores de combate y ronda si corresponde. En fase final, la vista incluye `motivoFin` (`victoria`, `abandono` o `cancelacion`) y `ganador` cuando corresponde a una victoria por las reglas.
 
 | Estado | Código de error y tratamiento |
@@ -62,6 +86,8 @@ Las rutas llevan el prefijo `/api/v1/partidas/{id}`. Los cuerpos son JSON UTF-8 
 | 422 | `eleccionInvalida` por carta o atributo fuera de las opciones. Solicitar otra entrada |
 | 503 | `servicioNoDisponible`. Consultar recibo o reintentar con la misma operación |
 
+Una cabecera `X-Sesion` ausente, inválida o sin sesión vigente devuelve `409 sesionVencida`. Durante una incorporación, un nombre distinto del registrado devuelve `403 sinPermiso` cuando la plaza está disponible para esa instancia.
+
 El error incluye `codigo`, `mensaje` e `idSeguimiento`; sus campos excluyen elecciones ocultas y detalles internos.
 
 ## Estados, presencia y recuperación
@@ -71,7 +97,7 @@ El error incluye `codigo`, `mensaje` e `idSeguimiento`; sus campos excluyen elec
 3. Si continúa la ronda, alterna el elector. Al alcanzar dos combates ganados se suma la ronda, se recupera el mazo completo y se alterna la mano para el nuevo reparto. Al alcanzar quince rondas se pasa a `finalizada`, sin repartir de nuevo.
 4. Mientras la partida está activa, el cliente consulta la presentación cada segundo, incluso mientras el jugador elige, y renueva presencia cada cinco segundos. Las consultas y las renovaciones continúan durante la pausa. El plazo de sesión es de quince segundos desde la última renovación. Estos valores son iniciales para la prueba de red. Si falta alguna sesión durante el juego, se pausa la admisión de nuevas elecciones y se conserva la solicitud vigente. Las consultas siguen disponibles para el participante presente.
 5. Tras un reinicio del servidor se invalidan las sesiones activas y se restaura la partida desde SQLite. Los dos participantes se reincorporan con sus credenciales y la partida retoma su fase y mano guardadas. Cerrar un cliente o perder la conexión conserva la partida. El abandono explícito finaliza por abandono sin sumar una victoria de juego. El operador puede cancelar una partida detenida.
-6. La revisión aumenta al iniciar, aceptar cada elección o finalizar. Renovar presencia, pausar o reincorporarse conserva la revisión. El cliente aplica cada presentación completa y detecta la pausa o reanudación mediante `pausada` y `solicitud`, aunque `revision` sea la misma. Mientras la partida está pausada, conserva cualquier elección pendiente y espera a que la solicitud vuelva a estar disponible. Una operación pendiente conserva su identificador y puede retomarse tras la pausa si la solicitud y revisión siguen vigentes.
+6. La revisión aumenta al iniciar, aceptar cada elección, abandonar o cancelar. La elección que confirma la victoria y finaliza la partida produce un solo incremento. Renovar presencia, pausar o reincorporarse conserva la revisión. El cliente aplica cada presentación completa y detecta la pausa o reanudación mediante `pausada` y `solicitud`, aunque `revision` sea la misma. Mientras la partida está pausada, conserva cualquier elección pendiente y espera a que la solicitud vuelva a estar disponible. Una operación pendiente conserva su identificador y puede retomarse tras la pausa si la solicitud y revisión siguen vigentes.
 
 ## Persistencia, concurrencia y catálogo
 
@@ -86,9 +112,25 @@ El error incluye `codigo`, `mensaje` e `idSeguimiento`; sus campos excluyen elec
 | Solicitud | UUID, partida, participante, combate, tipo y estado vigente o consumida |
 | Operacion | Clave partida, participante e ID de operación, datos normalizados de la elección y recibo |
 
-El operador puede dar de alta personajes uno por uno mediante la API del servidor desde [`subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola). La ruta, el formato de la solicitud y las respuestas del alta están pendientes de definición.
+### Alta individual de personajes
 
-Para la carga por lotes, el operador carga o actualiza el catálogo mediante importación local del formato DataBases definido en la actividad 5. Se valida todo el lote antes de confirmar altas y cambios por ID en una sola transacción. Un error deja intacto el catálogo vigente y se informa el registro inválido. El operador retira personajes desactivándolos por ID. Las partidas iniciadas usan únicamente su copia, incluso después de reiniciar o desactivar un personaje. La conversión al CSV conserva el pendiente acordado en la actividad 5.
+`POST /api/v1/personajes` recibe JSON UTF-8 con `nombre`, `descripcion`, `ascii`, `fuerza`, `velocidad`, `resistencia`, `inteligencia`, `energia` y `habilidad`. La descripción admite texto vacío. Los puntajes son enteros y el servidor aplica las [validaciones de Personaje](arquitectura.md#formato-de-archivos-de-personajes--actividad-5). El ASCII admite hasta 25 líneas, con un máximo de 120 caracteres por línea y sin tabulaciones.
+
+El operador configura una credencial de catálogo en el entorno del servidor mediante `Catalogo__Credencial`. El cliente la envía en `Authorization: Bearer`. El alta devuelve `401 credencialInvalida` si falta la configuración o la credencial recibida no coincide. Las credenciales de las plazas se usan para la partida. El cliente [`subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola) se conectará a esta ruta.
+
+| Respuesta | Significado |
+|---|---|
+| `201` | Guarda el personaje activo y devuelve `{"idPersonaje":17}`. El ID es un entero positivo asignado por el servidor. |
+| `400 entradaInvalida` | Los campos, tipos o valores del personaje no son válidos. |
+| `401 credencialInvalida` | El alta requiere la credencial de catálogo. |
+| `409 operacionIncompatible` | Se agotó el rango para asignar un ID de alta automática. |
+| `503 servicioNoDisponible` | La base de datos no pudo confirmar el alta. |
+
+Cada solicitud de alta válida crea un personaje. La idempotencia por `idOperacion` se aplica a las elecciones de partida.
+
+### Importación local
+
+Para la carga por lotes, el operador carga o actualiza el catálogo mediante importación local del formato DataBases definido en la actividad 5. Se valida todo el lote antes de confirmar altas y cambios por ID en una sola transacción. Los IDs repetidos dentro del lote se rechazan. Una actualización por ID conserva la condición activa o inactiva registrada. Un error deja intacto el catálogo vigente y se informa el registro inválido. El operador puede corregir el archivo y volver a importar. El operador retira personajes desactivándolos por ID. Las partidas iniciadas usan únicamente su copia, incluso después de reiniciar o desactivar un personaje. La conversión al CSV conserva el pendiente acordado en la actividad 5.
 
 Cada escritura de juego usa una transacción SQLite con adquisición del turno de escritura antes de leer el estado para validar. Se comprueba primero si existe el recibo propio. Si los campos normalizados coinciden se devuelve el recibo guardado sin aplicar otra transición. Si difieren, se rechaza con `operacionIncompatible`. Para una operación nueva se comprueban presencia, fase, revisión, titular, solicitud, carta y atributo. Se confirman juntos estado, solicitud consumida, revisión y recibo. Si la escritura no está disponible se devuelve `503`; el cliente reutiliza el identificador original. Los recibos se conservan junto con la partida, incluso finalizada. Inicio y cancelación locales validan la transición desde la fase persistida antes de modificarla.
 

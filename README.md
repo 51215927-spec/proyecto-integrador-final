@@ -6,9 +6,9 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 ## Estado actual
 
-El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. La implementación de red y su validación entre dos computadoras corresponden al trabajo pendiente del [plan](docs/plan.md).
+El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. La rama `feature/api-rest-partida` implementa el servidor HTTP. Los clientes y la validación entre dos computadoras forman parte del [plan](docs/plan.md).
 
-La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, con pruebas de dominio en xUnit. La aplicación de consola todavía imprime `Hello, World!`.
+La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, con pruebas de dominio en xUnit. La aplicación de consola todavía imprime `Hello, World!`. La guía del servidor describe cómo iniciarlo y administrar el catálogo y las partidas en la rama de la API.
 
 ## Contenido del repositorio
 
@@ -26,7 +26,7 @@ La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, c
 | Qué debe hacer el juego | [Consigna](docs/consigna.md) y [reglas](docs/reglas-del-juego.md) |
 | Entregables y pendientes | [Plan de trabajo](docs/plan.md) |
 | Dominio y catálogo de personajes | [Arquitectura](docs/arquitectura.md) y [diagrama UML](docs/diagramas/uml.uxf) |
-| Comunicación entre equipos | [Protocolo HTTP](docs/protocolo-partida-web.md) y [tecnologías REST](docs/tecnologias-rest.md) |
+| Comunicación entre equipos | [Protocolo HTTP](docs/protocolo-partida-web.md), [operación del servidor](docs/protocolo-partida-web.md#operación-del-servidor) y [tecnologías REST](docs/tecnologias-rest.md) |
 | Pantallas y controles | [Diseño de consola](docs/interfaz.md) y [maquetas](docs/diagramas/juego-guerra-propuestas.html) |
 | Validación y colaboración | [Plan de pruebas](docs/posibles-fallos.md) y [guía de colaboración](CONTRIBUTING.md) |
 
