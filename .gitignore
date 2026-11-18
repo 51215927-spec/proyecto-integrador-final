@@ -1,3 +1,8 @@
 .vs/
 **/bin/
 **/obj/
+
+guerra.db
+guerra.db-shm
+guerra.db-wal
+guerra.db-journal
