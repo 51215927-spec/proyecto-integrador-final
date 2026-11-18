@@ -4,7 +4,7 @@ Este plan de TI especifica resultados esperados. La ejecución y el registro de 
 
 **Caja negra** comprueba resultados observables por consola, API o contrato público del dominio. **Caja blanca** inspecciona el estado persistido o controla un punto de fallo para comprobar efectos que la respuesta por sí sola no demuestra.
 
-Los resultados esperados se basan en la [consigna](consigna.md), las [reglas](reglas-del-juego.md), el [formato de personajes](arquitectura.md#reglas-del-formato-proporcionadas-por-databases) y el [contrato HTTP](protocolo-partida-web.md).
+Los resultados esperados se basan en la [consigna](consigna.md), las [reglas](reglas-del-juego.md), la [validación de personajes](arquitectura.md#datos-y-validación-de-personajes--actividad-5) y el [contrato HTTP](protocolo-partida-web.md).
 
 ## Personajes y catálogo
 
@@ -18,10 +18,10 @@ Los vectores siguen el orden Fuerza, Velocidad, Resistencia, Inteligencia, Energ
 | P04 · Caja negra | Construir con un solo valor fuera de rango. | (249, 750, 501, 500, 500, 500) y (250, 751, 499, 500, 500, 500) | Rechaza por el rango. Ambos vectores suman 3000 y cumplen los umbrales de especialización. |
 | P05 · Caja negra | Construir en los umbrales exactos de especialización. | (650, 350, 500, 500, 500, 500) | Acepta 650 como alto y 350 como bajo. |
 | P06 · Caja negra | Construir sin cumplir uno o ambos umbrales. | (649, 350, 501, 500, 500, 500), (650, 351, 499, 500, 500, 500) y (500, 500, 500, 500, 500, 500) | Rechaza, respectivamente, por falta de atributo alto, bajo o ambos. |
-| P07 · Caja negra | Importar un catálogo DataBases con un registro incompleto. | Encabezado válido y fila sin la última celda obligatoria | Informa el error de formato, identifica el registro y conserva el catálogo vigente sin aplicar altas parciales. |
+| P07 · Caja negra | Enviar un alta incompleta. | Solicitud sin un campo obligatorio | Responde con un error de entrada y conserva el catálogo vigente. |
 | P08 · Caja negra | Cargar el catálogo obligatorio. | Ruta inexistente y archivo ilegible, en ejecuciones separadas | Informa el error de carga y el juego no comienza con un catálogo parcial. |
-| P09 · Caja negra | Importar un registro válido con descripción vacía. | Celda de descripción `""`, ASCII válido y puntajes P01 | Acepta el registro y conserva la descripción como texto vacío. |
-| P10 · Caja negra | Importar un lote cuya última fila contiene un valor inválido. | Una fila válida seguida de un puntaje con valor `abc` | Informa un error de conversión y no aplica ninguna alta ni cambio del lote. |
+| P09 · Caja negra | Dar de alta un personaje con descripción vacía. | Descripción vacía, ASCII válido y puntajes P01 | Acepta el alta y conserva la descripción vacía. |
+| P10 · Caja negra | Ingresar un puntaje no numérico en la consola. | Escribir `abc` en un atributo | Vuelve a pedir el atributo antes de enviar el alta. |
 
 El catálogo de referencia se prepara sin duplicados, según la actividad 5. La ausencia de duplicados se verifica al preparar los datos de prueba.
 

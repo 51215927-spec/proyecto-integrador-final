@@ -137,8 +137,7 @@ _- RONDAS_PARA_GANAR: int = 15 {readOnly}_
 + GetDescripcion(): string
 + GetAscii(): string
 + GetAtributo(tipo: TipoAtributo): int
-- Validar(): void
-_+ Configurar(entidad: ConstructorEntidad&lt;Personaje&gt;): void_</panel_attributes>
+- Validar(): void</panel_attributes>
     <additional_attributes />
   </element>
   <element>
@@ -166,24 +165,6 @@ _+ Configurar(entidad: ConstructorEntidad&lt;Personaje&gt;): void_</panel_attrib
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>600</x>
-      <y>820</y>
-      <w>390</w>
-      <h>170</h>
-    </coordinates>
-    <panel_attributes>Datos
---
-_+ RUTA_PERSONAJES: string {readOnly}_
-_- tipoProceso: TipoProceso [0..1]_
---
-_+ Configurar(tipo: TipoProceso): void_
-_+ GetTipoProceso(): TipoProceso_
-_+ Iniciar(): void_</panel_attributes>
-    <additional_attributes />
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
       <x>1130</x>
       <y>780</y>
       <w>110</w>
@@ -201,52 +182,6 @@ TipoAtributo
     <additional_attributes />
   </element>
   <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>600</x>
-      <y>1150</y>
-      <w>340</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>DataBases::Modelo
---
-+ Cargar&lt;T&gt;(exigirArchivo: bool = false): Tabla&lt;T&gt;
-+ Tabla&lt;T&gt;(): Tabla&lt;T&gt;
-+ Guardar&lt;T&gt;(): void</panel_attributes>
-    <additional_attributes />
-  </element>
-  <element>
-    <id>UMLPackage</id>
-    <coordinates>
-      <x>40</x>
-      <y>1080</y>
-      <w>140</w>
-      <h>150</h>
-    </coordinates>
-    <panel_attributes>Utilidades
---
-Funciones
-DecoracionConsola
-MyConsole
-ColoresMenu
-FormatoMenu</panel_attributes>
-    <additional_attributes />
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>1130</x>
-      <y>1040</y>
-      <w>400</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;interface&gt;&gt;
-DataBases::IEntidad&lt;Personaje&gt;
---
-_+ Configurar(entidad: ConstructorEntidad&lt;Personaje&gt;): void_</panel_attributes>
-    <additional_attributes />
-  </element>
-  <element>
     <id>UMLNote</id>
     <coordinates>
       <x>760</x>
@@ -257,7 +192,7 @@ _+ Configurar(entidad: ConstructorEntidad&lt;Personaje&gt;): void_</panel_attrib
     <panel_attributes>Distribucion por procesos:
 Servidor: dominio y CoordinadorServidor.
 Clientes: CoordinadorCliente e InterfazConsola.
-DataBases: formato del catalogo CSV.
+Catalogo: alta manual mediante la API.
 Comunicacion HTTP: ver Arquitectura.
 Ampliacion propuesta: Comunicacion.uxf y Protocolo-partida.md.
 Sin implementacion; red Windows pendiente de verificar.</panel_attributes>
@@ -461,31 +396,6 @@ r2=- personajes</panel_attributes>
 m2=0..3
 r2=- cartas</panel_attributes>
     <additional_attributes>10.0;10.0;190.0;10.0;190.0;330.0;230.0;330.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>720</x>
-      <y>980</y>
-      <w>60</w>
-      <h>180</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-m2=0..1
-r2=_+ Modelo {readOnly}_
-propiedad estatica; escritura privada</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;130.0;50.0;130.0;50.0;170.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1300</x>
-      <y>710</y>
-      <w>210</w>
-      <h>340</h>
-    </coordinates>
-    <panel_attributes>lt=.&gt;&gt;</panel_attributes>
-    <additional_attributes>200.0;10.0;200.0;290.0;10.0;290.0;10.0;330.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>

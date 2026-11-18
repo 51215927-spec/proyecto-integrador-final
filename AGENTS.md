@@ -71,13 +71,6 @@ Al agregar documentación, enlazarla desde `README.md` cuando corresponda.
 
 Mantener la documentación y el código coherentes. Una modificación arquitectónica relevante debe reflejarse en la documentación correspondiente.
 
-### Bibliotecas auxiliares
-
-- `mis-librerias/` contiene bibliotecas auxiliares independientes, con sus propios proyectos y documentación.
-- Consultar los README de las bibliotecas antes de utilizarlas.
-- `mis-librerias/DataBases viejo/` contiene código anterior y no forma parte de la solución actual.
-- No asumir que el comportamiento de una biblioteca es conocido sin consultar su implementación o documentación pertinente.
-
 ### Estado del proyecto
 
 Consultar el [estado actual](README.md#estado-actual) y confirmar el código y las pruebas presentes en la rama de trabajo antes de atribuirles un comportamiento.

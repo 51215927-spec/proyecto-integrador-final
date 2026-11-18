@@ -45,12 +45,12 @@ La integración HTTP se documenta en la actividad 6.
 
 Para este proyecto se acordó documentar cada método por escrito, sin diagramas Nassi–Schneiderman.
 
-### Actividad 5 — Formato de los archivos de personajes
+### Actividad 5 — Datos y validación de personajes
 
-- [x] Definir el [formato de personajes](arquitectura.md#formato-de-archivos-de-personajes--actividad-5), incluidas sus columnas, validaciones y errores de lectura.
+- [x] Definir los [datos de los personajes](arquitectura.md#datos-y-validación-de-personajes--actividad-5) y sus validaciones.
 - [x] Incorporar ID, descripción y ASCII al catálogo y a los contratos de Personaje.
 
-La actividad está cerrada. Quedan postergados los ejemplos propios y la conversión al CSV. La presentación de la descripción se trata en [Interfaz](interfaz.md#decisiones-pendientes).
+La decisión vigente es cargar los personajes manualmente mediante `subir-personajes`. Esta decisión sustituye la lectura de archivos de personajes prevista en la consigna original. La presentación de la descripción se trata en [Interfaz](interfaz.md#decisiones-pendientes).
 
 ### Actividad 6 — Comunicación HTTP en red local
 
@@ -81,18 +81,12 @@ El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado 
 - [x] Implementar GetNombre, GetAscii y GetAtributo conservando el encapsulamiento. GetDescripcion permanece pendiente en la tarea de completar Personaje.
 - [ ] Agregar en `test/` pruebas de personajes válidos y de cada restricción de puntajes.
 
-### Etapa 2 — Carga de personajes con Datos y DataBases
+### Etapa 2 — Carga manual de personajes
 
-- [x] Referenciar DataBases y Utilidades desde la aplicación e incluir sus proyectos en la solución.
-- [ ] Implementar Personaje.Configurar con el formato definido en TI: el método existe, pero su cuerpo está vacío.
-- [x] Definir el [contrato de alta individual de personajes](protocolo-partida-web.md#alta-individual-de-personajes).
-- [ ] Implementar el [alta por consola en `subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola). Pedir los datos con `PedirString` y `PedirInt`, enviarlos por la API y preguntar si se desea cargar otro personaje tras la confirmación.
-- [x] Permitir que el operador indique la ruta del CSV al [importar el catálogo](protocolo-partida-web.md#importación-local).
-- [ ] Cargar el catálogo obligatorio mediante Modelo.Cargar<Personaje>(exigirArchivo: true).
-- [ ] Obtener los personajes de la tabla cargada para construir el mazo inicial.
-- [ ] Mantener la validación de puntajes en el constructor de Personaje y la interpretación del CSV en DataBases.
-- [ ] Aplicar la finalización prevista para archivos inexistentes, ilegibles o inválidos.
-- [ ] Probar la carga con los ejemplos de la actividad 5, sin reimplementar el lector CSV.
+- [x] Definir el [contrato de alta individual](protocolo-partida-web.md#alta-individual-de-personajes).
+- [x] Pedir los datos en `subir-personajes`, enviarlos por HTTP y permitir otra alta tras confirmar el ID.
+- [x] Verificar dos altas consecutivas y el rechazo con una credencial incorrecta.
+
 
 ### Etapa 3 — Jugador e interacción de consola
 
