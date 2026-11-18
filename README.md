@@ -14,7 +14,7 @@ La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, c
 
 | Ubicación | Contenido |
 |---|---|
-| [`src/`](src/) | Código de la aplicación de consola. |
+| [`src/`](src/) | Proyectos `cliente`, `servidor` y `subir-personajes`. |
 | [`test/`](test/) | Proyecto de pruebas automatizadas. |
 | [`docs/`](docs/) | Requisitos, reglas, planificación y diseño. |
 | [`mis-librerias/`](mis-librerias/) | Submódulo de bibliotecas auxiliares independientes, con documentación propia. |
@@ -101,7 +101,7 @@ Ejecutá estos comandos uno después del otro:
 ```powershell
 dotnet build proyecto-integrador-final.sln
 dotnet test proyecto-integrador-final.sln
-dotnet run --project src/proyecto-integrador-final
+dotnet run --project src/cliente
 ```
 
 El programa de consola muestra `Hello, World!`. Las pruebas automatizadas cubren la base de código de dominio.

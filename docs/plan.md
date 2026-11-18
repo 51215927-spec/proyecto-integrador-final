@@ -85,7 +85,8 @@ Etapas conservadas como referencia futura. No se implementarán en el alcance ac
 
 - [x] Referenciar DataBases y Utilidades desde la aplicación e incluir sus proyectos en la solución.
 - [ ] Implementar Personaje.Configurar con el formato definido en TI: el método existe, pero su cuerpo está vacío.
-- [ ] Preparar la carga inicial de personajes en el servidor de acuerdo con el contrato de importación que se defina.
+- [ ] Definir el contrato de la API del servidor para el alta individual de personajes.
+- [ ] Implementar el [alta por consola en `subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola). Pedir los datos con `PedirString` y `PedirInt`, enviarlos por la API y preguntar si se desea cargar otro personaje tras la confirmación.
 - [ ] Definir la ubicación del CSV de origen y en qué momento se importa al catálogo SQLite.
 - [ ] Cargar el catálogo obligatorio mediante Modelo.Cargar<Personaje>(exigirArchivo: true).
 - [ ] Obtener los personajes de la tabla cargada para construir el mazo inicial.
