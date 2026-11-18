@@ -12,11 +12,11 @@
 
 Antes de modificar el alcance, la arquitectura o la estructura del proyecto, leer:
 
-- `readme.md`
+- `README.md`
 - `docs/consigna.md`
 - `docs/plan.md`
 - `docs/arquitectura.md`
-- `contributing.md`
+- `CONTRIBUTING.md`
 
 La fuente principal de requisitos es `docs/consigna.md`. En caso de contradicción, no asumir qué interpretación es correcta: identificar el conflicto y solicitar una definición cuando sea necesario.
 
@@ -31,7 +31,7 @@ Aplicar el skill `desarrollo-documentado` durante el trabajo en este proyecto:
 
 ### Separación de cambios documentales
 
-- Modificar documentación únicamente desde ramas cuyo nombre comience con `docs/`. Esta regla incluye `AGENTS.md`, `readme.md`, `contributing.md` y los documentos de `docs/`.
+- Modificar documentación únicamente desde ramas cuyo nombre comience con `docs/`. Esta regla incluye `AGENTS.md`, `README.md`, `CONTRIBUTING.md` y los documentos de `docs/`.
 - No modificar `docs/plan.md` ni marcar o tachar tareas completadas desde ramas de código o pruebas.
 - Realizar las actualizaciones documentales derivadas de una tarea en una rama `docs/` independiente, con commits exclusivamente documentales. No mezclar código y documentación en un mismo commit o PR.
 - Si una tarea de código requiere actualizar el plan, la arquitectura u otro documento, informar el pendiente al usuario y realizar la actualización en la tarea documental separada.
@@ -67,7 +67,7 @@ Respetar la siguiente organización:
 - `test/`: proyectos y código de pruebas automatizadas.
 - `docs/`: documentación del proyecto.
 
-Al agregar documentación, enlazarla desde `readme.md` cuando corresponda.
+Al agregar documentación, enlazarla desde `README.md` cuando corresponda.
 
 Mantener la documentación y el código coherentes. Una modificación arquitectónica relevante debe reflejarse en la documentación correspondiente.
 
@@ -80,7 +80,7 @@ Mantener la documentación y el código coherentes. Una modificación arquitect�
 
 ### Estado del proyecto
 
-Consultar el [estado actual](readme.md#estado-actual) y confirmar el código y las pruebas presentes en la rama de trabajo antes de atribuirles un comportamiento.
+Consultar el [estado actual](README.md#estado-actual) y confirmar el código y las pruebas presentes en la rama de trabajo antes de atribuirles un comportamiento.
 
 ## 5. Gestión de Git y GitHub
 
@@ -186,7 +186,7 @@ Ejemplos:
 
 ### 5.4. Pull Requests y colaboración
 
-- Seguir las convenciones de colaboración descritas en `contributing.md`.
+- Seguir las convenciones de colaboración descritas en `CONTRIBUTING.md`.
 - No publicar ni integrar cambios sin la revisión prevista en ese documento.
 - No aprobar ni integrar un PR propio cuando se requiera la revisión de un compañero.
 - Mantener los PR acotados y describir claramente los cambios realizados.

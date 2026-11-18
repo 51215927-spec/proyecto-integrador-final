@@ -28,7 +28,7 @@ La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, c
 | Dominio y catálogo de personajes | [Arquitectura](docs/arquitectura.md) y [diagrama UML](docs/diagramas/uml.uxf) |
 | Comunicación entre equipos | [Protocolo HTTP](docs/protocolo-partida-web.md) y [tecnologías REST](docs/tecnologias-rest.md) |
 | Pantallas y controles | [Diseño de consola](docs/interfaz.md) y [maquetas](docs/diagramas/juego-guerra-propuestas.html) |
-| Validación y colaboración | [Plan de pruebas](docs/posibles-fallos.md) y [guía de colaboración](contributing.md) |
+| Validación y colaboración | [Plan de pruebas](docs/posibles-fallos.md) y [guía de colaboración](CONTRIBUTING.md) |
 
 ## Instalación de herramientas y dependencias
 

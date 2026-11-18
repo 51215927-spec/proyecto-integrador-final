@@ -4,7 +4,7 @@
 
 ### Preparar la copia
 
-Seguí la [instalación](readme.md#instalación-de-herramientas-y-dependencias) para obtener el repositorio y sus bibliotecas. Configurá tu nombre y correo si todavía no están definidos en Git.
+Seguí la [instalación](README.md#instalación-de-herramientas-y-dependencias) para obtener el repositorio y sus bibliotecas. Configurá tu nombre y correo si todavía no están definidos en Git.
 
 ```bash
 git config user.name "Tu nombre"
@@ -104,17 +104,17 @@ No des por terminado el desarrollo con pruebas fallidas ni reemplaces las prueba
 | `test/` | Proyectos de pruebas automatizadas. |
 | `docs/` | Documentación del proyecto, consignas, arquitectura, planificación y guías. |
 | `mis-librerias/` | Submódulo independiente. La aplicación referencia DataBases y Utilidades. |
-| `contributing.md` | Guía de colaboración de este repositorio. |
+| `CONTRIBUTING.md` | Guía de colaboración de este repositorio. |
 | `AGENTS.md` | Instrucciones de trabajo para agentes. |
 | `.gitignore` | Archivos y carpetas que Git debe ignorar. |
 | `.sln` | Solución de Visual Studio que agrupa los proyectos. |
-| `readme.md` | Presentación del proyecto e índice de documentación. |
+| `README.md` | Presentación del proyecto e índice de documentación. |
 
 ### Reglas para organizar los archivos
 
 - Guardar el código de la aplicación dentro de `src/`, no directamente en la raíz del repositorio.
 - Guardar las pruebas dentro de `test/`.
-- Guardar la documentación del proyecto en `docs/`. En la raíz se mantienen `readme.md`, `contributing.md` y `AGENTS.md`; las bibliotecas del submódulo conservan sus propios README.
+- Guardar la documentación del proyecto en `docs/`. En la raíz se mantienen `README.md`, `CONTRIBUTING.md` y `AGENTS.md`; las bibliotecas del submódulo conservan sus propios README.
 - No subir carpetas generadas automáticamente, como `bin/` y `obj/`.
 - Si se agrega un nuevo proyecto de código, ubicarlo dentro de `src/` o `test/`, según corresponda.
-- Si se agrega documentación, incluir un enlace a ella en el `readme.md`.
+- Si se agrega documentación, incluir un enlace a ella en el `README.md`.

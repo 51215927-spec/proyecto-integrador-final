@@ -148,4 +148,4 @@ El [diseño de la interfaz](interfaz.md) registra el inventario inicial preparad
 - [ ] Comprobar que estén disponibles todos los entregables de TI y el código fuente integrado.
 - [ ] Preparar la defensa de las decisiones de diseño, estrategias de personajes, clases y métodos de cada integrante.
 
-Los Analistas coordinan los entregables y comunican los cambios a Taller. El flujo de GitHub está en la [guía de colaboración](../contributing.md).
+Los Analistas coordinan los entregables y comunican los cambios a Taller. El flujo de GitHub está en la [guía de colaboración](../CONTRIBUTING.md).
