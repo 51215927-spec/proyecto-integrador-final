@@ -4,7 +4,7 @@
 
 ### Preparar la copia
 
-Seguí la [instalación](README.md#instalación-de-herramientas-y-dependencias) para obtener el repositorio y sus bibliotecas. Configurá tu nombre y correo si todavía no están definidos en Git.
+Seguí la [instalación](readme.md#instalación-de-herramientas-y-dependencias) para obtener el repositorio y sus bibliotecas. Configurá tu nombre y correo si todavía no están definidos en Git.
 
 ```bash
 git config user.name "Tu nombre"
@@ -41,7 +41,7 @@ Comprobá el diff, ejecutá las verificaciones pertinentes y agregá únicamente
 
 ```bash
 git diff
-git add docs/Plan.md
+git add docs/plan.md
 git diff --cached
 git commit -m "docs: actualizar plan de trabajo"
 git push -u origin HEAD
@@ -53,7 +53,7 @@ En GitHub, abrí **Pull requests → New pull request**. Seleccioná `main` como
 
 ### Sincronizar después de integrar
 
-Actualizá `main` con `git fetch origin` y `git merge --ff-only origin/main` desde esa rama. Incorporá el nuevo `main` mediante merge en las ramas vigentes y actualizá las que ya estén publicadas. Si aparecen conflictos, revisá ambos cambios y coordiná la resolución con el compañero. Aplicá el [procedimiento de worktrees](AGENTS.md#trabajo-en-paralelo-con-worktrees) para conservar el trabajo y limpiar las ramas de tareas cerradas.
+Actualizá `main` con `git fetch origin` y `git merge --ff-only origin/main` desde esa rama. Incorporá el nuevo `main` mediante merge en las ramas vigentes y actualizá las que ya estén publicadas. Si aparecen conflictos, revisá ambos cambios y coordiná la resolución con el compañero. Aplicá el [procedimiento de worktrees](agents.md#trabajo-en-paralelo-con-worktrees) para conservar el trabajo y limpiar las ramas de tareas cerradas.
 
 ## Desarrollo guiado por pruebas (TDD)
 
@@ -61,7 +61,7 @@ TDD (*Test-Driven Development*) consiste en escribir una prueba antes de impleme
 
 ### Preparar la estructura
 
-Respetá los contratos de [Arquitectura](docs/Arquitectura.md). Creá las clases, atributos, constructores y firmas necesarios antes de implementar la lógica. Los métodos pendientes deben lanzar `NotImplementedException`, sin lógica de producción. Esta estructura no reemplaza la escritura previa de pruebas para cada comportamiento.
+Respetá los contratos de [Arquitectura](docs/arquitectura.md). Creá las clases, atributos, constructores y firmas necesarios antes de implementar la lógica. Los métodos pendientes deben lanzar `NotImplementedException`, sin lógica de producción. Esta estructura no reemplaza la escritura previa de pruebas para cada comportamiento.
 
 ### Ciclo rojo–verde–refactorización
 
@@ -88,8 +88,8 @@ Agregá pruebas para aceptar esa distribución y rechazar, por separado, un tota
 - Antes de finalizar una tarea de desarrollo, compilá y ejecutá la suite completa:
 
 ```bash
-dotnet build Proyecto-Integrador-Final.sln
-dotnet test Proyecto-Integrador-Final.sln
+dotnet build proyecto-integrador-final.sln
+dotnet test proyecto-integrador-final.sln
 ```
 
 No des por terminado el desarrollo con pruebas fallidas ni reemplaces las pruebas automatizadas por comprobaciones manuales. En el Pull Request, indicá los comportamientos verificados y los resultados de los comandos para que un compañero pueda revisarlos.
@@ -103,18 +103,18 @@ No des por terminado el desarrollo con pruebas fallidas ni reemplaces las prueba
 | `src/` | Código fuente de la aplicación. |
 | `test/` | Proyectos de pruebas automatizadas. |
 | `docs/` | Documentación del proyecto, consignas, arquitectura, planificación y guías. |
-| `Mis-Librerias/` | Submódulo independiente. La aplicación referencia DataBases y Utilidades. |
-| `CONTRIBUTING.md` | Guía de colaboración de este repositorio. |
-| `AGENTS.md` | Instrucciones de trabajo para agentes. |
+| `mis-librerias/` | Submódulo independiente. La aplicación referencia DataBases y Utilidades. |
+| `contributing.md` | Guía de colaboración de este repositorio. |
+| `agents.md` | Instrucciones de trabajo para agentes. |
 | `.gitignore` | Archivos y carpetas que Git debe ignorar. |
 | `.sln` | Solución de Visual Studio que agrupa los proyectos. |
-| `README.md` | Presentación del proyecto e índice de documentación. |
+| `readme.md` | Presentación del proyecto e índice de documentación. |
 
 ### Reglas para organizar los archivos
 
 - Guardar el código de la aplicación dentro de `src/`, no directamente en la raíz del repositorio.
 - Guardar las pruebas dentro de `test/`.
-- Guardar la documentación del proyecto en `docs/`. En la raíz se mantienen `README.md`, `CONTRIBUTING.md` y `AGENTS.md`; las bibliotecas del submódulo conservan sus propios README.
+- Guardar la documentación del proyecto en `docs/`. En la raíz se mantienen `readme.md`, `contributing.md` y `agents.md`; las bibliotecas del submódulo conservan sus propios README.
 - No subir carpetas generadas automáticamente, como `bin/` y `obj/`.
 - Si se agrega un nuevo proyecto de código, ubicarlo dentro de `src/` o `test/`, según corresponda.
-- Si se agrega documentación, incluir un enlace a ella en el `README.md`.
+- Si se agrega documentación, incluir un enlace a ella en el `readme.md`.

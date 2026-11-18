@@ -12,18 +12,18 @@
 
 Antes de modificar el alcance, la arquitectura o la estructura del proyecto, leer:
 
-- `README.md`
-- `docs/Consigna.md`
-- `docs/Plan.md`
-- `docs/Arquitectura.md`
-- `CONTRIBUTING.md`
+- `readme.md`
+- `docs/consigna.md`
+- `docs/plan.md`
+- `docs/arquitectura.md`
+- `contributing.md`
 
-La fuente principal de requisitos es `docs/Consigna.md`. En caso de contradicción, no asumir qué interpretación es correcta: identificar el conflicto y solicitar una definición cuando sea necesario.
+La fuente principal de requisitos es `docs/consigna.md`. En caso de contradicción, no asumir qué interpretación es correcta: identificar el conflicto y solicitar una definición cuando sea necesario.
 
 Aplicar el skill `desarrollo-documentado` durante el trabajo en este proyecto:
 
 - Consultar el contexto y el estado real del repositorio antes de planificar.
-- Mantener `docs/Plan.md` y `docs/Arquitectura.md` actualizados según las decisiones vigentes, exclusivamente mediante tareas documentales en ramas `docs/`.
+- Mantener `docs/plan.md` y `docs/arquitectura.md` actualizados según las decisiones vigentes, exclusivamente mediante tareas documentales en ramas `docs/`.
 - Realizar cambios acotados, coherentes y revisables.
 - Verificar los aspectos afectados por cada modificación.
 - Registrar decisiones y resultados relevantes cuando aporten trazabilidad.
@@ -31,8 +31,8 @@ Aplicar el skill `desarrollo-documentado` durante el trabajo en este proyecto:
 
 ### Separación de cambios documentales
 
-- Modificar documentación únicamente desde ramas cuyo nombre comience con `docs/`. Esta regla incluye `AGENTS.md`, `README.md`, `CONTRIBUTING.md` y los documentos de `docs/`.
-- No modificar `docs/Plan.md` ni marcar o tachar tareas completadas desde ramas de código o pruebas.
+- Modificar documentación únicamente desde ramas cuyo nombre comience con `docs/`. Esta regla incluye `agents.md`, `readme.md`, `contributing.md` y los documentos de `docs/`.
+- No modificar `docs/plan.md` ni marcar o tachar tareas completadas desde ramas de código o pruebas.
 - Realizar las actualizaciones documentales derivadas de una tarea en una rama `docs/` independiente, con commits exclusivamente documentales. No mezclar código y documentación en un mismo commit o PR.
 - Si una tarea de código requiere actualizar el plan, la arquitectura u otro documento, informar el pendiente al usuario y realizar la actualización en la tarea documental separada.
 - Esta separación prevalece sobre las indicaciones generales de actualizar documentación al completar una tarea y busca evitar conflictos entre ramas.
@@ -67,20 +67,20 @@ Respetar la siguiente organización:
 - `test/`: proyectos y código de pruebas automatizadas.
 - `docs/`: documentación del proyecto.
 
-Al agregar documentación, enlazarla desde `README.md` cuando corresponda.
+Al agregar documentación, enlazarla desde `readme.md` cuando corresponda.
 
 Mantener la documentación y el código coherentes. Una modificación arquitectónica relevante debe reflejarse en la documentación correspondiente.
 
 ### Bibliotecas auxiliares
 
-- `Mis-Librerias/` contiene bibliotecas auxiliares independientes, con sus propios proyectos y documentación.
+- `mis-librerias/` contiene bibliotecas auxiliares independientes, con sus propios proyectos y documentación.
 - Consultar los README de las bibliotecas antes de utilizarlas.
-- `Mis-Librerias/DataBases viejo/` contiene código anterior y no forma parte de la solución actual.
+- `mis-librerias/DataBases viejo/` contiene código anterior y no forma parte de la solución actual.
 - No asumir que el comportamiento de una biblioteca es conocido sin consultar su implementación o documentación pertinente.
 
 ### Estado del proyecto
 
-Consultar el [estado actual](README.md#estado-actual) y confirmar el código y las pruebas presentes en la rama de trabajo antes de atribuirles un comportamiento.
+Consultar el [estado actual](readme.md#estado-actual) y confirmar el código y las pruebas presentes en la rama de trabajo antes de atribuirles un comportamiento.
 
 ## 5. Gestión de Git y GitHub
 
@@ -186,7 +186,7 @@ Ejemplos:
 
 ### 5.4. Pull Requests y colaboración
 
-- Seguir las convenciones de colaboración descritas en `CONTRIBUTING.md`.
+- Seguir las convenciones de colaboración descritas en `contributing.md`.
 - No publicar ni integrar cambios sin la revisión prevista en ese documento.
 - No aprobar ni integrar un PR propio cuando se requiera la revisión de un compañero.
 - Mantener los PR acotados y describir claramente los cambios realizados.
@@ -205,11 +205,11 @@ Utilizar los siguientes comandos para comprobar el estado de la solución:
 
 Compilación:
 
-`dotnet build Proyecto-Integrador-Final.sln`
+`dotnet build proyecto-integrador-final.sln`
 
 Pruebas automatizadas:
 
-`dotnet test Proyecto-Integrador-Final.sln`
+`dotnet test proyecto-integrador-final.sln`
 
 La compilación y las pruebas deben ejecutarse según corresponda al alcance y al tipo de modificación.
 

@@ -1,6 +1,6 @@
 # Arquitectura
 
-Diseño de TI basado en las [reglas del juego](Reglas-del-juego.md) y el [diagrama UML](diagramas/UML.uxf). El [plan](Plan.md) reúne los entregables y pendientes.
+Diseño de TI basado en las [reglas del juego](reglas-del-juego.md) y el [diagrama UML](diagramas/uml.uxf). El [plan](plan.md) reúne los entregables y pendientes.
 
 - [Componentes HTTP](#comunicación-http--actividad-6)
 - [Responsabilidades del dominio](#distribución-y-responsabilidades)
@@ -10,7 +10,7 @@ Diseño de TI basado en las [reglas del juego](Reglas-del-juego.md) y el [diagra
 
 ## Comunicación HTTP — actividad 6
 
-El usuario informó el 17 de noviembre de 2026 que se aprobó usar HTTP en la red local para la entrega. El [protocolo REST](Protocolo-partida-web.md) detalla el flujo y las operaciones HTTP. El [plan](Plan.md#actividad-6--comunicación-http-en-red-local) registra las decisiones y verificaciones pendientes.
+El usuario informó el 17 de noviembre de 2026 que se aprobó usar HTTP en la red local para la entrega. El [protocolo REST](protocolo-partida-web.md) detalla el flujo y las operaciones HTTP. El [plan](plan.md#actividad-6--comunicación-http-en-red-local) registra las decisiones y verificaciones pendientes.
 
 ```mermaid
 flowchart LR
@@ -22,9 +22,9 @@ flowchart LR
 
 Servidor y cliente J1 se ejecutan en el primer equipo Windows. El cliente J2 se ejecuta en el segundo. Cada cliente usa una dirección configurable y el puerto acordado es TCP 5000. El servidor inicia primero.
 
-La API identifica al participante, valida el intercambio y prepara una presentación por jugador. El dominio mantiene la partida y aplica las reglas. El servidor confirma el estado y los recibos de las operaciones mediante persistencia local. SQLite también conserva el catálogo permanente. Los DTO delimitan los datos visibles en cada cliente. El protocolo especifica la identidad, la concurrencia y la recuperación. Las comprobaciones de conectividad están en el [procedimiento de verificación](Protocolo-partida-web.md#verificación-en-dos-equipos).
+La API identifica al participante, valida el intercambio y prepara una presentación por jugador. El dominio mantiene la partida y aplica las reglas. El servidor confirma el estado y los recibos de las operaciones mediante persistencia local. SQLite también conserva el catálogo permanente. Los DTO delimitan los datos visibles en cada cliente. El protocolo especifica la identidad, la concurrencia y la recuperación. Las comprobaciones de conectividad están en el [procedimiento de verificación](protocolo-partida-web.md#verificación-en-dos-equipos).
 
-El [UML de dominio](diagramas/UML.uxf) y las firmas de la actividad 4 sirven como base de diseño. El modelo de integración web complementa el UML de dominio.
+El [UML de dominio](diagramas/uml.uxf) y las firmas de la actividad 4 sirven como base de diseño. El modelo de integración web complementa el UML de dominio.
 
 ```mermaid
 classDiagram
@@ -53,7 +53,7 @@ classDiagram
     }
 ```
 
-ClienteHttp conserva la sesión y la operación pendiente. ApiPartidas valida credenciales y mapea las respuestas HTTP. ServicioPartida aplica las transiciones mediante el dominio y proyecta la vista propia. RepositorioPartida carga y confirma el estado y el recibo en la misma transacción de escritura, según el [contrato HTTP](Protocolo-partida-web.md#contrato-http).
+ClienteHttp conserva la sesión y la operación pendiente. ApiPartidas valida credenciales y mapea las respuestas HTTP. ServicioPartida aplica las transiciones mediante el dominio y proyecta la vista propia. RepositorioPartida carga y confirma el estado y el recibo en la misma transacción de escritura, según el [contrato HTTP](protocolo-partida-web.md#contrato-http).
 
 ## Distribución y responsabilidades
 
@@ -387,13 +387,13 @@ Es público y estático. Devuelve el rol guardado por Configurar en el diseño b
 
 #### `Iniciar(): void`
 
-Es público y estático. Se llama una vez, después de Configurar. Registra las entidades con ConstructorModelo, construye el modelo y carga las tablas iniciales, exigiendo que exista el catálogo de personajes. Asigna Modelo cuando la preparación termina correctamente. Los errores de configuración, datos o archivos se propagan al punto de ejecución, que los informa y finaliza. La importación a SQLite usa el [contrato de la actividad 6](Protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
+Es público y estático. Se llama una vez, después de Configurar. Registra las entidades con ConstructorModelo, construye el modelo y carga las tablas iniciales, exigiendo que exista el catálogo de personajes. Asigna Modelo cuando la preparación termina correctamente. Los errores de configuración, datos o archivos se propagan al punto de ejecución, que los informa y finaliza. La importación a SQLite usa el [contrato de la actividad 6](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
 
 ### InterfazConsola
 
-El [diseño de la interfaz](Interfaz.md) reúne los estados de presentación, las limitaciones de consola y las decisiones pendientes.
+El [diseño de la interfaz](interfaz.md) reúne los estados de presentación, las limitaciones de consola y las decisiones pendientes.
 
-Presentación de los clientes, sin decidir ganadores ni modificar marcadores. Todos sus métodos son públicos y de instancia, como indica el UML. Compone pantallas propias según el [diseño de la interfaz](Interfaz.md#composición-propia-y-uso-de-utilidades). El flujo del cliente controla qué información puede presentarse.
+Presentación de los clientes, sin decidir ganadores ni modificar marcadores. Todos sus métodos son públicos y de instancia, como indica el UML. Compone pantallas propias según el [diseño de la interfaz](interfaz.md#composición-propia-y-uso-de-utilidades). El flujo del cliente controla qué información puede presentarse.
 
 #### `MostrarMano(jugador: Jugador): void`
 
@@ -463,9 +463,9 @@ Utilidades es un paquete externo que agrupa Funciones, DecoracionConsola, MyCons
 
 ## Datos y persistencia
 
-[DataBases](../Mis-Librerias/DataBases/README.md) documenta el formato del catálogo CSV de la actividad 5. El diseño REST usa SQLite mediante EF Core para conservar los personajes y las partidas en el servidor. Los clientes reciben las vistas de la API.
+[DataBases](../mis-librerias/DataBases/README.md) documenta el formato del catálogo CSV de la actividad 5. El diseño REST usa SQLite mediante EF Core para conservar los personajes y las partidas en el servidor. Los clientes reciben las vistas de la API.
 
-El protocolo HTTP define la importación, el esquema, las copias para cada partida y las transacciones de elección. Las reglas de validación de atributos siguen en Personaje. Consultá [Tecnologías del protocolo REST](Tecnologias-rest.md) y [Persistencia, concurrencia y catálogo](Protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
+El protocolo HTTP define la importación, el esquema, las copias para cada partida y las transacciones de elección. Las reglas de validación de atributos siguen en Personaje. Consultá [Tecnologías del protocolo REST](tecnologias-rest.md) y [Persistencia, concurrencia y catálogo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
 
 ## Formato de archivos de personajes — actividad 5
 
@@ -494,7 +494,7 @@ Los seis atributos numéricos deben sumar exactamente 3000, incluir al menos uno
 
 ### Reglas del formato proporcionadas por DataBases
 
-El archivo usa el formato propio descrito en el [README de DataBases](../Mis-Librerias/DataBases/README.md#3-el-formato-del-archivo-csv): encabezado con los nombres de columnas, separador coma y un objeto por línea física. La biblioteca asocia las columnas por nombre al leer, por lo que admite reordenarlas. Al guardar utiliza UTF-8 sin BOM y escribe los textos entre comillas.
+El archivo usa el formato propio descrito en el [README de DataBases](../mis-librerias/DataBases/README.md#3-el-formato-del-archivo-csv): encabezado con los nombres de columnas, separador coma y un objeto por línea física. La biblioteca asocia las columnas por nombre al leer, por lo que admite reordenarlas. Al guardar utiliza UTF-8 sin BOM y escribe los textos entre comillas.
 
 Dentro de los textos, las barras, comillas, saltos de línea, retornos de carro y tabulaciones se representan mediante los escapes de DataBases. Un ASCII con varios renglones puede almacenarse como texto en una sola línea física usando saltos escapados. El límite confirmado es de 25 líneas de contenido y 120 caracteres por línea; los saltos escapados permiten representar esas líneas dentro del registro. No se permiten caracteres de tabulación en el ASCII, aunque DataBases pueda representarlos mediante su escape. El usuario garantiza que el ASCII tendrá contenido y pidió no validar si está vacío; esta decisión no elimina el rechazo de null ya establecido en el constructor. La descripción se incorpora como texto en la columna descripcion y utiliza los mismos escapes de DataBases. Cuando no hay descripción, la celda se escribe como ""; la columna permanece en el encabezado y en cada registro.
 
@@ -510,8 +510,8 @@ La conversión de la información de los personajes al catálogo CSV se definir�
 
 ### Importación y presentación
 
-La conversión al CSV está postergada. La ubicación del archivo se registra en el [plan](Plan.md#archivos) y la importación está definida en el [protocolo](Protocolo-partida-web.md#persistencia-concurrencia-y-catálogo). La presentación de la descripción sigue abierta en el [diseño de interfaz](Interfaz.md#decisiones-pendientes).
+La conversión al CSV está postergada. La ubicación del archivo se registra en el [plan](plan.md#actividad-6--comunicación-http-en-red-local) y la importación está definida en el [protocolo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo). La presentación de la descripción sigue abierta en el [diseño de interfaz](interfaz.md#decisiones-pendientes).
 
 ## Presentación de consola
 
-La [especificación de interfaz](Interfaz.md) describe las pantallas, sus maquetas y el uso puntual de Utilidades. La validación de opciones de entrada pertenece al cliente. Las consultas, esperas y reintentos siguen el [protocolo HTTP](Protocolo-partida-web.md#estados-presencia-y-recuperación).
+La [especificación de interfaz](interfaz.md) describe las pantallas, sus maquetas y el uso puntual de Utilidades. La validación de opciones de entrada pertenece al cliente. Las consultas, esperas y reintentos siguen el [protocolo HTTP](protocolo-partida-web.md#estados-presencia-y-recuperación).

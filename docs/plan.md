@@ -1,6 +1,6 @@
 # Plan de trabajo — Juego Guerra
 
-Plan basado en la [consigna](Consigna.md). Las casillas registran entregables de diseño en TI y trabajo futuro en Taller.
+Plan basado en la [consigna](consigna.md). Las casillas registran entregables de diseño en TI y trabajo futuro en Taller.
 
 | Actividades de TI | Estado |
 |---|---|
@@ -27,36 +27,36 @@ Valores en orden: Fuerza, Velocidad, Resistencia, Inteligencia, Energía y Habil
 
 ### Actividad 2 — Relevamiento de requerimientos
 
-- [x] Documentar participantes, reglas de combate, ronda y partida en [Reglas del juego](Reglas-del-juego.md).
+- [x] Documentar participantes, reglas de combate, ronda y partida en [Reglas del juego](reglas-del-juego.md).
 - [x] Definir catálogo, mazo, reparto, duplicados y mínimo de cartas.
 - [x] Especificar datos de ejecución, validaciones, errores y condiciones técnicas.
 - [x] Preparar el texto para que el usuario lo copie al documento de entrega.
 
 ### Actividad 3 — Modelo de clases
 
-- [x] Definir responsabilidades, encapsulamiento, dependencias y relaciones del dominio en [Arquitectura](Arquitectura.md) y el [diagrama UML](diagramas/UML.uxf).
+- [x] Definir responsabilidades, encapsulamiento, dependencias y relaciones del dominio en [Arquitectura](arquitectura.md) y el [diagrama UML](diagramas/uml.uxf).
 - [x] Modelar la carga del catálogo, la coordinación de la partida y la presentación de consola.
 
 La integración HTTP se documenta en la actividad 6.
 
 ### Actividad 4 — Especificación de métodos
 
-- [x] Especificar las firmas, precondiciones, efectos, retornos, validaciones y errores de cada operación en [Arquitectura](Arquitectura.md#especificación-de-clases-y-métodos--actividad-4).
+- [x] Especificar las firmas, precondiciones, efectos, retornos, validaciones y errores de cada operación en [Arquitectura](arquitectura.md#especificación-de-clases-y-métodos--actividad-4).
 
 Para este proyecto se acordó documentar cada método por escrito, sin diagramas Nassi–Schneiderman.
 
 ### Actividad 5 — Formato de los archivos de personajes
 
-- [x] Definir el [formato de personajes](Arquitectura.md#formato-de-archivos-de-personajes--actividad-5), incluidas sus columnas, validaciones y errores de lectura.
+- [x] Definir el [formato de personajes](arquitectura.md#formato-de-archivos-de-personajes--actividad-5), incluidas sus columnas, validaciones y errores de lectura.
 - [x] Incorporar ID, descripción y ASCII al catálogo y a los contratos de Personaje.
 
-La actividad está cerrada. Quedan postergados los ejemplos propios y la conversión al CSV. La presentación de la descripción se trata en [Interfaz](Interfaz.md#decisiones-pendientes).
+La actividad está cerrada. Quedan postergados los ejemplos propios y la conversión al CSV. La presentación de la descripción se trata en [Interfaz](interfaz.md#decisiones-pendientes).
 
 ### Actividad 6 — Comunicación HTTP en red local
 
-**En curso.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](Protocolo-partida-web.md), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
+**En curso.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](protocolo-partida-web.md), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
 
-- [x] Documentar tecnologías, despliegue, sesiones y reincorporación en el [protocolo](Protocolo-partida-web.md).
+- [x] Documentar tecnologías, despliegue, sesiones y reincorporación en el [protocolo](protocolo-partida-web.md).
 - [x] Especificar rutas, DTO, errores, estados, presencia, pausa y abandono.
 - [x] Diseñar el control de revisión de estado, la idempotencia y la persistencia transaccional.
 - [x] Documentar el modelo de integración y vincular los casos de prueba HTTP.
@@ -95,11 +95,11 @@ Etapas conservadas como referencia futura. No se implementarán en el alcance ac
 
 ### Etapa 3 — Jugador e interacción de consola
 
-El [diseño de la interfaz](Interfaz.md) registra el inventario inicial preparado en TI y las decisiones pendientes antes de implementar la interacción.
+El [diseño de la interfaz](interfaz.md) registra el inventario inicial preparado en TI y las decisiones pendientes antes de implementar la interacción.
 
 - [ ] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
 - [ ] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
-- [ ] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](Interfaz.md), con reutilización puntual de Utilidades.
+- [ ] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](interfaz.md), con reutilización puntual de Utilidades.
 - [ ] Validar la carta elegida contra la mano disponible y el atributo contra las opciones del combate.
 - [ ] Presentar mano, marcador, esperas, resultados y errores según los contratos de TI.
 - [ ] Comprobar que la interfaz no revele las elecciones rivales hasta completar ambas elecciones.
@@ -139,8 +139,8 @@ El [diseño de la interfaz](Interfaz.md) registra el inventario inicial preparad
 - [ ] Integrar la carga de personajes, mazo, jugadores, reglas, consola y comunicación en la aplicación de consola.
 - [ ] Comprobar que las firmas y responsabilidades implementadas coincidan con los contratos de TI.
 - [ ] Resolver con los Analistas las diferencias detectadas y actualizar la documentación afectada.
-- [ ] Ejecutar `dotnet build Proyecto-Integrador-Final.sln` y corregir los errores de compilación.
-- [ ] Ejecutar `dotnet test Proyecto-Integrador-Final.sln` y corregir los fallos de las pruebas.
+- [ ] Ejecutar `dotnet build proyecto-integrador-final.sln` y corregir los errores de compilación.
+- [ ] Ejecutar `dotnet test proyecto-integrador-final.sln` y corregir los fallos de las pruebas.
 - [ ] Iniciar la aplicación en ambas computadoras con los personajes entregados por los alumnos.
 - [ ] Completar una partida en red local y comprobar su resultado en ambas computadoras.
 - [ ] Registrar los resultados del plan de pruebas y resolver los fallos pendientes.
@@ -148,4 +148,4 @@ El [diseño de la interfaz](Interfaz.md) registra el inventario inicial preparad
 - [ ] Comprobar que estén disponibles todos los entregables de TI y el código fuente integrado.
 - [ ] Preparar la defensa de las decisiones de diseño, estrategias de personajes, clases y métodos de cada integrante.
 
-Los Analistas coordinan los entregables y comunican los cambios a Taller. El flujo de GitHub está en la [guía de colaboración](../CONTRIBUTING.md).
+Los Analistas coordinan los entregables y comunican los cambios a Taller. El flujo de GitHub está en la [guía de colaboración](../contributing.md).
