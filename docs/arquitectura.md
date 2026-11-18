@@ -415,11 +415,11 @@ Muestra las cartas disponibles y sus atributos. Usa fichas en paralelo cuando ca
 
 #### `PedirCarta(mano: IReadOnlyList<CartaVisible>): CartaVisible`
 
-Copia la lista de opciones, la enumera y devuelve la carta seleccionada con su identificador. El flujo debe proporcionar solo las cartas de la mano que permite la solicitud vigente. La elección conserva la mano y el flujo registra la jugada ante el servidor. Una lista vacía provoca `InvalidOperationException`.
+Copia la lista de opciones, marca la opción activa y devuelve la carta seleccionada con su identificador. El flujo debe proporcionar solo las cartas de la mano que permite la solicitud vigente. La elección conserva la mano y el flujo registra la jugada ante el servidor. Una lista vacía provoca `InvalidOperationException`.
 
-#### `PedirAtributo(permitidos: IReadOnlyList<string>? = null): string`
+#### `PedirAtributo(permitidos: IReadOnlyList<string>? = null, mesa: MesaVisible? = null): string`
 
-Muestra los atributos permitidos por la solicitud y devuelve el nombre de la opción elegida. Si se omite la lista, ofrece los seis atributos de la consigna. Una lista explícitamente vacía provoca `InvalidOperationException`. Los dos métodos de selección reintentan las entradas inválidas y señalan el fin de entrada mediante `EndOfStreamException`.
+Muestra los atributos permitidos por la solicitud y devuelve el nombre de la opción elegida. Si se omite la lista, ofrece los seis atributos de la consigna. Una lista explícitamente vacía provoca `InvalidOperationException`. Si se proporciona la mesa, la vista conserva el encabezado del combate. Los métodos de selección ignoran las teclas sin acción y señalan el fin de entrada mediante `EndOfStreamException`.
 
 #### `MostrarMarcador(j1: JugadorVisible, j2: JugadorVisible, ronda: int): void`
 

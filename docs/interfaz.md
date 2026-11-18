@@ -51,13 +51,13 @@ Las siguientes respuestas son propuestas de diseño.
 
 ## Controles de la implementación
 
-Se elige una opción por solicitud con números y Enter. Se admiten flujos de entrada por líneas, incluso redirigidos. Una línea vacía vuelve a pedir la opción. El fin de entrada termina la solicitud mediante `EndOfStreamException`. En una salida redirigida, o si el ancho disponible resulta insuficiente o desconocido, las fichas se presentan en bloques verticales. La consola conserva los resultados impresos junto a la siguiente acción.
+La consola limpia la pantalla al cambiar de vista en una terminal. Para elegir, mové el foco con las flechas, WASD o HJKL y pulsá Enter. La opción activa se marca con `>` y un resaltado si hay color disponible. El foco se detiene en los extremos de la lista. Con entrada redirigida, enviá una letra de movimiento por línea y una línea vacía para confirmar. El fin de entrada termina la solicitud mediante `EndOfStreamException`. La salida redirigida apila las fichas y conserva el historial de pantallas.
 
 El flujo cliente debe comprobar que la solicitud siga vigente antes de enviar una opción. También debe gestionar el cambio de estado durante la escritura, la entrada sobrante entre solicitudes, las confirmaciones, la recuperación y la salida.
 
 ## Decisiones pendientes
 
-- Decidir si también se admitirán flechas y cómo se descarta la entrada interactiva sobrante entre solicitudes.
+- Definir cómo se descarta la entrada interactiva sobrante entre solicitudes.
 - Definir cuándo mostrar el arte y la descripción. La propuesta es consultarlos en una ficha separada.
 - Definir cómo se presentan la incorporación, el rol asignado, la recuperación y la confirmación de salida. Decidir si el diseño visual abarca la consola del servidor.
 
@@ -92,7 +92,7 @@ En la [maqueta elegida](diagramas/juego-guerra-propuestas.html#duelo-paralelo), 
 
 ## Composición con Spectre.Console
 
-El cliente conserva la composición de las doce pantallas elegidas y usa [Spectre.Console](https://spectreconsole.net/console/) para renderizar las barras de estado, los paneles, las fichas y la planilla final sobre .NET 8. Aplica los acentos verdes de las maquetas cuando la terminal admite color. En pantallas angostas o con salida redirigida, apila los paneles y conserva el orden de lectura. El menú usa números y Enter para que la selección coincida con la numeración visible.
+El cliente conserva la composición de las doce pantallas elegidas y usa [Spectre.Console](https://spectreconsole.net/console/) para renderizar las barras de estado, los paneles, las fichas y la planilla final sobre .NET 8. Aplica los acentos verdes de las maquetas cuando la terminal admite color. En pantallas angostas o con salida redirigida, apila los paneles y conserva el orden de lectura. El menú resalta la opción activa y actualiza la vista al mover el foco.
 
 ## Demostración local
 
