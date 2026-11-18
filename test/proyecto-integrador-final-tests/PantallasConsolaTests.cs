@@ -37,7 +37,7 @@ public class PantallasConsolaTests
     public void Apertura_UsaMesaConFichasEncabezadoYPie(int ancho, bool paralelas)
     {
         using var texto = new StringWriter();
-        var interfaz = new InterfazConsola(new StringReader("2"), texto, ancho);
+        var interfaz = new InterfazConsola(new StringReader("d\n\n"), texto, ancho);
 
         Assert.Same(Cartas[1], interfaz.PedirCarta(Mesa, Cartas, abre: true));
 
@@ -55,7 +55,7 @@ public class PantallasConsolaTests
     public void EsperaYRespuesta_MuestranManoPropiaSinPedirAtributo()
     {
         using var texto = new StringWriter();
-        var interfaz = new InterfazConsola(new StringReader("1"), texto, 100);
+        var interfaz = new InterfazConsola(new StringReader("\n"), texto, 100);
 
         interfaz.MostrarEsperaRival(Mesa, "Mateo", Cartas);
         Assert.Same(Cartas[0], interfaz.PedirCarta(Mesa, Cartas, abre: false));

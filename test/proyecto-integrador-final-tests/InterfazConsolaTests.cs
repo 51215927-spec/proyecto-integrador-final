@@ -14,15 +14,15 @@ public class InterfazConsolaTests
     [Fact]
     public void PedirCarta_ReintentaEntradasInvalidasYConservaLaMano()
     {
-        using var entrada = new StringReader("\ntexto\n0\n3\n999999999999999999\n2\n1\n");
+        using var entrada = new StringReader("2\ntexto\nl\n\nsobra\n");
         using var salida = new StringWriter();
         var interfaz = new InterfazConsola(entrada, salida, ancho: 30);
         CartaVisible[] mano = [Carta(15, "Maga"), Carta(30, "Arquero")];
 
         Assert.Same(mano[1], interfaz.PedirCarta(mano));
         Assert.Equal(2, mano.Length);
-        Assert.Equal("1", entrada.ReadLine());
-        Assert.Contains("Elegí un número entre 1 y 2", salida.ToString());
+        Assert.Equal("sobra", entrada.ReadLine());
+        Assert.Contains("> Arquero", salida.ToString());
         Assert.Contains("Inteligencia", salida.ToString());
     }
 
@@ -39,15 +39,15 @@ public class InterfazConsolaTests
     }
 
     [Theory]
-    [InlineData("1", "Fuerza")]
-    [InlineData("2", "Velocidad")]
-    [InlineData("3", "Resistencia")]
-    [InlineData("4", "Inteligencia")]
-    [InlineData("5", "Energía")]
-    [InlineData("6", "Habilidad")]
-    public void PedirAtributo_OfreceLosSeisAtributos(string numero, string esperado)
+    [InlineData(0, "Fuerza")]
+    [InlineData(1, "Velocidad")]
+    [InlineData(2, "Resistencia")]
+    [InlineData(3, "Inteligencia")]
+    [InlineData(4, "Energía")]
+    [InlineData(5, "Habilidad")]
+    public void PedirAtributo_OfreceLosSeisAtributos(int pasos, string esperado)
     {
-        var interfaz = new InterfazConsola(new StringReader($"7\n{numero}"), TextWriter.Null);
+        var interfaz = new InterfazConsola(new StringReader(string.Concat(Enumerable.Repeat("s\n", pasos)) + "\n"), TextWriter.Null);
 
         Assert.Equal(esperado, interfaz.PedirAtributo());
     }
@@ -55,7 +55,7 @@ public class InterfazConsolaTests
     [Fact]
     public void PedirAtributo_RespetaLasOpcionesDeLaSolicitud()
     {
-        var interfaz = new InterfazConsola(new StringReader("2\n1"), TextWriter.Null);
+        var interfaz = new InterfazConsola(new StringReader("2\n\n"), TextWriter.Null);
 
         Assert.Equal("Habilidad", interfaz.PedirAtributo(["Habilidad"]));
     }
@@ -63,7 +63,7 @@ public class InterfazConsolaTests
     [Fact]
     public void FinDeEntrada_TerminaLaSolicitud()
     {
-        var interfaz = new InterfazConsola(new StringReader("\n"), TextWriter.Null);
+        var interfaz = new InterfazConsola(new StringReader("s\n"), TextWriter.Null);
 
         Assert.Throws<EndOfStreamException>(() => interfaz.PedirCarta([Carta(1, "Maga")]));
         Assert.Throws<EndOfStreamException>(() => interfaz.PedirAtributo());

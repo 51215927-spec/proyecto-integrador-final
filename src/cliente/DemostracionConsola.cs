@@ -44,16 +44,18 @@ internal sealed class DemostracionConsola(InterfazConsola interfaz, TextReader e
             }
 
             CartaVisible propia = interfaz.PedirCarta(mesa, mano, abre);
-            string atributo = abre ? interfaz.PedirAtributo() : "Inteligencia";
+            string atributo = abre ? interfaz.PedirAtributo(mesa: mesa) : "Inteligencia";
             CartaVisible contraria = manoRival[mesa.Combate - 1];
 
             interfaz.MostrarEnvio(mesa, EstadoEnvio.Enviando);
+            Continuar();
             if (mesa.Combate == 1)
             {
                 interfaz.MostrarEnvio(mesa, EstadoEnvio.Pendiente);
                 Continuar();
             }
             interfaz.MostrarEnvio(mesa, EstadoEnvio.Recibido);
+            Continuar();
 
             int valorPropio = propia.Atributos[atributo];
             int valorRival = contraria.Atributos[atributo];

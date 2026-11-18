@@ -14,7 +14,11 @@ internal sealed class InterfazConsola
     private static readonly Style Barra = new(Verde, new Color(32, 44, 36), Decoration.Bold);
     private static readonly Style Borde = new(new Color(95, 120, 105));
 
+    private const string Controles = "Flechas, WASD o HJKL\nEnter para confirmar.";
+
     private readonly TextReader entrada;
+    private readonly bool leerTeclas;
+    private readonly bool limpiarPantalla;
     private readonly IAnsiConsole terminal;
     private readonly bool salidaLineal;
     private string? ultimaEspera;
@@ -23,6 +27,8 @@ internal sealed class InterfazConsola
     {
         this.entrada = entrada ?? Console.In;
         bool interactiva = salida is null && !Console.IsOutputRedirected;
+        limpiarPantalla = interactiva;
+        leerTeclas = interactiva && entrada is null && !Console.IsInputRedirected;
         salidaLineal = !interactiva && ancho is null;
         terminal = AnsiConsole.Create(new AnsiConsoleSettings
         {
@@ -57,7 +63,9 @@ internal sealed class InterfazConsola
         Pie(mesa.Local == mano ? "Elegí una carta y después un atributo." : $"Esperá a {TextoVisible(mano)}.");
     }
 
-    public void MostrarMano(IReadOnlyList<CartaVisible> mano)
+    public void MostrarMano(IReadOnlyList<CartaVisible> mano) => MostrarMano(mano, foco: null);
+
+    private void MostrarMano(IReadOnlyList<CartaVisible> mano, int? foco)
     {
         Escribir($"Tu mano · {mano.Count} {(mano.Count == 1 ? "carta" : "cartas")}", Titulo);
         if (mano.Count == 0)
@@ -66,7 +74,7 @@ internal sealed class InterfazConsola
             return;
         }
 
-        Paneles(mano.Select(Ficha).ToArray());
+        Paneles(mano.Select((carta, i) => Ficha(carta, i == foco)).ToArray());
     }
 
     public void MostrarEsperaRival(MesaVisible mesa, string rival, IReadOnlyList<CartaVisible> cartas)
@@ -79,39 +87,54 @@ internal sealed class InterfazConsola
     public CartaVisible PedirCarta(IReadOnlyList<CartaVisible> mano)
     {
         CartaVisible[] opciones = CopiarOpciones(mano);
-        MostrarMano(opciones);
-        return opciones[LeerOpcion("Elegí una carta", opciones.Length)];
+        int elegida = Elegir(opciones.Length, foco =>
+        {
+            Encabezado((string?)null, "Elegí una carta");
+            MostrarMano(opciones, foco);
+            Pie(Controles);
+        });
+        return opciones[elegida];
     }
 
     public CartaVisible PedirCarta(MesaVisible mesa, IReadOnlyList<CartaVisible> cartas, bool abre)
     {
         CartaVisible[] opciones = CopiarOpciones(cartas);
-        string instruccion = $"Elegí una carta del 1 al {opciones.Length} y pulsá Enter.";
-        if (abre)
+        int elegida = Elegir(opciones.Length, foco =>
         {
-            Encabezado(mesa, $"Rondas ganadas · {Rondas(mesa)}");
-            MostrarMano(opciones);
-            Pie($"Tu turno\n{instruccion}\nDespués elegís el atributo.");
-        }
-        else
-        {
-            Encabezado(mesa, "Te toca responder");
-            Paneles(PanelInfo("Cartas disponibles", ResumenMano(opciones)), PanelInfo("Marcador", Marcador(mesa)));
-            Pie(instruccion);
-        }
-
-        return opciones[LeerOpcion("Carta", opciones.Length)];
+            if (abre)
+            {
+                Encabezado(mesa, $"Rondas ganadas · {Rondas(mesa)}");
+                MostrarMano(opciones, foco);
+                Pie($"Tu turno\nDespués elegís el atributo.\n{Controles}");
+            }
+            else
+            {
+                Encabezado(mesa, "Te toca responder");
+                var lista = ListaOpciones(opciones.Select(carta => carta.Nombre), foco);
+                Paneles(PanelInfo("Cartas disponibles", lista), PanelInfo("Marcador", Marcador(mesa)));
+                Pie(Controles);
+            }
+        });
+        return opciones[elegida];
     }
 
-    public string PedirAtributo(IReadOnlyList<string>? permitidos = null)
+    public string PedirAtributo(IReadOnlyList<string>? permitidos = null, MesaVisible? mesa = null)
     {
         string[] opciones = permitidos?.ToArray() ?? Atributos;
         if (opciones.Length == 0)
             throw new InvalidOperationException("Se solicitó un atributo sin opciones disponibles.");
 
-        var lista = new Text(string.Join('\n', opciones.Select((opcion, i) => $"{i + 1:00}  {TextoVisible(opcion)}")));
-        Paneles(PanelInfo("Atributo del combate", lista));
-        return opciones[LeerOpcion("Elegí un atributo", opciones.Length)];
+        int elegida = Elegir(opciones.Length, foco =>
+        {
+            if (mesa is null)
+                Encabezado((string?)null, "Elegí un atributo");
+            else
+                Encabezado(mesa, "Elegí un atributo");
+
+            Paneles(PanelInfo("Atributo del combate", ListaOpciones(opciones, foco)));
+            Pie(Controles);
+        });
+        return opciones[elegida];
     }
 
     public void MostrarEnvio(MesaVisible mesa, EstadoEnvio estado)
@@ -220,6 +243,9 @@ internal sealed class InterfazConsola
 
     private void Encabezado(string? local, string situacion, string? detalle = null)
     {
+        if (limpiarPantalla)
+            terminal.Clear(home: true);
+
         string identidad = local is null ? "GUERRA" : $"GUERRA / {TextoVisible(local)}";
         string[] partes = detalle is null ? [identidad, TextoVisible(situacion)] : [identidad, TextoVisible(situacion), TextoVisible(detalle)];
         string linea = string.Join("  │  ", partes);
@@ -262,7 +288,7 @@ internal sealed class InterfazConsola
         Expand = true
     };
 
-    private static Panel Ficha(CartaVisible carta, int indice)
+    private static Panel Ficha(CartaVisible carta, bool enfocada)
     {
         var valores = new Grid { Expand = true };
         valores.AddColumn(new GridColumn());
@@ -270,8 +296,8 @@ internal sealed class InterfazConsola
         foreach ((string atributo, int valor) in carta.Atributos)
             valores.AddRow(new Text(TextoVisible(atributo)), new Text(valor.ToString(CultureInfo.InvariantCulture), Titulo));
 
-        var ficha = new Rows(new Text($"{indice + 1:00}  {TextoVisible(carta.Nombre)}", Titulo), valores);
-        return new Panel(ficha) { Border = BoxBorder.Square, BorderStyle = Borde, Expand = true };
+        var ficha = new Rows(Opcion(carta.Nombre, enfocada), valores);
+        return new Panel(ficha) { Border = BoxBorder.Square, BorderStyle = enfocada ? Titulo : Borde, Expand = true };
     }
 
     private static Panel FichaJugada(CartaJugada jugada, bool ganadora)
@@ -290,7 +316,7 @@ internal sealed class InterfazConsola
 
     private static string ResumenMano(IReadOnlyList<CartaVisible> cartas) => cartas.Count == 0
         ? "No hay cartas disponibles."
-        : string.Join(" · ", cartas.Select((c, i) => $"{i + 1}. {TextoVisible(c.Nombre)}"));
+        : string.Join(" · ", cartas.Select(c => TextoVisible(c.Nombre)));
 
     private static string Rondas(MesaVisible mesa) =>
         $"{TextoVisible(mesa.J1.Nombre)} {mesa.J1.RondasGanadas} / {TextoVisible(mesa.J2.Nombre)} {mesa.J2.RondasGanadas}";
@@ -304,20 +330,59 @@ internal sealed class InterfazConsola
     private static CartaVisible[] CopiarOpciones(IReadOnlyList<CartaVisible> mano) =>
         mano.Count > 0 ? mano.ToArray() : throw new InvalidOperationException("Se solicitó una carta con la mano vacía.");
 
-    private int LeerOpcion(string accion, int cantidad)
+    private static Rows ListaOpciones(IEnumerable<string> opciones, int foco) =>
+        new(opciones.Select((opcion, i) => Opcion(opcion, i == foco)));
+
+    private static Text Opcion(string opcion, bool enfocada) =>
+        enfocada ? new Text($"> {TextoVisible(opcion)}", Barra) : new Text($"  {TextoVisible(opcion)}");
+
+    private int Elegir(int cantidad, Action<int> dibujar)
     {
+        int foco = 0;
+        dibujar(foco);
         while (true)
         {
-            Escribir($"{accion} [1–{cantidad}]:", Titulo);
-            string linea = entrada.ReadLine()
-                ?? throw new EndOfStreamException("Se cerró la entrada de consola.");
+            ConsoleKey tecla = LeerTecla();
+            if (tecla == ConsoleKey.Enter)
+                return foco;
 
-            if (int.TryParse(linea, NumberStyles.Integer, CultureInfo.InvariantCulture, out int opcion)
-                && opcion >= 1 && opcion <= cantidad)
-                return opcion - 1;
+            int paso = tecla switch
+            {
+                ConsoleKey.UpArrow or ConsoleKey.LeftArrow or ConsoleKey.W or ConsoleKey.A or ConsoleKey.K or ConsoleKey.H => -1,
+                ConsoleKey.DownArrow or ConsoleKey.RightArrow or ConsoleKey.S or ConsoleKey.D or ConsoleKey.J or ConsoleKey.L => 1,
+                _ => 0
+            };
 
-            Escribir($"Elegí un número entre 1 y {cantidad}.");
+            int nuevo = Math.Clamp(foco + paso, 0, cantidad - 1);
+            if (nuevo != foco)
+            {
+                foco = nuevo;
+                dibujar(foco);
+            }
         }
+    }
+
+    private ConsoleKey LeerTecla()
+    {
+        if (leerTeclas)
+            return Console.ReadKey(intercept: true).Key;
+
+        string linea = entrada.ReadLine()
+            ?? throw new EndOfStreamException("Se cerró la entrada de consola.");
+
+        return linea.Trim().ToLowerInvariant() switch
+        {
+            "" => ConsoleKey.Enter,
+            "w" => ConsoleKey.W,
+            "a" => ConsoleKey.A,
+            "s" => ConsoleKey.S,
+            "d" => ConsoleKey.D,
+            "h" => ConsoleKey.H,
+            "j" => ConsoleKey.J,
+            "k" => ConsoleKey.K,
+            "l" => ConsoleKey.L,
+            _ => ConsoleKey.NoName
+        };
     }
 
     private static string TextoVisible(string texto) =>
