@@ -15,6 +15,7 @@ internal sealed partial class RepositorioJuego : IDisposable
     private readonly SqliteConnection? memoria;
     private readonly TimeProvider reloj;
     private readonly object sincronizacion = new();
+    // La presencia de cada jugador se mantiene en memoria y vence si deja de renovarse.
     private readonly Dictionary<(Guid, string), Sesion> sesiones = [];
 
     internal RepositorioJuego(string cadena, TimeProvider reloj)
@@ -146,6 +147,7 @@ internal sealed partial class RepositorioJuego : IDisposable
         {
             using var db = Abrir();
             db.Database.OpenConnection();
+            // La escritura adquiere el bloqueo de SQLite antes de leer el estado que va a modificar.
             using var transaccion = ((SqliteConnection)db.Database.GetDbConnection())
                 .BeginTransaction(deferred: !escritura);
             db.Database.UseTransaction(transaccion);

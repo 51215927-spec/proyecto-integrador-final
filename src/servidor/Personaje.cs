@@ -59,6 +59,7 @@ namespace Proyecto_Integrador_Final
 
         private void Validar()
         {
+            // El total fija el presupuesto de puntos y los umbrales exigen una fortaleza y una debilidad.
             int suma = fuerza + velocidad + resistencia
                      + inteligencia + energia + habilidad;
 

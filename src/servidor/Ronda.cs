@@ -89,6 +89,7 @@ namespace Proyecto_Integrador_Final
                     "La ronda ya está definida."
                 );
 
+            // La elección empieza con el jugador mano y alterna después de cada combate.
             return this.combates.Count % 2 == 0
                 ? this.mano
                 : this.rival;

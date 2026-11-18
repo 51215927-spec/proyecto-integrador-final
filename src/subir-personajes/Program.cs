@@ -91,6 +91,7 @@ internal static class ConsolaAlta
                     return 1;
                 }
 
+                // El alta se confirma cuando la respuesta incluye el identificador asignado por el servidor.
                 var alta = await respuesta.Content.ReadFromJsonAsync<AltaConfirmada>();
                 if (alta is null || alta.IdPersonaje <= 0)
                 {
