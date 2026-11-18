@@ -1,6 +1,6 @@
 # Protocolo de partida web — API REST
 
-HTTP en red local está aprobado para la entrega de la [actividad 6](consigna.md). Este documento describe el contrato REST y la operación del servidor de la rama `feature/api-rest-partida`. Los clientes de consola y la comprobación en dos computadoras siguen pendientes.
+HTTP en red local está aprobado para la entrega de la [actividad 6](consigna.md). Este documento describe el contrato REST y la operación del servidor de la solución. Los clientes de consola y la comprobación en dos computadoras siguen pendientes.
 
 - [Despliegue y conexión](#organización-propuesta)
 - [Operación del servidor](#operación-del-servidor)
@@ -32,7 +32,7 @@ HTTP no cifra el intercambio. Su elección se limita al entorno local de prueba 
 
 ## Operación del servidor
 
-El siguiente comando inicia el servidor desde la raíz del worktree de la API.
+El siguiente comando inicia el servidor desde la raíz del repositorio.
 
 ```powershell
 dotnet run --project src/servidor/servidor.csproj
@@ -55,7 +55,7 @@ Para iniciar una partida, importar el catálogo o cargar personajes mediante el 
 
 ### Prueba del servidor en una sola computadora
 
-Desde la raíz de la rama `feature/api-rest-partida`, usá una base de prueba para que el catálogo y las partidas del ensayo queden en un archivo propio. En PowerShell, ejecutá:
+Desde la raíz del repositorio, usá una base de prueba para que el catálogo y las partidas del ensayo queden en un archivo propio. En PowerShell, ejecutá:
 
 ```powershell
 $env:ConnectionStrings__Juego = 'Data Source=guerra-prueba.db;Default Timeout=1'

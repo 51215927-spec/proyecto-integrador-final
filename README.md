@@ -6,9 +6,9 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 ## Estado actual
 
-El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. La rama `feature/api-rest-partida` implementa el servidor HTTP. Los clientes y la validación entre dos computadoras forman parte del [plan](docs/plan.md).
+El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. Consultá el [plan](docs/plan.md) para ver los avances de implementación y los pendientes.
 
-La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, con pruebas de dominio en xUnit. La aplicación de consola todavía imprime `Hello, World!`. La guía del servidor describe cómo iniciarlo y administrar el catálogo y las partidas en la rama de la API.
+La solución incluye el dominio del juego, el servidor REST y una interfaz de consola con demostración local. La conexión del cliente a una partida y la validación entre dos computadoras siguen pendientes. La [guía del servidor](docs/protocolo-partida-web.md#operación-del-servidor) describe el inicio y la administración del catálogo y las partidas.
 
 ## Contenido del repositorio
 
@@ -104,9 +104,9 @@ dotnet test proyecto-integrador-final.sln
 dotnet run --project src/cliente
 ```
 
-El programa de consola muestra `Hello, World!`. Las pruebas automatizadas cubren la base de código de dominio.
+El programa muestra el panel de preparación de Juego Guerra. Usá `dotnet run --project src/cliente -- --demo` para recorrer las pantallas con una [partida simulada](docs/interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
 
-Las dependencias y los comandos del futuro servidor están en [Tecnologías REST](docs/tecnologias-rest.md#instalación-prevista-en-taller).
+Las dependencias y los comandos del servidor están en [Tecnologías REST](docs/tecnologias-rest.md#instalación-prevista-en-taller).
 
 ## Autores
 

@@ -71,7 +71,7 @@ La ejecución y la evidencia de resultados quedan para Taller de Programación.
 
 ## Taller de Programación — C#
 
-El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado para Taller se registra en la rama `feature/api-rest-partida`. Las casillas registran avances concretos de cada etapa.
+El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado para Taller se registra en esta etapa. Las casillas registran avances concretos de cada etapa.
 
 ### Etapa 1 — Implementación de Personaje
 
@@ -96,13 +96,13 @@ El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado 
 
 ### Etapa 3 — Jugador e interacción de consola
 
-El [diseño de la interfaz](interfaz.md) registra el inventario inicial preparado en TI y las decisiones pendientes antes de implementar la interacción.
+El [diseño de la interfaz](interfaz.md) registra las pantallas, los controles implementados en el cliente y las decisiones pendientes del flujo cliente.
 
 - [ ] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
 - [ ] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
-- [ ] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](interfaz.md), con reutilización puntual de Utilidades.
-- [ ] Validar la carta elegida contra la mano disponible y el atributo contra las opciones del combate.
-- [ ] Presentar mano, marcador, esperas, resultados y errores según los contratos de TI.
+- [x] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](interfaz.md), con renderizado mediante Spectre.Console.
+- [x] Validar la carta elegida contra las opciones de mano recibidas y el atributo contra las opciones de la solicitud.
+- [x] Presentar mano, marcador, esperas, resultados y errores según los contratos de TI.
 - [ ] Comprobar que la interfaz no revele las elecciones rivales hasta completar ambas elecciones.
 
 ### Etapa 4 — Administración del mazo
