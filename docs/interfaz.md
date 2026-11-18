@@ -102,9 +102,24 @@ Desde la raíz de la rama que contiene el cliente actualizado, ejecutá:
 dotnet run --project src/cliente -- --demo
 ```
 
-La demo simula una ronda decisiva. Pulsá Enter para avanzar entre pantallas. En la apertura elegís una carta y un atributo. En la respuesta elegís solo una carta. El resultado presenta los valores enfrentados y el cierre muestra el marcador de ambos jugadores.
+La demo comienza con Lucía y Mateo empatados 14–14. Usa un mazo de ejemplo y ejecuta la ronda decisiva localmente.
 
-Para revisar la pausa y la pérdida de comunicación, ejecutá `dotnet run --project src/cliente -- --demo pausa`. Los argumentos `abandono`, `cancelacion` y `salida` muestran sus respectivos cierres. Los casos usan datos locales de ejemplo. La integración HTTP, las confirmaciones reales y la recuperación corresponden al flujo cliente.
+1. Pulsá Enter en los paneles de preparación, espera e inicio de ronda.
+2. En la apertura, mové el foco hasta una carta y confirmá con Enter. Repetí la selección en el menú de atributos.
+3. Avanzá por los estados de envío y revisá el duelo. La pantalla muestra ambas cartas, sus puntajes en el atributo usado y el marcador de combates.
+4. Cuando abre Mateo, avanzá desde la espera y elegí solo una carta. La demo usa Inteligencia para comparar este combate y muestra el atributo en el resultado.
+5. Al ganar dos combates, el vencedor de la ronda alcanza 15 victorias. El resumen final muestra quién ganó y el marcador 15–14.
+
+Para probar un cierre específico, agregá uno de estos argumentos después de `--demo`. Por ejemplo, ejecutá `dotnet run --project src/cliente -- --demo pausa`.
+
+| Argumento | Pantalla esperada |
+|---|---|
+| `pausa` | Suspensión por pérdida de sesión, seguida de un estado de comunicación sin confirmar. |
+| `abandono` | Interrupción confirmada porque el rival abandonó. |
+| `cancelacion` | Interrupción confirmada porque el operador canceló la partida. |
+| `salida` | Cierre local del cliente con la partida guardada en el escenario simulado. |
+
+Con entrada y salida redirigidas, los paneles se imprimen en orden, las pantallas informativas avanzan automáticamente y solo las selecciones consumen líneas de entrada. Una línea vacía confirma la opción activa. La demostración simula las pantallas y sus transiciones. La conexión HTTP, los recibos reales y la recuperación siguen pendientes en el cliente.
 
 ## Escenarios de prueba de la interfaz
 
