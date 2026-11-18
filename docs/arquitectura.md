@@ -13,15 +13,15 @@ Diseño de TI basado en las [reglas del juego](reglas-del-juego.md) y el [diagra
 | Proyecto | Responsabilidad |
 |---|---|
 | `src/cliente` | Punto de entrada de consola. La interacción con la API está pendiente. |
-| `src/servidor` | Dominio y reglas de la partida. La API HTTP y la persistencia están pendientes. |
+| `src/servidor` | Dominio y reglas de la partida. Incluye la API HTTP, la consola del operador y la persistencia. |
 | `src/subir-personajes` | Herramienta de consola prevista para dar de alta personajes mediante la API del servidor. |
 
-Las pruebas de dominio viven en `test/` y referencian `servidor`.
+Las pruebas de dominio e integración HTTP viven en `test/` y referencian `servidor`.
 
 ### Alta de personajes desde consola
 
 1. `subir-personajes` pide el nombre, la descripción y el arte ASCII con `Funciones.PedirString` de Utilidades. Pide los seis atributos con `Funciones.PedirInt`, con valores entre 250 y 750 inclusive.
-2. La herramienta envía los datos del personaje a la API del servidor. El servidor valida el personaje según las reglas del dominio y guarda el alta en el catálogo cuando los datos son válidos.
+2. La herramienta enviará los datos mediante el [alta individual de personajes](protocolo-partida-web.md#alta-individual-de-personajes). El servidor valida el personaje según las reglas del dominio y guarda el alta en el catálogo cuando los datos son válidos.
 3. Cuando el servidor confirma el alta, la consola pregunta «¿Deseás cargar otro personaje?». Si la respuesta es afirmativa, vuelve a pedir los datos. Si es negativa, termina.
 
 ## Comunicación HTTP — actividad 6
@@ -40,36 +40,40 @@ Servidor y cliente J1 se ejecutan en el primer equipo Windows. El cliente J2 se 
 
 La API identifica al participante, valida el intercambio y prepara una presentación por jugador. El dominio mantiene la partida y aplica las reglas. El servidor confirma el estado y los recibos de las operaciones mediante persistencia local. SQLite también conserva el catálogo permanente. Los DTO delimitan los datos visibles en cada cliente. El protocolo especifica la identidad, la concurrencia y la recuperación. Las comprobaciones de conectividad están en el [procedimiento de verificación](protocolo-partida-web.md#verificación-en-dos-equipos).
 
-El [UML de dominio](diagramas/uml.uxf) y las firmas de la actividad 4 sirven como base de diseño. El modelo de integración web complementa el UML de dominio.
+El [UML de dominio](diagramas/uml.uxf) documenta las clases de la actividad 4. El siguiente diagrama muestra los componentes del servidor en la rama de la API.
 
 ```mermaid
 classDiagram
-    ClienteHttp ..> ApiPartidas : HTTP JSON
-    InterfazConsola ..> ClienteHttp : solicita y presenta
-    ApiPartidas --> ServicioPartida
-    ServicioPartida --> Partida
-    ServicioPartida --> RepositorioPartida
-    ApiPartidas ..> PresentacionDto
-    ApiPartidas ..> EleccionDto
-    class ClienteHttp {
-        Incorporar(SesionDto) SesionAceptadaDto
-        Consultar() PresentacionDto
-        Elegir(EleccionDto) ReciboDto
-        ConsultarRecibo(Guid) ReciboDto
-        RenovarPresencia()
-        Abandonar()
+    ConsolaServidor --> RepositorioJuego
+    ServidorHttp --> RepositorioJuego
+    RepositorioJuego --> BaseJuego
+    RepositorioJuego --> Combate
+    RepositorioJuego --> FilaCatalogo
+    FilaCatalogo ..> Personaje
+    class ServidorHttp {
+        Crear(args) WebApplication
     }
-    class ServicioPartida {
-        AplicarEleccion(Guid, Sesion, EleccionDto) ReciboDto
-        Proyectar(Guid, Sesion) PresentacionDto
-    }
-    class RepositorioPartida {
-        Cargar(Guid) EstadoPartida
-        Confirmar(EstadoPartida, ReciboDto)
+    class RepositorioJuego {
+        CrearPartida() PartidaCreada
+        Iniciar(id)
+        Cancelar(id)
+        Incorporar(id, credencial, datos) Sesion
+        Renovar(id, credencial, idSesion)
+        Presentacion(id, credencial, idSesion) PresentacionVisible
+        Elegir(id, credencial, idSesion, datos) Confirmacion
+        ConsultarRecibo(id, credencial, idSesion, idOperacion) Recibo
+        Abandonar(id, credencial, idSesion)
+        CerrarSesion(id, rol)
+        ReemplazarCredencial(id, rol) string
+        DarDeAlta(datos) int
+        Importar(ruta) int
+        Desactivar(id)
     }
 ```
 
-ClienteHttp conserva la sesión y la operación pendiente. ApiPartidas valida credenciales y mapea las respuestas HTTP. ServicioPartida aplica las transiciones mediante el dominio y proyecta la vista propia. RepositorioPartida carga y confirma el estado y el recibo en la misma transacción de escritura, según el [contrato HTTP](protocolo-partida-web.md#contrato-http).
+`ServidorHttp` registra las rutas y convierte las respuestas y errores al formato acordado. `RepositorioJuego` identifica a cada participante, proyecta su vista y aplica las transiciones del protocolo mediante `BaseJuego`. Para resolver un combate reconstruye las cartas y los participantes necesarios y delega la comparación a `Combate.Resolver`. El servidor usa los umbrales de `Ronda` y `Partida` y conserva la progresión en SQLite entre solicitudes. El estado y el recibo se confirman juntos en una transacción de escritura.
+
+`FilaCatalogo` configura las diez columnas CSV con DataBases. El catálogo persistido guarda el ID y la descripción, y usa el constructor de `Personaje` para validar los puntajes. Las operaciones de la consola y la protección del alta se detallan en el [protocolo](protocolo-partida-web.md#operación-del-servidor).
 
 ## Distribución y responsabilidades
 
@@ -391,7 +395,7 @@ Es privado y devuelve al jugador que llegó a 15 rondas ganadas. Jugar lo llama 
 
 ### Datos
 
-Clase estática, sin instancias. Conserva tipoProceso privado opcional y la ruta del catálogo CSV en el diseño base. Modelo permite lectura pública y escritura privada y no está disponible hasta completar Iniciar. La ubicación y el ciclo de carga al servidor siguen pendientes.
+Clase estática, sin instancias. Conserva tipoProceso privado opcional y la ruta del catálogo CSV en el diseño base. Modelo permite lectura pública y escritura privada y no está disponible hasta completar Iniciar. El operador del servidor indica la ruta al ejecutar la [importación local](protocolo-partida-web.md#importación-local).
 
 #### `Configurar(tipo: TipoProceso): void`
 
@@ -501,7 +505,7 @@ El protocolo HTTP define la importación, el esquema, las copias para cada parti
 
 ### Entidades persistentes y columnas
 
-El formato definido mediante DataBases corresponde al CSV de Personaje. Cada columna se declara en la configuración de la entidad. El diseño del catálogo permanente en SQLite y su carga desde el CSV se completarán en la actividad 6.
+El formato definido mediante DataBases corresponde al CSV de Personaje. Cada columna se declara en la configuración de la entidad. La persistencia en SQLite y la carga desde el CSV se describen en el [protocolo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
 
 Personaje tiene actualmente los siguientes campos en el modelo, sin agregar otros por inferencia:
 
@@ -538,7 +542,7 @@ La conversión de la información de los personajes al catálogo CSV se definir�
 
 ### Importación y presentación
 
-La conversión al CSV está postergada. La ubicación del archivo se registra en el [plan](plan.md#actividad-6--comunicación-http-en-red-local) y la importación está definida en el [protocolo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo). La presentación de la descripción sigue abierta en el [diseño de interfaz](interfaz.md#decisiones-pendientes).
+La conversión al CSV está postergada. El operador indica la ubicación del archivo en el comando de [importación local](protocolo-partida-web.md#importación-local). La presentación de la descripción sigue abierta en el [diseño de interfaz](interfaz.md#decisiones-pendientes).
 
 ## Presentación de consola
 

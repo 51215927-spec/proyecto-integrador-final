@@ -6,9 +6,9 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 ## Estado actual
 
-El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. La implementación de red y su validación entre dos computadoras corresponden al trabajo pendiente del [plan](docs/plan.md).
+El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. Consultá el [plan](docs/plan.md) para ver los avances de implementación y los pendientes.
 
-La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, con pruebas de dominio en xUnit. La interfaz de consola está implementada en `feature/interfaz-consola`. La conexión a una partida continúa pendiente.
+La solución incluye el dominio del juego, el servidor REST y una interfaz de consola con demostración local. La conexión del cliente a una partida y la validación entre dos computadoras siguen pendientes. La [guía del servidor](docs/protocolo-partida-web.md#operación-del-servidor) describe el inicio y la administración del catálogo y las partidas.
 
 ## Contenido del repositorio
 
@@ -26,7 +26,7 @@ La base de código incluye Personaje, Mazo, Jugador, Combate, Ronda y Partida, c
 | Qué debe hacer el juego | [Consigna](docs/consigna.md) y [reglas](docs/reglas-del-juego.md) |
 | Entregables y pendientes | [Plan de trabajo](docs/plan.md) |
 | Dominio y catálogo de personajes | [Arquitectura](docs/arquitectura.md) y [diagrama UML](docs/diagramas/uml.uxf) |
-| Comunicación entre equipos | [Protocolo HTTP](docs/protocolo-partida-web.md) y [tecnologías REST](docs/tecnologias-rest.md) |
+| Comunicación entre equipos | [Protocolo HTTP](docs/protocolo-partida-web.md), [operación del servidor](docs/protocolo-partida-web.md#operación-del-servidor) y [tecnologías REST](docs/tecnologias-rest.md) |
 | Pantallas y controles | [Diseño de consola](docs/interfaz.md) y [maquetas](docs/diagramas/juego-guerra-propuestas.html) |
 | Validación y colaboración | [Plan de pruebas](docs/posibles-fallos.md) y [guía de colaboración](CONTRIBUTING.md) |
 
@@ -104,9 +104,9 @@ dotnet test proyecto-integrador-final.sln
 dotnet run --project src/cliente
 ```
 
-Con `feature/interfaz-consola`, el programa muestra el panel de preparación de Juego Guerra. Usá `dotnet run --project src/cliente -- --demo` para recorrer las pantallas con una [partida simulada](docs/interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
+El programa muestra el panel de preparación de Juego Guerra. Usá `dotnet run --project src/cliente -- --demo` para recorrer las pantallas con una [partida simulada](docs/interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
 
-Las dependencias y los comandos del futuro servidor están en [Tecnologías REST](docs/tecnologias-rest.md#instalación-prevista-en-taller).
+Las dependencias y los comandos del servidor están en [Tecnologías REST](docs/tecnologias-rest.md#instalación-prevista-en-taller).
 
 ## Autores
 

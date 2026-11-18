@@ -71,7 +71,7 @@ La ejecución y la evidencia de resultados quedan para Taller de Programación.
 
 ## Taller de Programación — C#
 
-Etapas conservadas como referencia futura. No se implementarán en el alcance actual, limitado a TI. Las casillas marcadas registran código ya presente, no etapas terminadas ni cumplimiento de TDD: no hay pruebas de comportamiento que lo acrediten.
+El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado para Taller se registra en esta etapa. Las casillas registran avances concretos de cada etapa.
 
 ### Etapa 1 — Implementación de Personaje
 
@@ -85,9 +85,9 @@ Etapas conservadas como referencia futura. No se implementarán en el alcance ac
 
 - [x] Referenciar DataBases y Utilidades desde la aplicación e incluir sus proyectos en la solución.
 - [ ] Implementar Personaje.Configurar con el formato definido en TI: el método existe, pero su cuerpo está vacío.
-- [ ] Definir el contrato de la API del servidor para el alta individual de personajes.
+- [x] Definir el [contrato de alta individual de personajes](protocolo-partida-web.md#alta-individual-de-personajes).
 - [ ] Implementar el [alta por consola en `subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola). Pedir los datos con `PedirString` y `PedirInt`, enviarlos por la API y preguntar si se desea cargar otro personaje tras la confirmación.
-- [ ] Definir la ubicación del CSV de origen y en qué momento se importa al catálogo SQLite.
+- [x] Permitir que el operador indique la ruta del CSV al [importar el catálogo](protocolo-partida-web.md#importación-local).
 - [ ] Cargar el catálogo obligatorio mediante Modelo.Cargar<Personaje>(exigirArchivo: true).
 - [ ] Obtener los personajes de la tabla cargada para construir el mazo inicial.
 - [ ] Mantener la validación de puntajes en el constructor de Personaje y la interpretación del CSV en DataBases.
@@ -96,7 +96,7 @@ Etapas conservadas como referencia futura. No se implementarán en el alcance ac
 
 ### Etapa 3 — Jugador e interacción de consola
 
-El [diseño de la interfaz](interfaz.md) registra las pantallas, los controles implementados en `feature/interfaz-consola` y las decisiones pendientes del flujo cliente.
+El [diseño de la interfaz](interfaz.md) registra las pantallas, los controles implementados en el cliente y las decisiones pendientes del flujo cliente.
 
 - [ ] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
 - [ ] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
@@ -129,10 +129,11 @@ El [diseño de la interfaz](interfaz.md) registra las pantallas, los controles i
 
 ### Etapa 6 — Comunicación HTTP entre computadoras
 
-- [ ] Implementar la API REST y los clientes según las rutas, DTO y reglas de sesión aprobados en TI.
-- [ ] Conectar la API con el dominio y guardar las transiciones en SQLite conforme al contrato de persistencia.
-- [ ] Implementar vistas de jugador, validación autoritativa, concurrencia y reintentos idempotentes.
-- [ ] Aplicar la política acordada de presencia, abandono y recuperación.
+- [x] Implementar y probar la API REST del servidor según el contrato de partidas.
+- [ ] Conectar los clientes de consola con la API.
+- [x] Conectar la API con el dominio y guardar las transiciones en SQLite conforme al contrato de persistencia.
+- [x] Implementar vistas de jugador, validación autoritativa, concurrencia y reintentos idempotentes.
+- [x] Aplicar la política acordada de presencia, abandono y recuperación en el servidor.
 - [ ] Probar el intercambio en dos computadoras y registrar los resultados.
 
 ### Etapa 7 — Integración

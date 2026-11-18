@@ -1,6 +1,6 @@
 # Tecnologías del protocolo REST
 
-Selección tecnológica de TI para el [protocolo HTTP](protocolo-partida-web.md) de la actividad 6. La incorporación de paquetes al servidor corresponde a Taller.
+Selección tecnológica de TI para el [protocolo HTTP](protocolo-partida-web.md) de la actividad 6. La rama `feature/api-rest-partida` incorpora el proveedor SQLite al proyecto servidor.
 
 ## Tecnologías seleccionadas
 
@@ -32,40 +32,9 @@ El proyecto usa `net8.0` como framework de destino. Las versiones acordadas para
 
 Los SDK 8.0.428 y 8.0.134 incluyen los runtimes de referencia. La selección y la comprobación de las instalaciones de ambos equipos quedan para la [verificación en red](protocolo-partida-web.md#verificación-en-dos-equipos). La línea .NET 8 ya terminó su soporte.
 
-## Instalación prevista en Taller
+## Preparación del servidor
 
-Estos son los comandos de instalación previstos. Se ejecutarán cuando Taller esté autorizado y exista el proyecto servidor; no deben aplicarse al proyecto de consola actual. Cuando llegue esa etapa, PowerShell pedirá la ruta real del archivo `.csproj` del servidor, para no depender de un nombre todavía sin definir:
-
-```powershell
-$proyectoServidor = Read-Host "Ruta del archivo .csproj del servidor"
-if (-not (Test-Path -LiteralPath $proyectoServidor -PathType Leaf)) {
-    throw "No existe el archivo de proyecto indicado."
-}
-dotnet add "$proyectoServidor" package Microsoft.EntityFrameworkCore --version 8.0.34
-dotnet add "$proyectoServidor" package Microsoft.EntityFrameworkCore.Sqlite --version 8.0.34
-dotnet add "$proyectoServidor" package Microsoft.EntityFrameworkCore.Design --version 8.0.34
-dotnet restore "$proyectoServidor"
-dotnet list "$proyectoServidor" package
-```
-
-El proveedor SQLite incluye las dependencias necesarias para usar la base desde .NET. No hace falta instalar un servidor SQLite por separado. Los clientes de consola no necesitan estos paquetes de persistencia.
-
-Para instalar la herramienta de migraciones de EF Core por primera vez:
-
-```powershell
-dotnet tool install --global dotnet-ef --version 8.0.34
-dotnet ef --version
-```
-
-Si `dotnet-ef` ya estaba instalada y necesitás seleccionar esta versión, usá esta alternativa al comando de instalación:
-
-```powershell
-dotnet tool update --global dotnet-ef --version 8.0.34
-```
-
-Si la versión global existente pertenece a otra línea y la herramienta rechaza el cambio, conservála y revisá una instalación local para este proyecto; no hace falta desinstalar herramientas usadas por otros proyectos. Crear tablas y migraciones requiere diseñar e implementar primero el modelo de datos; instalar los paquetes no crea la base del juego.
-
-Referencias oficiales del [proveedor SQLite](https://learn.microsoft.com/en-us/ef/core/providers/sqlite/) y las [herramientas de EF Core](https://learn.microsoft.com/en-us/ef/core/cli/dotnet).
+En la rama `feature/api-rest-partida`, el proyecto `src/servidor/servidor.csproj` declara `Microsoft.EntityFrameworkCore.Sqlite` 8.0.34. Restaurar la solución obtiene el proveedor y sus dependencias, incluido EF Core. La base se crea al iniciar el servidor. Consultá los comandos y la configuración de almacenamiento en la [guía de operación](protocolo-partida-web.md#operación-del-servidor).
 
 ## Referencias
 
