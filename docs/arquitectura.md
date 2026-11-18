@@ -407,7 +407,7 @@ Es público y estático. Se llama una vez, después de Configurar. Registra las 
 
 ### InterfazConsola
 
-La [interfaz de consola](interfaz.md) compone las pantallas con datos que recibe del flujo cliente. Los métodos son de instancia. Las firmas de implementación en `src/cliente` adaptan las del UML a vistas de presentación locales. `CartaVisible` lleva el identificador, el nombre y los atributos de una carta propia. `JugadorVisible` contiene el nombre y las rondas ganadas. `CombateVisible` contiene las dos jugadas reveladas, el atributo comparado, el ganador confirmado, el marcador de combates y el próximo elector si corresponde. El flujo cliente prepara estas vistas a partir de los datos del protocolo.
+La [interfaz de consola](interfaz.md) compone las pantallas con datos que recibe del flujo cliente. Los métodos son de instancia. Las firmas de implementación en `src/cliente` adaptan las del UML a vistas de presentación locales. `CartaVisible` lleva el identificador, el nombre y los atributos de una carta propia. `JugadorVisible` contiene el nombre y las rondas ganadas. `CombateVisible` contiene las dos jugadas reveladas, el atributo comparado, el ganador confirmado, el marcador de combates y el próximo elector si corresponde. `MesaVisible` aporta la identidad local, la ronda, el combate y los marcadores de ambos jugadores. El flujo cliente prepara estas vistas a partir de los datos del protocolo. Puede identificar la plaza ganadora de un combate mediante `GanaJ1` cuando dos jugadores comparten nombre.
 
 #### `MostrarMano(mano: IReadOnlyList<CartaVisible>): void`
 
@@ -443,13 +443,21 @@ Anuncia el nombre del ganador de la partida. El flujo presenta el marcador final
 
 #### `MostrarError(mensaje: string): void`
 
-Presenta el error con la función de Utilidades en una terminal y con la etiqueta textual `ERROR` en salida redirigida. El punto de ejecución decide si corresponde cerrar.
+Presenta la etiqueta textual `ERROR` y la resalta si la terminal admite color. El punto de ejecución decide si corresponde cerrar.
 
 #### `MostrarEstado(titulo: string, mensaje: string): void`
 
-Compone un encabezado y un mensaje para preparación, envío, confirmación, pausa, interrupción o abandono. El flujo proporciona el título y el detalle según el estado conocido.
+Compone un encabezado y un mensaje general. El flujo proporciona el título y el detalle según el estado conocido.
 
-El constructor acepta una entrada, una salida y un ancho opcionales para probar la consola con flujos de texto. Por defecto usa la entrada de consola y escribe las líneas mediante `MyConsole`.
+El constructor acepta una entrada, una salida y un ancho opcionales para probar la consola con flujos de texto. Por defecto usa la entrada de consola y renderiza con Spectre.Console.
+
+#### Métodos de las pantallas acordadas
+
+- `MostrarPreparacion(local, estado)`, `MostrarEsperaInicial(local, participantes, motivo)`, `MostrarInicioRonda(mesa, mano, cartas)` y `MostrarEsperaRival(mesa, rival, cartas)` componen los paneles de información.
+- `PedirCarta(mesa, cartas, abre)` devuelve la carta elegida. Para abrir usa la mesa de fichas y anuncia la elección posterior de atributo. Para responder muestra las cartas disponibles y el marcador.
+- `MostrarEnvio(mesa, estado)` distingue `Enviando`, `Recibido` y `Pendiente`. `MostrarCombate(mesa, combate)` agrega el encabezado de ronda y combate al duelo.
+- `MostrarCierreRonda(mesa, ganador, proximoMano)` presenta el ganador, el marcador y el próximo jugador mano cuando existe. `MostrarCierrePartida(local, ganador, j1, j2)` muestra el resultado en una planilla y presenta la instrucción de salida.
+- `MostrarSuspension(mesa, motivo, confirmada)` muestra el último marcador confirmado. `MostrarInterrupcion(local, causa, efecto, confirmada)` distingue el cierre local del final confirmado de la partida.
 
 ### DataBases::Modelo — clase externa representada en el UML
 
@@ -534,4 +542,4 @@ La conversión al CSV está postergada. La ubicación del archivo se registra en
 
 ## Presentación de consola
 
-La [especificación de interfaz](interfaz.md) describe las pantallas, sus maquetas y el uso puntual de Utilidades. La validación de opciones de entrada pertenece al cliente. Las consultas, esperas y reintentos siguen el [protocolo HTTP](protocolo-partida-web.md#estados-presencia-y-recuperación).
+La [especificación de interfaz](interfaz.md) describe las pantallas, sus maquetas y su composición con Spectre.Console. La validación de opciones de entrada pertenece al cliente. Las consultas, esperas y reintentos siguen el [protocolo HTTP](protocolo-partida-web.md#estados-presencia-y-recuperación).

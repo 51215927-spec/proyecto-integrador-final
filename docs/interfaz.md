@@ -90,11 +90,21 @@ En la [maqueta elegida](diagramas/juego-guerra-propuestas.html#mesa), el encabez
 
 En la [maqueta elegida](diagramas/juego-guerra-propuestas.html#duelo-paralelo), el atributo comparado aparece encima de dos paneles enfrentados. Cada panel muestra el nombre del jugador, la carta jugada y el valor del atributo. El valor tiene más énfasis que el resto del contenido y el panel ganador lleva la etiqueta «Ganador». El pie muestra el marcador de combates y, si la ronda continúa, quién elige el próximo atributo.
 
-## Composición propia y uso de Utilidades
+## Composición con Spectre.Console
 
-La interfaz tiene una distribución y una interacción personalizadas. La composición de pantallas, cajas, columnas y resaltados se resolverá con métodos propios. El uso directo de `Utilidades.Funciones` y `Utilidades.DecoracionConsola` será excepcional y se evaluará caso por caso, cuando un método resuelva una necesidad concreta y encaje con el diseño.
+El cliente conserva la composición de las doce pantallas elegidas y usa [Spectre.Console](https://spectreconsole.net/console/) para renderizar las barras de estado, los paneles, las fichas y la planilla final sobre .NET 8. Aplica los acentos verdes de las maquetas cuando la terminal admite color. En pantallas angostas o con salida redirigida, apila los paneles y conserva el orden de lectura. El menú usa números y Enter para que la selección coincida con la numeración visible.
 
-El menú de la mano tendrá su propio código para mantener coordinadas las fichas de las cartas y la instrucción del turno. Los métodos de Utilidades pueden servir como referencia para resolver partes similares, como leer teclas, validar opciones, recorrer la lista o actualizar el elemento en foco. La navegación definitiva se decide por separado. `MyConsole` puede seguir sirviendo como mecanismo de escritura de las líneas compuestas.
+## Demostración local
+
+Desde la raíz de la rama que contiene el cliente actualizado, ejecutá:
+
+```bash
+dotnet run --project src/cliente -- --demo
+```
+
+La demo simula una ronda decisiva. Pulsá Enter para avanzar entre pantallas. En la apertura elegís una carta y un atributo. En la respuesta elegís solo una carta. El resultado presenta los valores enfrentados y el cierre muestra el marcador de ambos jugadores.
+
+Para revisar la pausa y la pérdida de comunicación, ejecutá `dotnet run --project src/cliente -- --demo pausa`. Los argumentos `abandono`, `cancelacion` y `salida` muestran sus respectivos cierres. Los casos usan datos locales de ejemplo. La integración HTTP, las confirmaciones reales y la recuperación corresponden al flujo cliente.
 
 ## Escenarios de prueba de la interfaz
 

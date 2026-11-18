@@ -104,7 +104,7 @@ dotnet test proyecto-integrador-final.sln
 dotnet run --project src/cliente
 ```
 
-Con `feature/interfaz-consola`, el programa muestra el encabezado de Juego Guerra y el estado de la conexión. Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
+Con `feature/interfaz-consola`, el programa muestra el panel de preparación de Juego Guerra. Usá `dotnet run --project src/cliente -- --demo` para recorrer las pantallas con una [partida simulada](docs/interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
 
 Las dependencias y los comandos del futuro servidor están en [Tecnologías REST](docs/tecnologias-rest.md#instalación-prevista-en-taller).
 
