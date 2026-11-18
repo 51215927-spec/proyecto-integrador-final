@@ -16,4 +16,16 @@ internal sealed record CombateVisible(
     string Ganador,
     int CombatesGanadosJ1,
     int CombatesGanadosJ2,
-    string? ProximoEnElegir);
+    string? ProximoEnElegir,
+    bool? GanaJ1 = null);
+
+internal sealed record MesaVisible(
+    string Local, JugadorVisible J1, JugadorVisible J2, int Ronda, int Combate,
+    int CombatesJ1, int CombatesJ2);
+
+internal enum EstadoEnvio
+{
+    Enviando,
+    Recibido,
+    Pendiente
+}

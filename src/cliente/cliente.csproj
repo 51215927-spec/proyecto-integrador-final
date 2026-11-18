@@ -2,7 +2,10 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Proyecto-Integrador-Final.Tests" />
-    <ProjectReference Include="..\..\mis-librerias\Utilidades\Utilidades.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" Version="0.57.2" />
   </ItemGroup>
 
   <PropertyGroup>

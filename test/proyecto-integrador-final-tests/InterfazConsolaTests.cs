@@ -102,9 +102,9 @@ public class InterfazConsolaTests
         Assert.Contains("Maga", resultado);
         Assert.Contains("Arquero", resultado);
         Assert.Contains("750", resultado);
-        Assert.Contains("Ganador: Mateo", resultado);
-        Assert.Contains("Lucía 0 - 1 Mateo", resultado);
-        Assert.Contains("Próximo atributo: Mateo", resultado);
+        Assert.Contains("Ganador", resultado);
+        Assert.Contains("Lucía 0 / Mateo 1", resultado);
+        Assert.Contains("Mateo elige el atributo", resultado);
     }
 
     [Fact]
