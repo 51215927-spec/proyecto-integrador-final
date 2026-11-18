@@ -2,7 +2,7 @@
 
 Trabajo de análisis y diseño para TI. La base es el cliente de consola previsto en la [consigna](Consigna.md), las [reglas](Reglas-del-juego.md) y la [arquitectura](Arquitectura.md#interfazconsola).
 
-El [comparador de propuestas](juego-guerra-propuestas.html) reúne las maquetas estáticas del inicio, la mano, el resultado de combate y el cierre de ronda.
+El [comparador de propuestas](diagramas/juego-guerra-propuestas.html) reúne las maquetas estáticas del inicio, la mano, el resultado de combate y el cierre de ronda.
 
 ## Estados del cliente
 
@@ -63,11 +63,11 @@ Las maquetas del HTML muestran una consola con espacio suficiente y un flujo de 
 
 ### Inicio y preparación · Pendiente de elección
 
-Las [cuatro maquetas](juego-guerra-propuestas.html#inicio) muestran el título del juego, el nombre local cuando está disponible y el estado de preparación. Bienvenida centrada da prioridad al título y al saludo, panel de preparación separa la identidad del estado, arranque por líneas presenta la información en secuencia y estado destacado pone la preparación en primer plano. Los datos de configuración y las acciones de inicio dependen del protocolo.
+Las [cuatro maquetas](diagramas/juego-guerra-propuestas.html#inicio) muestran el título del juego, el nombre local cuando está disponible y el estado de preparación. Bienvenida centrada da prioridad al título y al saludo, panel de preparación separa la identidad del estado, arranque por líneas presenta la información en secuencia y estado destacado pone la preparación en primer plano. Los datos de configuración y las acciones de inicio dependen del protocolo.
 
 ### Mano y elección · Lista con ficha
 
-En la [maqueta elegida](juego-guerra-propuestas.html#detalle), el encabezado muestra el nombre del jugador local, la ronda, el combate y el marcador acumulado. La mano se presenta en dos bloques alineados.
+En la [maqueta elegida](diagramas/juego-guerra-propuestas.html#detalle), el encabezado muestra el nombre del jugador local, la ronda, el combate y el marcador acumulado. La mano se presenta en dos bloques alineados.
 
 - **Izquierda.** Lista numerada de cartas disponibles, con la carta en foco identificada junto a su nombre.
 - **Derecha.** Caja con el nombre y los seis atributos de la carta en foco. Las etiquetas se alinean a la izquierda y los puntajes a la derecha. Solo la ficha lleva borde.
@@ -77,11 +77,11 @@ Para componer la vista, se preparan ambos bloques en memoria, se mide su ancho e
 
 ### Resultado de combate · Duelo en paralelo
 
-En la [maqueta elegida](juego-guerra-propuestas.html#duelo-paralelo), el atributo comparado aparece encima de dos paneles enfrentados. Cada panel muestra el nombre del jugador, la carta jugada y el valor del atributo. El valor tiene más énfasis que el resto del contenido y el panel ganador lleva la etiqueta «Ganador». El pie muestra el marcador de combates y, si la ronda continúa, quién elige el próximo atributo.
+En la [maqueta elegida](diagramas/juego-guerra-propuestas.html#duelo-paralelo), el atributo comparado aparece encima de dos paneles enfrentados. Cada panel muestra el nombre del jugador, la carta jugada y el valor del atributo. El valor tiene más énfasis que el resto del contenido y el panel ganador lleva la etiqueta «Ganador». El pie muestra el marcador de combates y, si la ronda continúa, quién elige el próximo atributo.
 
 ### Cierre de ronda · Pendiente de elección
 
-Las [cuatro maquetas](juego-guerra-propuestas.html#cierre-ronda) presentan el mismo resultado y cambian qué se lee primero. Victoria destacada pone al ganador arriba, marcador enfrentado da una columna a cada jugador, resumen en planilla separa combates y rondas en dos filas, y transición pone primero quién abre la ronda siguiente. Si un jugador alcanza 15 rondas ganadas, corresponde presentar el cierre de partida.
+Las [cuatro maquetas](diagramas/juego-guerra-propuestas.html#cierre-ronda) presentan el mismo resultado y cambian qué se lee primero. Victoria destacada pone al ganador arriba, marcador enfrentado da una columna a cada jugador, resumen en planilla separa combates y rondas en dos filas, y transición pone primero quién abre la ronda siguiente. Si un jugador alcanza 15 rondas ganadas, corresponde presentar el cierre de partida.
 
 ## Composición propia y uso de Utilidades
 
