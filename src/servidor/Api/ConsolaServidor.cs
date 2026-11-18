@@ -5,6 +5,17 @@ namespace Proyecto_Integrador_Final.Api;
 
 internal static class ConsolaServidor
 {
+    private static readonly Dictionary<string, (string Grupo, string Uso, string Descripcion)> comandos = new()
+    {
+        ["crear"] = ("Partidas", "crear", "Crea una partida y muestra su ID y las credenciales de J1 y J2."),
+        ["iniciar"] = ("Partidas", "iniciar <idPartida>", "Inicia la partida cuando están presentes los dos jugadores y hay al menos seis personajes activos."),
+        ["cancelar"] = ("Partidas", "cancelar <idPartida>", "Finaliza la partida por cancelación."),
+        ["cerrar-sesion"] = ("Jugadores", "cerrar-sesion <idPartida> <J1|J2>", "Cierra la sesión del jugador. Puede volver a conectarse con su credencial."),
+        ["reemplazar-credencial"] = ("Jugadores", "reemplazar-credencial <idPartida> <J1|J2>", "Cierra la sesión, invalida la credencial anterior y muestra la nueva."),
+        ["desactivar"] = ("Catálogo", "desactivar <idPersonaje>", "Excluye al personaje de las partidas que se inicien en adelante."),
+        ["ayuda"] = ("Ayuda", "ayuda", "Vuelve a mostrar esta guía.")
+    };
+
     internal static void Ejecutar(RepositorioJuego juego, TextReader entrada, TextWriter salida,
         CancellationToken detener)
     {
@@ -37,11 +48,12 @@ internal static class ConsolaServidor
         Guid id = valores.Length > 0 && Guid.TryParse(valores[0], out var uuid) ? uuid : Guid.Empty;
         string? rol = valores.Length == 2 ? valores[1].ToUpperInvariant() : null;
 
-        switch (partes[0].ToLowerInvariant())
+        string comando = partes[0].ToLowerInvariant();
+        switch (comando)
         {
             case "":
                 break;
-            case "ayuda":
+            case "ayuda" when argumento.Length == 0:
                 Ayuda(salida);
                 break;
             case "crear" when argumento.Length == 0:
@@ -70,18 +82,37 @@ internal static class ConsolaServidor
                 salida.WriteLine("Personaje desactivado.");
                 break;
             default:
-                salida.WriteLine("Comando o argumentos inválidos. Escribí ayuda.");
+                if (comandos.TryGetValue(comando, out var conocido))
+                    salida.WriteLine($"Argumentos inválidos. Uso: {conocido.Uso}. Escribí ayuda para ver los argumentos.");
+                else
+                    salida.WriteLine($"Comando desconocido: {partes[0]}. Escribí ayuda para ver los comandos.");
                 break;
         }
     }
 
-    private static void Ayuda(TextWriter salida) => salida.WriteLine(
-        """
-        crear
-        iniciar <idPartida>
-        cancelar <idPartida>
-        cerrar-sesion <idPartida> <J1|J2>
-        reemplazar-credencial <idPartida> <J1|J2>
-        desactivar <idPersonaje>
-        """);
+    private static void Ayuda(TextWriter salida)
+    {
+        salida.WriteLine("=== Consola del servidor de Guerra ===");
+        salida.WriteLine("Para empezar, escribí crear y compartí con cada jugador el ID de la partida y su credencial.");
+        salida.WriteLine("Cuando ambos estén conectados, usá iniciar con ese ID.");
+
+        foreach (var grupo in comandos.Values.GroupBy(comando => comando.Grupo))
+        {
+            salida.WriteLine();
+            salida.WriteLine(grupo.Key);
+            foreach (var comando in grupo)
+            {
+                salida.WriteLine($"  {comando.Uso}");
+                salida.WriteLine($"    {comando.Descripcion}");
+            }
+        }
+
+        salida.WriteLine();
+        salida.WriteLine("Argumentos");
+        salida.WriteLine("  <idPartida>    ID que muestra crear, por ejemplo 12345678-1234-4234-8234-123456789abc.");
+        salida.WriteLine("  <J1|J2>        Escribí J1 o J2 para elegir al jugador.");
+        salida.WriteLine("  <idPersonaje>  ID numérico del catálogo. Ejemplo: desactivar 12.");
+        salida.WriteLine("  Escribí los valores sin los signos < y >.");
+        salida.WriteLine();
+    }
 }
