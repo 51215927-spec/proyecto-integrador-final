@@ -8,7 +8,7 @@ namespace Proyecto_Integrador_Final
 {
     internal class Partida
     {
-        private const int RONDAS_PARA_GANAR = 15;
+        internal const int RondasParaGanar = 15;
 
         private readonly Jugador j1;
         private readonly Jugador j2;
@@ -127,13 +127,13 @@ namespace Proyecto_Integrador_Final
 
         private bool EstaTerminada()
         {
-            return this.j1.GetRondasGanadas() >= RONDAS_PARA_GANAR
-                || this.j2.GetRondasGanadas() >= RONDAS_PARA_GANAR;
+            return this.j1.GetRondasGanadas() >= RondasParaGanar
+                || this.j2.GetRondasGanadas() >= RondasParaGanar;
         }
 
         private Jugador DeterminarGanadorPartida()
         {
-            return this.j1.GetRondasGanadas() >= RONDAS_PARA_GANAR
+            return this.j1.GetRondasGanadas() >= RondasParaGanar
                 ? this.j1
                 : this.j2;
         }
