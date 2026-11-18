@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\proyecto-integrador-final\proyecto-integrador-final.csproj" />
+    <ProjectReference Include="..\..\src\servidor\servidor.csproj" />
   </ItemGroup>
 
 </Project>
