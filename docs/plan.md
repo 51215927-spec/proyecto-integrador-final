@@ -1,6 +1,6 @@
 # Plan de trabajo — Juego Guerra
 
-Plan basado en la [consigna](consigna.md). Las casillas registran entregables de diseño en TI y trabajo futuro en Taller.
+Plan basado en la [consigna](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Consigna). Las casillas registran entregables de diseño en TI y trabajo futuro en Taller.
 
 | Actividades de TI | Estado |
 |---|---|
@@ -27,43 +27,43 @@ Valores en orden: Fuerza, Velocidad, Resistencia, Inteligencia, Energía y Habil
 
 ### Actividad 2 — Relevamiento de requerimientos
 
-- [x] Documentar participantes, reglas de combate, ronda y partida en [Reglas del juego](reglas-del-juego.md).
+- [x] Documentar participantes, reglas de combate, ronda y partida en [Reglas del juego](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Reglas-del-juego).
 - [x] Definir catálogo, mazo, reparto, duplicados y mínimo de cartas.
 - [x] Especificar datos de ejecución, validaciones, errores y condiciones técnicas.
 - [x] Preparar el texto para que el usuario lo copie al documento de entrega.
 
 ### Actividad 3 — Modelo de clases
 
-- [x] Definir responsabilidades, encapsulamiento, dependencias y relaciones del dominio en [Arquitectura](arquitectura.md) y el [diagrama UML](diagramas/uml.uxf).
+- [x] Definir responsabilidades, encapsulamiento, dependencias y relaciones del dominio en [Arquitectura](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura) y el [diagrama UML](https://raw.githubusercontent.com/wiki/51215927-spec/proyecto-integrador-final/diagramas/uml.uxf).
 - [x] Modelar la carga del catálogo, la coordinación de la partida y la presentación de consola.
 
 La integración HTTP se documenta en la actividad 6.
 
 ### Actividad 4 — Especificación de métodos
 
-- [x] Especificar las firmas, precondiciones, efectos, retornos, validaciones y errores de cada operación en [Arquitectura](arquitectura.md#especificación-de-clases-y-métodos--actividad-4).
+- [x] Especificar las firmas, precondiciones, efectos, retornos, validaciones y errores de cada operación en [Arquitectura](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura#especificación-de-clases-y-métodos--actividad-4).
 
 Para este proyecto se acordó documentar cada método por escrito, sin diagramas Nassi–Schneiderman.
 
 ### Actividad 5 — Datos y validación de personajes
 
-- [x] Definir los [datos de los personajes](arquitectura.md#datos-y-validación-de-personajes--actividad-5) y sus validaciones.
+- [x] Definir los [datos de los personajes](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura#datos-y-validación-de-personajes--actividad-5) y sus validaciones.
 - [x] Incorporar ID, descripción y ASCII al catálogo y a los contratos de Personaje.
 
-La decisión vigente es cargar los personajes manualmente mediante `subir-personajes`. Esta decisión sustituye la lectura de archivos de personajes prevista en la consigna original. La presentación de la descripción se trata en [Interfaz](interfaz.md#decisiones-pendientes).
+La decisión vigente es cargar los personajes manualmente mediante `subir-personajes`. Esta decisión sustituye la lectura de archivos de personajes prevista en la consigna original. La presentación de la descripción se trata en [Interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz#decisiones-pendientes).
 
 ### Actividad 6 — Comunicación HTTP en red local
 
-**En curso.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](protocolo-partida-web.md), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
+**En curso.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
 
-- [x] Documentar tecnologías, despliegue, sesiones y reincorporación en el [protocolo](protocolo-partida-web.md).
+- [x] Documentar tecnologías, despliegue, sesiones y reincorporación en el [protocolo](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida).
 - [x] Especificar rutas, DTO, errores, estados, presencia, pausa y abandono.
 - [x] Diseñar el control de revisión de estado, la idempotencia y la persistencia transaccional.
 - [x] Documentar el modelo de integración y vincular los casos de prueba HTTP.
 
 ### Actividad 7 — Casos de prueba
 
-- [x] Documentar condiciones iniciales, datos, acción y resultados esperados de caja negra y blanca en el [plan de pruebas](posibles-fallos.md).
+- [x] Documentar condiciones iniciales, datos, acción y resultados esperados de caja negra y blanca en el [plan de pruebas](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Plan-de-pruebas).
 - [x] Cubrir personajes, formato del catálogo, mazo, reglas de combate y finalización.
 - [x] Cubrir indisponibilidad, turno incorrecto, pausa, recuperación y concurrencia según el contrato HTTP de la actividad 6.
 
@@ -83,18 +83,18 @@ El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado 
 
 ### Etapa 2 — Carga manual de personajes
 
-- [x] Definir el [contrato de alta individual](protocolo-partida-web.md#alta-individual-de-personajes).
+- [x] Definir el [contrato de alta individual](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida#alta-individual-de-personajes).
 - [x] Pedir los datos en `subir-personajes`, enviarlos por HTTP y permitir otra alta tras confirmar el ID.
 - [x] Verificar dos altas consecutivas y el rechazo con una credencial incorrecta.
 
 
 ### Etapa 3 — Jugador e interacción de consola
 
-El [diseño de la interfaz](interfaz.md) registra las pantallas, los controles implementados en el cliente y las decisiones pendientes del flujo cliente.
+El [diseño de la interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz) registra las pantallas, los controles implementados en el cliente y las decisiones pendientes del flujo cliente.
 
 - [ ] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
 - [ ] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
-- [x] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](interfaz.md), con renderizado mediante Spectre.Console.
+- [x] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz), con renderizado mediante Spectre.Console.
 - [x] Validar la carta elegida contra las opciones de mano recibidas y el atributo contra las opciones de la solicitud.
 - [x] Presentar mano, marcador, esperas, resultados y errores según los contratos de TI.
 - [ ] Comprobar que la interfaz no revele las elecciones rivales hasta completar ambas elecciones.
@@ -140,7 +140,7 @@ El [diseño de la interfaz](interfaz.md) registra las pantallas, los controles i
 - [ ] Iniciar la aplicación en ambas computadoras con los personajes entregados por los alumnos.
 - [ ] Completar una partida en red local y comprobar su resultado en ambas computadoras.
 - [ ] Registrar los resultados del plan de pruebas y resolver los fallos pendientes.
-- [ ] Revisar que el código esté en `src/`, las pruebas en `test/` y la documentación en `docs/`.
+- [ ] Revisar que el código esté en `src/`, las pruebas en `test/` y la documentación en la [wiki](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Home).
 - [ ] Comprobar que estén disponibles todos los entregables de TI y el código fuente integrado.
 - [ ] Preparar la defensa de las decisiones de diseño, estrategias de personajes, clases y métodos de cada integrante.
 
