@@ -1,4 +1,3 @@
-using DataBases;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +18,7 @@ internal static class ConsolaServidor
             {
                 Comando(juego, linea.Trim(), salida);
             }
-            catch (Exception error) when (error is ErrorApi or CsvException or IOException or UnauthorizedAccessException)
+            catch (ErrorApi error)
             {
                 salida.WriteLine(error.Message);
             }
@@ -66,10 +65,6 @@ internal static class ConsolaServidor
             case "reemplazar-credencial" when id != Guid.Empty && rol is "J1" or "J2":
                 salida.WriteLine($"{rol} {juego.ReemplazarCredencial(id, rol)}");
                 break;
-            case "importar" when argumento.Length > 0:
-                int cantidad = juego.Importar(argumento.Trim('"'));
-                salida.WriteLine($"Personajes importados {cantidad}.");
-                break;
             case "desactivar" when int.TryParse(argumento, out int personaje):
                 juego.Desactivar(personaje);
                 salida.WriteLine("Personaje desactivado.");
@@ -87,7 +82,6 @@ internal static class ConsolaServidor
         cancelar <idPartida>
         cerrar-sesion <idPartida> <J1|J2>
         reemplazar-credencial <idPartida> <J1|J2>
-        importar <rutaCsv>
         desactivar <idPersonaje>
         """);
 }

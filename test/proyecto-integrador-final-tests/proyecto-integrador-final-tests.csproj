@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\servidor\servidor.csproj" />
     <ProjectReference Include="..\..\src\cliente\cliente.csproj" />
+    <ProjectReference Include="..\..\src\subir-personajes\subir-personajes.csproj" />
   </ItemGroup>
 
 </Project>
