@@ -53,6 +53,22 @@ Por defecto el servidor crea `guerra.db` en el directorio de ejecución. Se pued
 
 Para iniciar una partida, importar el catálogo o cargar personajes mediante el alta HTTP. Ejecutar `crear`, incorporar a ambos jugadores y luego ejecutar `iniciar` con el UUID. El servidor conserva los datos de juego al reiniciar. Para seguir una partida, ambos jugadores se reincorporan con sus credenciales.
 
+### Prueba del servidor en una sola computadora
+
+Desde la raíz de la rama `feature/api-rest-partida`, usá una base de prueba para que el catálogo y las partidas del ensayo queden en un archivo propio. En PowerShell, ejecutá:
+
+```powershell
+$env:ConnectionStrings__Juego = 'Data Source=guerra-prueba.db;Default Timeout=1'
+dotnet run --project src/servidor/servidor.csproj -- --urls http://127.0.0.1:5000
+```
+
+- Esperá el mensaje de escucha en `http://127.0.0.1:5000`. En esa misma terminal, escribí `crear`. La consola imprime el UUID de la partida y una credencial para cada plaza.
+- Mantené abierta esa terminal mientras probás la API desde otra. Para iniciar el juego, importá primero un catálogo con al menos seis personajes activos mediante `importar <rutaCsv>`. Una importación correcta informa cuántos personajes procesó.
+- Incorporá ambos participantes mediante `PUT /participantes/me/sesion` según el contrato de abajo. Usá un UUID de sesión diferente por jugador y renová la presencia con `PUT /participantes/me/presencia` mientras realizás la prueba. Después, escribí `iniciar <idPartida>` en la consola del servidor. El resultado esperado es `Partida iniciada.`.
+- Consultá `GET /presentacion` con la credencial y sesión de cada plaza. Al inicio, ambas vistas muestran tres cartas propias. La vista de J1 incluye una solicitud `cartaYAtributo` y la de J2 tiene `solicitud: null` hasta que J1 juegue.
+
+Si el inicio falla, verificá que el UUID corresponda a la partida creada, que ambas sesiones sigan vigentes y que el catálogo tenga suficientes personajes activos. Al terminar, detené el servidor con Ctrl+C. Si volvés a iniciarlo con el mismo archivo, conserva la partida y requiere que ambos participantes vuelvan a incorporarse.
+
 ## Administración e identidad
 
 El operador crea, inicia y cancela partidas mediante la consola local del servidor. La creación genera un UUID de partida y dos credenciales aleatorias independientes, una por plaza J1/J2, que el operador entrega a cada jugador fuera de la API. Solo se almacena el hash de cada credencial. El cliente envía su credencial en `Authorization: Bearer` y el servidor deduce la plaza. El nombre visible se registra al incorporarse y queda fijo. El operador puede reemplazar una credencial desde el servidor y revocar la sesión anterior sin cambiar de plaza ni perder la mano.
