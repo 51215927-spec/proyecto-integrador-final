@@ -454,7 +454,7 @@ El constructor acepta una entrada, una salida y un ancho opcionales para probar 
 #### Métodos de las pantallas acordadas
 
 - `MostrarPreparacion(local, estado)`, `MostrarEsperaInicial(local, participantes, motivo)`, `MostrarInicioRonda(mesa, mano, cartas)` y `MostrarEsperaRival(mesa, rival, cartas)` componen los paneles de información.
-- `PedirCarta(mesa, cartas, abre)` devuelve la carta elegida. Para abrir usa la mesa de fichas y anuncia la elección posterior de atributo. Para responder muestra las cartas disponibles y el marcador.
+- `PedirCarta(mesa, cartas, abre)` devuelve la carta elegida. La apertura y la respuesta comparten la mesa de fichas con los seis atributos de cada carta. El encabezado de respuesta conserva el marcador y la apertura anuncia la elección posterior de atributo.
 - `MostrarEnvio(mesa, estado)` distingue `Enviando`, `Recibido` y `Pendiente`. `MostrarCombate(mesa, combate)` agrega el encabezado de ronda y combate al duelo.
 - `MostrarCierreRonda(mesa, ganador, proximoMano)` presenta el ganador, el marcador y el próximo jugador mano cuando existe. `MostrarCierrePartida(local, ganador, j1, j2)` muestra el resultado en una planilla y presenta la instrucción de salida.
 - `MostrarSuspension(mesa, motivo, confirmada)` muestra el último marcador confirmado. `MostrarInterrupcion(local, causa, efecto, confirmada)` distingue el cierre local del final confirmado de la partida.

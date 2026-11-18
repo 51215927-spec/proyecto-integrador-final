@@ -13,7 +13,7 @@ El [comparador de propuestas](diagramas/juego-guerra-propuestas.html) reúne cua
 | Inicio de ronda | Número de ronda, marcador acumulado, jugador mano y tres cartas propias. |
 | Turno para abrir | Elegir una carta propia disponible y uno de los seis atributos. |
 | Espera de la apertura rival | Mano propia, marcador y aviso de espera. Las elecciones rivales permanecen ocultas. |
-| Turno para responder | Elegir una carta propia disponible. La carta y el atributo elegidos por el rival permanecen ocultos. |
+| Turno para responder | Elegir una carta propia disponible en la misma mesa de fichas que se usa al abrir. La carta y el atributo elegidos por el rival permanecen ocultos. |
 | Envío o espera de resultado | Distinguir envío, recepción confirmada y confirmación pendiente. Evitar una segunda jugada sobre la misma solicitud. |
 | Combate resuelto | Mostrar ambas cartas jugadas, atributo, valores, ganador y marcador de combates. Si empatan, gana quien respondió. Si sigue la ronda, alterna quien elige atributo. |
 | Ronda resuelta | Mostrar ganador y marcador acumulado. Con dos victorias de combate se cierra la ronda, aunque quede una carta. Si sigue la partida, alterna el jugador mano y se vuelven a repartir tres cartas por jugador. |
@@ -74,7 +74,7 @@ Las maquetas del HTML muestran una consola con espacio suficiente y cubren el fl
 | Inicio de ronda | 02 · Paneles de información |
 | Mano y elección | 01 · Mesa de cartas |
 | Espera de la apertura rival | 02 · Paneles de información |
-| Turno para responder | 02 · Paneles de información |
+| Turno para responder | Mesa de cartas, con el marcador y sin elección de atributo |
 | Envío y espera de resultado | 01 · Mensaje principal |
 | Resultado de combate | 01 · Duelo en paralelo |
 | Cierre de ronda | 01 · Victoria destacada |
