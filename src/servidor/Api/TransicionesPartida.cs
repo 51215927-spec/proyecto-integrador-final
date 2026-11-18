@@ -20,6 +20,7 @@ internal sealed partial class RepositorioJuego
         if (!AmbosPresentes(id))
             throw new ErrorApi(409, "partidaPausada", "Se necesitan los dos participantes presentes.");
 
+        // Cada partida conserva su propia copia de los personajes activos al iniciar.
         var cartas = db.Catalogo.Where(p => p.Activo).ToArray()
             .Select(p => PersonajePartida.Copiar(id, p)).ToArray();
         if (cartas.Length < 6)
@@ -40,6 +41,7 @@ internal sealed partial class RepositorioJuego
         return Ejecutar(true, db =>
         {
             var (partida, jugador) = Acceso(db, id, credencial, idSesion);
+            // Un reintento idéntico recupera su recibo aunque la revisión o el turno hayan cambiado.
             var anterior = db.Operaciones.Find(id, jugador.Rol, datos.IdOperacion);
             if (anterior is not null)
             {
@@ -77,6 +79,7 @@ internal sealed partial class RepositorioJuego
                 Resolver(db, partida, combate, carta);
             }
 
+            // El recibo se guarda en la misma transacción que la jugada que confirma.
             var operacion = new OperacionGuardada
             {
                 IdPartida = id, Rol = jugador.Rol, IdOperacion = datos.IdOperacion,
@@ -139,6 +142,7 @@ internal sealed partial class RepositorioJuego
     private static void Repartir(BaseJuego db, PartidaGuardada partida, PersonajePartida[] cartas,
         int numero, string mano)
     {
+        // Al empezar cada ronda se mezclan todas las cartas y se reparten tres por jugador.
         Random.Shared.Shuffle(cartas);
         for (int i = 0; i < cartas.Length; i++)
         {
@@ -178,6 +182,7 @@ internal sealed partial class RepositorioJuego
     private static void Resolver(BaseJuego db, PartidaGuardada partida, CombateGuardado guardado,
         PersonajePartida cartaRival)
     {
+        // La API reconstruye las dos jugadas para aplicar las reglas de Combate.
         var cartaElector = db.Cartas.Find(partida.Id, guardado.IdCartaElector!.Value)!;
         var elector = new Jugador(guardado.Elector);
         var rival = new Jugador(Otro(guardado.Elector));

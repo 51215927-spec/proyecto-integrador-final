@@ -360,6 +360,7 @@ internal sealed class InterfazConsola
         if (leerTeclas)
             return Console.ReadKey(intercept: true).Key;
 
+        // Con entrada por líneas, una línea vacía equivale a presionar Enter.
         string linea = entrada.ReadLine()
             ?? throw new EndOfStreamException("Se cerró la entrada de consola.");
 
@@ -378,6 +379,7 @@ internal sealed class InterfazConsola
         };
     }
 
+    // Los caracteres de control y formato se reemplazan por espacios al mostrar texto.
     private static string TextoVisible(string texto) =>
         string.Concat(texto.Select(caracter =>
             char.IsControl(caracter) || char.GetUnicodeCategory(caracter) is UnicodeCategory.Format

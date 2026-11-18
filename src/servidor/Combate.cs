@@ -77,6 +77,7 @@ namespace Proyecto_Integrador_Final
             int valorElector = cartaQueElige!.GetAtributo(atributoElegido!.Value);
             int valorRival = cartaRival!.GetAtributo(atributoElegido.Value);
 
+            // Si los valores empatan, gana el rival de quien eligió el atributo.
             ganador = valorElector > valorRival
                 ? jugadorQueElige
                 : jugadorRival;

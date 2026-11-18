@@ -25,6 +25,7 @@ internal sealed partial class RepositorioJuego
             var cartas = db.Cartas.Where(c => c.IdPartida == id).OrderBy(c => c.Orden).ToArray();
             var mano = cartas.Where(c => c.Ubicacion == jugador.Rol).Select(c => c.Vista()).ToArray();
 
+            // Solo se envían opciones a quien tiene el turno mientras ambos jugadores están presentes.
             SolicitudVisible? visible = null;
             if (!pausada && partida.IdSolicitud is Guid idSolicitud)
             {
@@ -34,6 +35,7 @@ internal sealed partial class RepositorioJuego
                         solicitud.Tipo == "cartaYAtributo" ? atributos.Keys.ToArray() : []);
             }
 
+            // Las cartas de cada combate se muestran una vez que se conoce su ganador.
             var historial = db.Combates.Where(c => c.IdPartida == id && c.Ganador != null)
                 .OrderBy(c => c.NumeroRonda).ThenBy(c => c.Numero).ToArray();
             var ganadores = db.Rondas.Where(r => r.IdPartida == id && r.Ganador != null)
