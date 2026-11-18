@@ -16,7 +16,7 @@ Selección tecnológica de TI para el [protocolo HTTP](protocolo-partida-web.md)
 
 ## Persistencia
 
-SQLite almacena en el servidor el catálogo permanente y el estado de las partidas. Los clientes obtienen sus vistas mediante la API. La importación del CSV, las copias por partida y los límites de transacción están en el [diseño de persistencia](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo). El contrato de DataBases describe el [formato de origen](arquitectura.md#formato-de-archivos-de-personajes--actividad-5).
+SQLite almacena en el servidor el catálogo permanente y el estado de las partidas. Los clientes obtienen sus vistas mediante la API. La importación del CSV, las copias por partida y los límites de transacción están en el [diseño de persistencia](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo). La actividad 5 describe el [formato de origen](arquitectura.md#formato-de-archivos-de-personajes--actividad-5).
 
 ## Versiones de referencia
 

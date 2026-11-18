@@ -20,7 +20,7 @@ Las pruebas de dominio e integración HTTP viven en `test/` y referencian `servi
 
 ### Alta de personajes desde consola
 
-1. `subir-personajes` pide el nombre, la descripción y el arte ASCII con `Funciones.PedirString` de Utilidades. Pide los seis atributos con `Funciones.PedirInt`, con valores entre 250 y 750 inclusive.
+1. `subir-personajes` pide el nombre, la descripción y el arte ASCII. Pide los seis atributos, con valores entre 250 y 750 inclusive.
 2. La herramienta enviará los datos mediante el [alta individual de personajes](protocolo-partida-web.md#alta-individual-de-personajes). El servidor valida el personaje según las reglas del dominio y guarda el alta en el catálogo cuando los datos son válidos.
 3. Cuando el servidor confirma el alta, la consola pregunta «¿Deseás cargar otro personaje?». Si la respuesta es afirmativa, vuelve a pedir los datos. Si es negativa, termina.
 
@@ -48,8 +48,8 @@ classDiagram
     ServidorHttp --> RepositorioJuego
     RepositorioJuego --> BaseJuego
     RepositorioJuego --> Combate
-    RepositorioJuego --> FilaCatalogo
-    FilaCatalogo ..> Personaje
+    RepositorioJuego --> CatalogoCsv
+    CatalogoCsv ..> Personaje
     class ServidorHttp {
         Crear(args) WebApplication
     }
@@ -73,7 +73,7 @@ classDiagram
 
 `ServidorHttp` registra las rutas y convierte las respuestas y errores al formato acordado. `RepositorioJuego` identifica a cada participante, proyecta su vista y aplica las transiciones del protocolo mediante `BaseJuego`. Para resolver un combate reconstruye las cartas y los participantes necesarios y delega la comparación a `Combate.Resolver`. El servidor usa los umbrales de `Ronda` y `Partida` y conserva la progresión en SQLite entre solicitudes. El estado y el recibo se confirman juntos en una transacción de escritura.
 
-`FilaCatalogo` configura las diez columnas CSV con DataBases. El catálogo persistido guarda el ID y la descripción, y usa el constructor de `Personaje` para validar los puntajes. Las operaciones de la consola y la protección del alta se detallan en el [protocolo](protocolo-partida-web.md#operación-del-servidor).
+`CatalogoCsv` lee las diez columnas CSV por nombre y valida el lote antes de guardarlo. El catálogo persistido guarda el ID y la descripción, y usa el constructor de `Personaje` para validar los puntajes. Las operaciones de la consola y la protección del alta se detallan en el [protocolo](protocolo-partida-web.md#operación-del-servidor).
 
 ## Distribución y responsabilidades
 
@@ -102,7 +102,7 @@ Los roles diferentes se dibujan como asociaciones distintas, incluso si apuntan 
 
 Se consultó la [especificación UML 2.5.1 de OMG](https://www.omg.org/spec/UML/2.5.1/PDF): sección 9.4.4 para miembros estáticos y de solo lectura, 10.2.4 para enumeraciones y 11.5.4 para asociaciones. La [documentación de UMLet](https://www.umlet.com/faq.htm) define la representación mediante lt, r1/r2 y m1/m2 y la conexión de extremos a los bordes.
 
-TipoAtributo utiliza la palabra clave «enumeration» y un literal por línea. Por convención solicitada por el usuario, cada literal lleva `+`. Los miembros estáticos se subrayan; la propiedad Modelo se representa en su asociación, subrayada, con acceso público y una aclaración de escritura privada. La realización de IEntidad apunta a la interfaz con triángulo hueco y línea discontinua. Las asociaciones navegables usan línea continua y punta abierta; las dependencias de uso se explican por escrito y no se dibujan con flechas `.>`, por indicación del usuario. Utilidades se representa como paquete y los nombres externos de DataBases se califican con `::`.
+TipoAtributo utiliza la palabra clave «enumeration» y un literal por línea. Por convención solicitada por el usuario, cada literal lleva `+`. Los miembros estáticos se subrayan. Las asociaciones navegables usan línea continua y punta abierta.
 
 Las firmas conservan nombres de tipos y colecciones de C# para orientar la futura implementación; no constituyen una especificación completa de plantillas UML. El atributo opcional TipoAtributo de Combate expresa multiplicidad `[0..1]`.
 
@@ -112,7 +112,7 @@ Las firmas indican parámetros y retornos. Salvo donde se indica estático, los 
 
 ### Personaje
 
-Representa una carta válida con ID, nombre, descripción, ASCII y seis atributos privados. No ofrece modificación pública de esos valores. Implementa `IEntidad<Personaje>` sin encargarse de leer archivos.
+Representa una carta válida con ID, nombre, descripción, ASCII y seis atributos privados. No ofrece modificación pública de esos valores. La lectura de archivos corresponde a CatalogoCsv.
 
 #### Constructor `Personaje(id: int, nombre: string, descripcion: string, ascii: string, fuerza: int, velocidad: int, resistencia: int, inteligencia: int, energia: int, habilidad: int)`
 
@@ -141,10 +141,6 @@ Es público y devuelve el ASCII del personaje para que InterfazConsola lo muestr
 #### `GetAtributo(tipo: TipoAtributo): int`
 
 Es público y recibe un TipoAtributo elegido entre las seis opciones del juego. Devuelve el valor de ese atributo para permitir la comparación de cartas. La opción se valida al recibir la entrada; este método solo consulta el valor.
-
-#### `Configurar(entidad: ConstructorEntidad<Personaje>): void`
-
-Es público y estático. Recibe el ConstructorEntidad que proporciona DataBases y configura el archivo Datos.RUTA_PERSONAJES y las columnas asociadas a los campos privados, incluidos id de tipo int y descripcion de tipo string. El constructor compatible recibe también descripcion para reconstruir el objeto sin utilizar setters. DataBases comprueba la configuración. El formato del catálogo está especificado en el apartado de la actividad 5 de este documento.
 
 ### Mazo
 
@@ -395,7 +391,7 @@ Es privado y devuelve al jugador que llegó a 15 rondas ganadas. Jugar lo llama 
 
 ### Datos
 
-Clase estática, sin instancias. Conserva tipoProceso privado opcional y la ruta del catálogo CSV en el diseño base. Modelo permite lectura pública y escritura privada y no está disponible hasta completar Iniciar. El operador del servidor indica la ruta al ejecutar la [importación local](protocolo-partida-web.md#importación-local).
+Clase estática, sin instancias. Conserva tipoProceso privado opcional y la ruta del catálogo CSV en el diseño base. El operador del servidor indica la ruta al ejecutar la [importación local](protocolo-partida-web.md#importación-local).
 
 #### `Configurar(tipo: TipoProceso): void`
 
@@ -407,7 +403,7 @@ Es público y estático. Devuelve el rol guardado por Configurar en el diseño b
 
 #### `Iniciar(): void`
 
-Es público y estático. Se llama una vez, después de Configurar. Registra las entidades con ConstructorModelo, construye el modelo y carga las tablas iniciales, exigiendo que exista el catálogo de personajes. Asigna Modelo cuando la preparación termina correctamente. Los errores de configuración, datos o archivos se propagan al punto de ejecución, que los informa y finaliza. La importación a SQLite usa el [contrato de la actividad 6](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
+En el servidor REST, la preparación del catálogo se realiza mediante la [importación local](protocolo-partida-web.md#importación-local).
 
 ### InterfazConsola
 
@@ -463,35 +459,9 @@ El constructor acepta una entrada, una salida y un ancho opcionales para probar 
 - `MostrarCierreRonda(mesa, ganador, proximoMano)` presenta el ganador, el marcador y el próximo jugador mano cuando existe. `MostrarCierrePartida(local, ganador, j1, j2)` muestra el resultado en una planilla y presenta la instrucción de salida.
 - `MostrarSuspension(mesa, motivo, confirmada)` muestra el último marcador confirmado. `MostrarInterrupcion(local, causa, efecto, confirmada)` distingue el cierre local del final confirmado de la partida.
 
-### DataBases::Modelo — clase externa representada en el UML
-
-Pertenece a la biblioteca y no se reimplementa. Cada proceso tiene su instancia mediante Datos.Modelo después de Iniciar. Se especifican las tres operaciones que muestra el UML; el resto de su API se consulta en el README de DataBases.
-
-#### `Cargar<T>(exigirArchivo: bool = false): Tabla<T>`
-
-Es público y genérico. Carga desde el archivo la tabla de la entidad T registrada en el modelo y la devuelve. Con exigirArchivo en true, un archivo ausente produce FileNotFoundException; con false permite una tabla vacía. Al recargar, conserva la instancia de Tabla y reemplaza sus elementos; si falla la lectura conserva el contenido anterior. Los errores de formato, construcción o acceso a archivos se propagan.
-
-#### `Tabla<T>(): Tabla<T>`
-
-Es público y genérico. Devuelve la tabla de T previamente cargada, con sus datos en memoria. No es una copia: los cambios afectan esa tabla y se publican al llamar a Guardar. No lee el archivo de nuevo.
-
-#### `Guardar<T>(): void`
-
-Es público y genérico. Escribe en el archivo todo el contenido de la tabla cargada de T. Si detecta cambios externos desde la carga, DataBases lanza CsvConcurrenciaException; los errores de acceso también se propagan. El punto de ejecución informa el fallo y finaliza.
-
-### DataBases::IEntidad<Personaje>
-
-Interfaz externa sin instancias ni estado de carta. Su contrato requiere la siguiente operación, cuya implementación concreta se especifica en Personaje.
-
-#### `Configurar(entidad: ConstructorEntidad<Personaje>): void`
-
-Es público, estático y abstracto. Recibe el ConstructorEntidad con el que Personaje debe declarar su archivo y sus columnas. ConstructorModelo utiliza este contrato para configurar la entidad sin crear un personaje. La implementación se describe en Personaje.Configurar.
-
-### Enumeraciones y paquete externo
+### Enumeraciones
 
 TipoAtributo contiene Fuerza, Velocidad, Resistencia, Inteligencia, Energia y Habilidad; TipoProceso contiene Servidor, ClienteJ1 y ClienteJ2. No declaran métodos en el UML. Las entradas se convierten a estas opciones después de validarlas; los métodos que las reciben no repiten ese control.
-
-Utilidades es un paquete externo que agrupa Funciones, DecoracionConsola, MyConsole, ColoresMenu y FormatoMenu. No se rediseñan esas clases ni se les inventan métodos: su uso se evalúa según el diseño de la interfaz.
 
 ## Datos y persistencia
 
@@ -501,11 +471,11 @@ El protocolo HTTP define la importación, el esquema, las copias para cada parti
 
 ## Formato de archivos de personajes — actividad 5
 
-**Completada por confirmación del usuario.** Se documentan las definiciones acordadas y las condiciones de DataBases. El cierre corresponde al análisis y diseño; no implica implementación.
+**Completada por confirmación del usuario.** Se documentan las definiciones acordadas. El cierre corresponde al análisis y diseño; no implica implementación.
 
 ### Entidades persistentes y columnas
 
-El formato definido mediante DataBases corresponde al CSV de Personaje. Cada columna se declara en la configuración de la entidad. La persistencia en SQLite y la carga desde el CSV se describen en el [protocolo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
+El CSV contiene los datos de los personajes. El lector asocia cada columna por su nombre. La persistencia en SQLite y la carga desde el CSV se describen en el [protocolo](protocolo-partida-web.md#persistencia-concurrencia-y-catálogo).
 
 Personaje tiene actualmente los siguientes campos en el modelo, sin agregar otros por inferencia:
 
@@ -524,19 +494,19 @@ Personaje tiene actualmente los siguientes campos en el modelo, sin agregar otro
 
 Los seis atributos numéricos deben sumar exactamente 3000, incluir al menos uno mayor o igual a 650 y al menos uno menor o igual a 350. La validación pertenece al constructor de Personaje mediante Validar, según el contrato de la actividad 4.
 
-### Reglas del formato proporcionadas por DataBases
+### Reglas del formato CSV
 
-El archivo CSV tiene esta estructura: encabezado con los nombres de columnas, separador coma y un objeto por línea física. La biblioteca asocia las columnas por nombre al leer, por lo que admite reordenarlas. Al guardar utiliza UTF-8 sin BOM y escribe los textos entre comillas.
+El archivo CSV tiene esta estructura: encabezado con los nombres de columnas, separador coma y un objeto por línea física. El lector asocia las columnas por nombre al leer, por lo que admite reordenarlas. Los archivos se preparan en UTF-8 sin BOM y con los textos entre comillas.
 
-Dentro de los textos, las barras, comillas, saltos de línea, retornos de carro y tabulaciones se representan mediante los escapes de DataBases. Un ASCII con varios renglones puede almacenarse como texto en una sola línea física usando saltos escapados. El límite confirmado es de 25 líneas de contenido y 120 caracteres por línea; los saltos escapados permiten representar esas líneas dentro del registro. No se permiten caracteres de tabulación en el ASCII, aunque DataBases pueda representarlos mediante su escape. El usuario garantiza que el ASCII tendrá contenido y pidió no validar si está vacío; esta decisión no elimina el rechazo de null ya establecido en el constructor. La descripción se incorpora como texto en la columna descripcion y utiliza los mismos escapes de DataBases. Cuando no hay descripción, la celda se escribe como ""; la columna permanece en el encabezado y en cada registro.
+Dentro de los textos, las barras, comillas, saltos de línea, retornos de carro y tabulaciones se representan con los escapes `\\`, `\"`, `\n`, `\r` y `\t` respectivamente. Un ASCII con varios renglones puede almacenarse como texto en una sola línea física usando saltos escapados. El límite confirmado es de 25 líneas de contenido y 120 caracteres por línea; los saltos escapados permiten representar esas líneas dentro del registro. No se permiten caracteres de tabulación en el ASCII, incluidas las tabulaciones escapadas. El usuario garantiza que el ASCII tendrá contenido y pidió no validar si está vacío; esta decisión no elimina el rechazo de null ya establecido en el constructor. La descripción se incorpora como texto en la columna descripcion y utiliza los mismos escapes. Cuando no hay descripción, la celda se escribe como ""; la columna permanece en el encabezado y en cada registro.
 
-La palabra null sin comillas representa ausencia de valor; las comillas vacías representan texto vacío y la palabra null entre comillas representa texto literal. DataBases distingue esos valores; las restricciones de Personaje determinan cuáles son admisibles.
+La palabra null sin comillas representa ausencia de valor; las comillas vacías representan texto vacío y la palabra null entre comillas representa texto literal. Las restricciones del personaje determinan qué valores se admiten.
 
 ### Lectura y errores ya especificados
 
-El catálogo se carga al iniciar mediante Cargar<Personaje>(exigirArchivo: true). Si falta, se produce FileNotFoundException. DataBases informa encabezados inválidos, cantidad incorrecta de celdas, conversiones imposibles y datos rechazados por el constructor mediante CsvFormatException. Los errores de entrada y salida o de permisos se propagan sin envolver. Conforme a la política vigente, el punto de ejecución informa el error y finaliza el juego completo, sin recuperación.
+El servidor abre el CSV al ejecutar la importación local. Un archivo ausente produce FileNotFoundException. Los errores de formato o validación producen FormatException e indican la línea afectada. Los errores de acceso se propagan al comando, que informa el fallo y permite reintentar.
 
-DataBases no impone unicidad de personajes. Por confirmación del usuario, el catálogo estará preparado antes de la ejecución y él garantizará que no contenga duplicados. La carga no queda a cargo del usuario final del juego; por decisión posterior del usuario se agrega id como columna única y estable. La biblioteca no valida esa unicidad: antes de comenzar la partida debe rechazarse un catálogo con IDs ambiguos.
+El ID es único y estable. El lector rechaza los IDs repetidos dentro del mismo archivo antes de aplicar cambios al catálogo.
 
 La conversión de la información de los personajes al catálogo CSV se definirá posteriormente. El usuario considera como posibilidades un script o solicitar la generación del CSV a partir de los datos, sin haber elegido todavía una alternativa. No se exige por ahora que cada alumno entregue un CSV individual ni se define un formato de conversión.
 

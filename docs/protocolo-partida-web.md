@@ -47,7 +47,7 @@ Por defecto el servidor crea `guerra.db` en el directorio de ejecución. Se pued
 | `cancelar <idPartida>` | Finaliza una partida pendiente o activa con motivo `cancelacion`. |
 | `cerrar-sesion <idPartida> <J1|J2>` | Libera la plaza para otra sesión y conserva su estado de juego. |
 | `reemplazar-credencial <idPartida> <J1|J2>` | Revoca el acceso anterior y muestra una credencial nueva para la misma plaza. |
-| `importar <rutaCsv>` | Lee un CSV DataBases y aplica el lote completo. La ruta puede ser absoluta o relativa al directorio de ejecución. |
+| `importar <rutaCsv>` | Lee un CSV y aplica el lote completo. La ruta puede ser absoluta o relativa al directorio de ejecución. |
 | `desactivar <idPersonaje>` | Excluye el personaje de futuros repartos de partidas nuevas. |
 | `ayuda` | Muestra los comandos disponibles. |
 
@@ -146,7 +146,7 @@ Cada solicitud de alta válida crea un personaje. La idempotencia por `idOperaci
 
 ### Importación local
 
-Para la carga por lotes, el operador carga o actualiza el catálogo mediante importación local del formato DataBases definido en la actividad 5. Se valida todo el lote antes de confirmar altas y cambios por ID en una sola transacción. Los IDs repetidos dentro del lote se rechazan. Una actualización por ID conserva la condición activa o inactiva registrada. Un error deja intacto el catálogo vigente y se informa el registro inválido. El operador puede corregir el archivo y volver a importar. El operador retira personajes desactivándolos por ID. Las partidas iniciadas usan únicamente su copia, incluso después de reiniciar o desactivar un personaje. La conversión al CSV conserva el pendiente acordado en la actividad 5.
+Para la carga por lotes, el operador carga o actualiza el catálogo mediante importación local del formato CSV definido en la actividad 5. Se valida todo el lote antes de confirmar altas y cambios por ID en una sola transacción. Los IDs repetidos dentro del lote se rechazan. Una actualización por ID conserva la condición activa o inactiva registrada. Un error deja intacto el catálogo vigente y se informa el registro inválido. El operador puede corregir el archivo y volver a importar. El operador retira personajes desactivándolos por ID. Las partidas iniciadas usan únicamente su copia, incluso después de reiniciar o desactivar un personaje. La conversión al CSV conserva el pendiente acordado en la actividad 5.
 
 Cada escritura de juego usa una transacción SQLite con adquisición del turno de escritura antes de leer el estado para validar. Se comprueba primero si existe el recibo propio. Si los campos normalizados coinciden se devuelve el recibo guardado sin aplicar otra transición. Si difieren, se rechaza con `operacionIncompatible`. Para una operación nueva se comprueban presencia, fase, revisión, titular, solicitud, carta y atributo. Se confirman juntos estado, solicitud consumida, revisión y recibo. Si la escritura no está disponible se devuelve `503`; el cliente reutiliza el identificador original. Los recibos se conservan junto con la partida, incluso finalizada. Inicio y cancelación locales validan la transición desde la fase persistida antes de modificarla.
 

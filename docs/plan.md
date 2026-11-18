@@ -81,18 +81,13 @@ El alcance de TI reúne análisis y diseño. El desarrollo de la API autorizado 
 - [x] Implementar GetNombre, GetAscii y GetAtributo conservando el encapsulamiento. GetDescripcion permanece pendiente en la tarea de completar Personaje.
 - [ ] Agregar en `test/` pruebas de personajes válidos y de cada restricción de puntajes.
 
-### Etapa 2 — Carga de personajes con Datos y DataBases
+### Etapa 2 — Carga de personajes desde CSV
 
-- [ ] Resolver la dependencia del código de importación respecto de DataBases tras retirar el submódulo.
-- [ ] Implementar Personaje.Configurar con el formato definido en TI: el método existe, pero su cuerpo está vacío.
+- [x] Implementar el lector del catálogo CSV y validar el lote antes de guardarlo.
 - [x] Definir el [contrato de alta individual de personajes](protocolo-partida-web.md#alta-individual-de-personajes).
-- [ ] Implementar el [alta por consola en `subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola). Pedir los datos con `PedirString` y `PedirInt`, enviarlos por la API y preguntar si se desea cargar otro personaje tras la confirmación.
+- [ ] Implementar el [alta por consola en `subir-personajes`](arquitectura.md#alta-de-personajes-desde-consola). Pedir los datos, enviarlos por la API y preguntar si se desea cargar otro personaje tras la confirmación.
 - [x] Permitir que el operador indique la ruta del CSV al [importar el catálogo](protocolo-partida-web.md#importación-local).
-- [ ] Cargar el catálogo obligatorio mediante Modelo.Cargar<Personaje>(exigirArchivo: true).
-- [ ] Obtener los personajes de la tabla cargada para construir el mazo inicial.
-- [ ] Mantener la validación de puntajes en el constructor de Personaje y la interpretación del CSV en DataBases.
-- [ ] Aplicar la finalización prevista para archivos inexistentes, ilegibles o inválidos.
-- [ ] Probar la carga con los ejemplos de la actividad 5, sin reimplementar el lector CSV.
+- [x] Verificar la lectura con columnas reordenadas, textos escapados y registros inválidos sin persistencia parcial.
 
 ### Etapa 3 — Jugador e interacción de consola
 
