@@ -407,45 +407,57 @@ Es público y estático. Se llama una vez, después de Configurar. Registra las 
 
 ### InterfazConsola
 
-El [diseño de la interfaz](interfaz.md) reúne los estados de presentación, las limitaciones de consola y las decisiones pendientes.
+La [interfaz de consola](interfaz.md) compone las pantallas con datos que recibe del flujo cliente. Los métodos son de instancia. Las firmas de implementación en `src/cliente` adaptan las del UML a vistas de presentación locales. `CartaVisible` lleva el identificador, el nombre y los atributos de una carta propia. `JugadorVisible` contiene el nombre y las rondas ganadas. `CombateVisible` contiene las dos jugadas reveladas, el atributo comparado, el ganador confirmado, el marcador de combates y el próximo elector si corresponde. `MesaVisible` aporta la identidad local, la ronda, el combate y los marcadores de ambos jugadores. El flujo cliente prepara estas vistas a partir de los datos del protocolo. Puede identificar la plaza ganadora de un combate mediante `GanaJ1` cuando dos jugadores comparten nombre.
 
-Presentación de los clientes, sin decidir ganadores ni modificar marcadores. Todos sus métodos son públicos y de instancia, como indica el UML. Compone pantallas propias según el [diseño de la interfaz](interfaz.md#composición-propia-y-uso-de-utilidades). El flujo del cliente controla qué información puede presentarse.
+#### `MostrarMano(mano: IReadOnlyList<CartaVisible>): void`
 
-#### `MostrarMano(jugador: Jugador): void`
+Muestra las cartas disponibles y sus atributos. Usa fichas en paralelo cuando caben y pasa a bloques verticales según el ancho disponible. Si la mano está vacía, lo informa.
 
-Recibe al jugador y muestra su mano: una lista de cartas disponibles y la ficha con los seis atributos de la carta en foco. Si está vacía, lo informa. Solo presenta los datos que recibe del flujo del cliente.
+#### `PedirCarta(mano: IReadOnlyList<CartaVisible>): CartaVisible`
 
-#### `PedirCarta(jugador: Jugador): Personaje`
+Copia la lista de opciones, marca la opción activa y devuelve la carta seleccionada con su identificador. El flujo debe proporcionar solo las cartas de la mano que permite la solicitud vigente. La elección conserva la mano y el flujo registra la jugada ante el servidor. Una lista vacía provoca `InvalidOperationException`.
 
-Recibe al jugador local y devuelve la carta que selecciona de su mano. El flujo lo llama cuando tiene cartas disponibles. Obtiene una copia de GetCartas, muestra el menú propio y valida la opción contra las cartas disponibles. El método no retira la carta: SetCarta registra y consume la elección.
+#### `PedirAtributo(permitidos: IReadOnlyList<string>? = null, mesa: MesaVisible? = null): string`
 
-#### `PedirAtributo(): TipoAtributo`
+Muestra los atributos permitidos por la solicitud y devuelve el nombre de la opción elegida. Si se omite la lista, ofrece los seis atributos de la consigna. Una lista explícitamente vacía provoca `InvalidOperationException`. Si se proporciona la mesa, la vista conserva el encabezado del combate. Los métodos de selección ignoran las teclas sin acción y señalan el fin de entrada mediante `EndOfStreamException`.
 
-Devuelve uno de los seis atributos y vuelve a solicitar la entrada cuando es incorrecta. El flujo del cliente lo llama cuando corresponde elegir y luego comunica la opción.
+#### `MostrarMarcador(j1: JugadorVisible, j2: JugadorVisible, ronda: int): void`
 
-#### `MostrarMarcador(j1: Jugador, j2: Jugador, ronda: int): void`
-
-Recibe a los dos jugadores y el número de ronda. Muestra sus nombres, las rondas ganadas y la ronda actual en el encabezado de la pantalla. Usa los datos preparados por Partida sin volver a validarlos.
+Muestra la ronda en curso, los nombres de los jugadores y sus rondas ganadas.
 
 #### `MostrarEsperando(mensaje: string): void`
 
-Recibe un mensaje de espera y lo muestra mediante MyConsole. La consulta HTTP y la espera de respuestas corresponden al flujo del cliente.
+Muestra el motivo conocido de la espera. Omite el mismo mensaje cuando se repite consecutivamente. El flujo cliente realiza las consultas al servidor.
 
-#### `MostrarCombate(combate: Combate): void`
+#### `MostrarCombate(combate: CombateVisible): void`
 
-Recibe un combate resuelto y presenta los participantes, sus cartas, el atributo comparado, los valores y el ganador. El flujo del cliente lo llama cuando dispone del resultado completo; el método no vuelve a resolverlo ni modifica los marcadores.
+Presenta los participantes, las cartas jugadas, el atributo, los valores comparados, el ganador, el marcador y el próximo elector si está informado. El servidor proporciona el resultado confirmado.
 
-#### `MostrarGanadorRonda(ganador: Jugador): void`
+#### `MostrarGanadorRonda(ganador: JugadorVisible): void`
 
-Recibe al ganador de la ronda, ya determinado por el flujo, y muestra su nombre. La actualización del marcador corresponde a Partida.
+Anuncia el nombre del ganador de la ronda. El flujo puede acompañar el anuncio con el marcador acumulado.
 
-#### `MostrarGanadorPartida(ganador: Jugador): void`
+#### `MostrarGanadorPartida(ganador: JugadorVisible): void`
 
-Recibe al ganador final, devuelto por Partida o comunicado por el servidor, y muestra el anuncio de victoria.
+Anuncia el nombre del ganador de la partida. El flujo presenta el marcador final y gestiona la salida.
 
 #### `MostrarError(mensaje: string): void`
 
-Recibe el mensaje de error y lo presenta mediante la función de error de Utilidades. El punto de ejecución decide el cierre de la aplicación.
+Presenta la etiqueta textual `ERROR` y la resalta si la terminal admite color. El punto de ejecución decide si corresponde cerrar.
+
+#### `MostrarEstado(titulo: string, mensaje: string): void`
+
+Compone un encabezado y un mensaje general. El flujo proporciona el título y el detalle según el estado conocido.
+
+El constructor acepta una entrada, una salida y un ancho opcionales para probar la consola con flujos de texto. Por defecto usa la entrada de consola y renderiza con Spectre.Console.
+
+#### Métodos de las pantallas acordadas
+
+- `MostrarPreparacion(local, estado)`, `MostrarEsperaInicial(local, participantes, motivo)`, `MostrarInicioRonda(mesa, mano, cartas)` y `MostrarEsperaRival(mesa, rival, cartas)` componen los paneles de información.
+- `PedirCarta(mesa, cartas, abre)` devuelve la carta elegida. La apertura y la respuesta comparten la mesa de fichas con los seis atributos de cada carta. El encabezado de respuesta conserva el marcador y la apertura anuncia la elección posterior de atributo.
+- `MostrarEnvio(mesa, estado)` distingue `Enviando`, `Recibido` y `Pendiente`. `MostrarCombate(mesa, combate)` agrega el encabezado de ronda y combate al duelo.
+- `MostrarCierreRonda(mesa, ganador, proximoMano)` presenta el ganador, el marcador y el próximo jugador mano cuando existe. `MostrarCierrePartida(local, ganador, j1, j2)` muestra el resultado en una planilla y presenta la instrucción de salida.
+- `MostrarSuspension(mesa, motivo, confirmada)` muestra el último marcador confirmado. `MostrarInterrupcion(local, causa, efecto, confirmada)` distingue el cierre local del final confirmado de la partida.
 
 ### DataBases::Modelo — clase externa representada en el UML
 
@@ -530,4 +542,4 @@ La conversión al CSV está postergada. La ubicación del archivo se registra en
 
 ## Presentación de consola
 
-La [especificación de interfaz](interfaz.md) describe las pantallas, sus maquetas y el uso puntual de Utilidades. La validación de opciones de entrada pertenece al cliente. Las consultas, esperas y reintentos siguen el [protocolo HTTP](protocolo-partida-web.md#estados-presencia-y-recuperación).
+La [especificación de interfaz](interfaz.md) describe las pantallas, sus maquetas y su composición con Spectre.Console. La validación de opciones de entrada pertenece al cliente. Las consultas, esperas y reintentos siguen el [protocolo HTTP](protocolo-partida-web.md#estados-presencia-y-recuperación).

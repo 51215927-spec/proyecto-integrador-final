@@ -13,7 +13,7 @@ El [comparador de propuestas](diagramas/juego-guerra-propuestas.html) reúne cua
 | Inicio de ronda | Número de ronda, marcador acumulado, jugador mano y tres cartas propias. |
 | Turno para abrir | Elegir una carta propia disponible y uno de los seis atributos. |
 | Espera de la apertura rival | Mano propia, marcador y aviso de espera. Las elecciones rivales permanecen ocultas. |
-| Turno para responder | Elegir una carta propia disponible. La carta y el atributo elegidos por el rival permanecen ocultos. |
+| Turno para responder | Elegir una carta propia disponible en la misma mesa de fichas que se usa al abrir. La carta y el atributo elegidos por el rival permanecen ocultos. |
 | Envío o espera de resultado | Distinguir envío, recepción confirmada y confirmación pendiente. Evitar una segunda jugada sobre la misma solicitud. |
 | Combate resuelto | Mostrar ambas cartas jugadas, atributo, valores, ganador y marcador de combates. Si empatan, gana quien respondió. Si sigue la ronda, alterna quien elige atributo. |
 | Ronda resuelta | Mostrar ganador y marcador acumulado. Con dos victorias de combate se cierra la ronda, aunque quede una carta. Si sigue la partida, alterna el jugador mano y se vuelven a repartir tres cartas por jugador. |
@@ -49,11 +49,15 @@ Las siguientes respuestas son propuestas de diseño.
 - **Espera.** Distinguir ausencia del rival, servidor inaccesible, estado desactualizado y respuesta inválida cuando el protocolo permita identificarlos.
 - **Cierre.** Distinguir victoria, salida solicitada, abandono y fallo fatal. El [protocolo HTTP](protocolo-partida-web.md#estados-presencia-y-recuperación) define pausa, abandono y cancelación.
 
+## Controles de la implementación
+
+La consola limpia la pantalla al cambiar de vista en una terminal. Para elegir, mové el foco con las flechas, WASD o HJKL y pulsá Enter. La opción activa se marca con `>` y un resaltado si hay color disponible. El foco se detiene en los extremos de la lista. Con entrada redirigida, enviá una letra de movimiento por línea y una línea vacía para confirmar. El fin de entrada termina la solicitud mediante `EndOfStreamException`. La salida redirigida apila las fichas y conserva el historial de pantallas.
+
+El flujo cliente debe comprobar que la solicitud siga vigente antes de enviar una opción. También debe gestionar el cambio de estado durante la escritura, la entrada sobrante entre solicitudes, las confirmaciones, la recuperación y la salida.
+
 ## Decisiones pendientes
 
-- Confirmar números y Enter como control principal y decidir si también se admitirán flechas.
-- Decidir si se admite entrada redirigida para jugar y probar.
-- Definir si los resultados avanzan automáticamente, requieren confirmación local o permanecen visibles junto a la siguiente acción.
+- Definir cómo se descarta la entrada interactiva sobrante entre solicitudes.
 - Definir cuándo mostrar el arte y la descripción. La propuesta es consultarlos en una ficha separada.
 - Definir cómo se presentan la incorporación, el rol asignado, la recuperación y la confirmación de salida. Decidir si el diseño visual abarca la consola del servidor.
 
@@ -70,7 +74,7 @@ Las maquetas del HTML muestran una consola con espacio suficiente y cubren el fl
 | Inicio de ronda | 02 · Paneles de información |
 | Mano y elección | 01 · Mesa de cartas |
 | Espera de la apertura rival | 02 · Paneles de información |
-| Turno para responder | 02 · Paneles de información |
+| Turno para responder | Mesa de cartas, con el marcador y sin elección de atributo |
 | Envío y espera de resultado | 01 · Mensaje principal |
 | Resultado de combate | 01 · Duelo en paralelo |
 | Cierre de ronda | 01 · Victoria destacada |
@@ -86,11 +90,36 @@ En la [maqueta elegida](diagramas/juego-guerra-propuestas.html#mesa), el encabez
 
 En la [maqueta elegida](diagramas/juego-guerra-propuestas.html#duelo-paralelo), el atributo comparado aparece encima de dos paneles enfrentados. Cada panel muestra el nombre del jugador, la carta jugada y el valor del atributo. El valor tiene más énfasis que el resto del contenido y el panel ganador lleva la etiqueta «Ganador». El pie muestra el marcador de combates y, si la ronda continúa, quién elige el próximo atributo.
 
-## Composición propia y uso de Utilidades
+## Composición con Spectre.Console
 
-La interfaz tiene una distribución y una interacción personalizadas. La composición de pantallas, cajas, columnas y resaltados se resolverá con métodos propios. El uso directo de `Utilidades.Funciones` y `Utilidades.DecoracionConsola` será excepcional y se evaluará caso por caso, cuando un método resuelva una necesidad concreta y encaje con el diseño.
+El cliente conserva la composición de las doce pantallas elegidas y usa [Spectre.Console](https://spectreconsole.net/console/) para renderizar las barras de estado, los paneles, las fichas y la planilla final sobre .NET 8. Aplica los acentos verdes de las maquetas cuando la terminal admite color. En pantallas angostas o con salida redirigida, apila los paneles y conserva el orden de lectura. El menú resalta la opción activa y actualiza la vista al mover el foco.
 
-El menú de la mano tendrá su propio código para mantener coordinadas las fichas de las cartas y la instrucción del turno. Los métodos de Utilidades pueden servir como referencia para resolver partes similares, como leer teclas, validar opciones, recorrer la lista o actualizar el elemento en foco. La navegación definitiva se decide por separado. `MyConsole` puede seguir sirviendo como mecanismo de escritura de las líneas compuestas.
+## Demostración local
+
+Desde la raíz de la rama que contiene el cliente actualizado, ejecutá:
+
+```bash
+dotnet run --project src/cliente -- --demo
+```
+
+La demo comienza con Lucía y Mateo empatados 14–14. Usa un mazo de ejemplo y ejecuta la ronda decisiva localmente.
+
+1. Pulsá Enter en los paneles de preparación, espera e inicio de ronda.
+2. En la apertura, mové el foco hasta una carta y confirmá con Enter. Repetí la selección en el menú de atributos.
+3. Avanzá por los estados de envío y revisá el duelo. La pantalla muestra ambas cartas, sus puntajes en el atributo usado y el marcador de combates.
+4. Cuando abre Mateo, avanzá desde la espera y elegí solo una carta. La demo usa Inteligencia para comparar este combate y muestra el atributo en el resultado.
+5. Al ganar dos combates, el vencedor de la ronda alcanza 15 victorias. El resumen final muestra quién ganó y el marcador 15–14.
+
+Para probar un cierre específico, agregá uno de estos argumentos después de `--demo`. Por ejemplo, ejecutá `dotnet run --project src/cliente -- --demo pausa`.
+
+| Argumento | Pantalla esperada |
+|---|---|
+| `pausa` | Suspensión por pérdida de sesión, seguida de un estado de comunicación sin confirmar. |
+| `abandono` | Interrupción confirmada porque el rival abandonó. |
+| `cancelacion` | Interrupción confirmada porque el operador canceló la partida. |
+| `salida` | Cierre local del cliente con la partida guardada en el escenario simulado. |
+
+Con entrada y salida redirigidas, los paneles se imprimen en orden, las pantallas informativas avanzan automáticamente y solo las selecciones consumen líneas de entrada. Una línea vacía confirma la opción activa. La demostración simula las pantallas y sus transiciones. La conexión HTTP, los recibos reales y la recuperación siguen pendientes en el cliente.
 
 ## Escenarios de prueba de la interfaz
 
