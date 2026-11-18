@@ -12,10 +12,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "subir-personajes", "src\sub
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "proyecto-integrador-final-tests", "test\proyecto-integrador-final-tests\proyecto-integrador-final-tests.csproj", "{1E878B74-31EA-66AE-1AAA-2AF1E8F22313}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBases", "mis-librerias\DataBases\DataBases.csproj", "{D1C6E30F-C6E0-F4AE-9557-069C12E46016}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilidades", "mis-librerias\Utilidades\Utilidades.csproj", "{FE47999A-5418-9876-9D47-93E5AF62DD6B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,14 +22,6 @@ Global
 		{1E878B74-31EA-66AE-1AAA-2AF1E8F22313}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E878B74-31EA-66AE-1AAA-2AF1E8F22313}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E878B74-31EA-66AE-1AAA-2AF1E8F22313}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D1C6E30F-C6E0-F4AE-9557-069C12E46016}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D1C6E30F-C6E0-F4AE-9557-069C12E46016}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D1C6E30F-C6E0-F4AE-9557-069C12E46016}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D1C6E30F-C6E0-F4AE-9557-069C12E46016}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FE47999A-5418-9876-9D47-93E5AF62DD6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE47999A-5418-9876-9D47-93E5AF62DD6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE47999A-5418-9876-9D47-93E5AF62DD6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE47999A-5418-9876-9D47-93E5AF62DD6B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B6DA1253-4197-4AB2-AC3A-9D43BB0EEA9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B6DA1253-4197-4AB2-AC3A-9D43BB0EEA9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6DA1253-4197-4AB2-AC3A-9D43BB0EEA9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
