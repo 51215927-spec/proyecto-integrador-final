@@ -56,19 +56,10 @@ La actividad está cerrada. Quedan postergados los ejemplos propios y la convers
 
 **En curso.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](Protocolo-partida-web.md), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
 
-#### Archivos
-
-- [x] Diseñar la importación local del catálogo CSV a SQLite, el mantenimiento por ID y las copias por partida.
-- [ ] Definir la ubicación del CSV de importación.
-
-#### REST
-
 - [x] Documentar tecnologías, despliegue, sesiones y reincorporación en el [protocolo](Protocolo-partida-web.md).
 - [x] Especificar rutas, DTO, errores, estados, presencia, pausa y abandono.
 - [x] Diseñar el control de revisión de estado, la idempotencia y la persistencia transaccional.
 - [x] Documentar el modelo de integración y vincular los casos de prueba HTTP.
-- [ ] Comprobar instalaciones, escucha TCP 5000 y comunicación en red siguiendo el [procedimiento en dos equipos](Protocolo-partida-web.md#verificación-en-dos-equipos).
-- [ ] Verificar servidor ausente, desconexión, reintentos y concurrencia en los equipos previstos.
 
 ### Actividad 7 — Casos de prueba
 
