@@ -1,6 +1,6 @@
 # Plan de trabajo — Juego Guerra
 
-Plan basado en la [consigna](wiki/Consigna.md). El usuario confirmó la entrega de TI. Las casillas registran los entregables de diseño y el estado del trabajo de Taller.
+Plan basado en la [consigna](../wiki/Consigna.md). El usuario confirmó la entrega de TI. Las casillas registran los entregables de diseño y el estado del trabajo de Taller.
 
 | Actividades de TI | Estado |
 |---|---|
@@ -27,7 +27,7 @@ Valores en orden: Fuerza, Velocidad, Resistencia, Inteligencia, Energía y Habil
 
 ### Actividad 2 — Relevamiento de requerimientos
 
-- [x] Documentar participantes, reglas de combate, ronda y partida en [Reglas del juego](wiki/Reglas-del-juego.md).
+- [x] Documentar participantes, reglas de combate, ronda y partida en [Reglas del juego](../wiki/Reglas-del-juego.md).
 - [x] Definir catálogo, mazo, reparto, duplicados y mínimo de cartas.
 - [x] Especificar datos de ejecución, validaciones, errores y condiciones técnicas.
 - [x] Preparar el texto para que el usuario lo copie al documento de entrega.
@@ -63,7 +63,7 @@ La decisión vigente es cargar los personajes manualmente mediante `subir-person
 
 ### Actividad 7 — Casos de prueba
 
-- [x] Documentar condiciones iniciales, datos, acción y resultados esperados de caja negra y blanca en el [plan de pruebas](wiki/Plan-de-pruebas.md).
+- [x] Documentar condiciones iniciales, datos, acción y resultados esperados de caja negra y blanca en el [plan de pruebas](../wiki/Plan-de-pruebas.md).
 - [x] Cubrir personajes, formato del catálogo, mazo, reglas de combate y finalización.
 - [x] Cubrir indisponibilidad, turno incorrecto, pausa, recuperación y concurrencia según el contrato HTTP de la actividad 6.
 
@@ -90,11 +90,11 @@ TI ya fue entregado. Para completar Taller, primero hay que cerrar las decisione
 
 ### Etapa 3 — Jugador e interacción de consola
 
-El [diseño de la interfaz](wiki/Diseno-de-interfaz.md) registra las pantallas, los controles implementados en el cliente y las decisiones pendientes del flujo cliente.
+El [diseño de la interfaz](../wiki/Diseno-de-interfaz.md) registra las pantallas, los controles implementados en el cliente y las decisiones pendientes del flujo cliente.
 
 - [x] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
 - [x] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
-- [x] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](wiki/Diseno-de-interfaz.md), con renderizado mediante Spectre.Console.
+- [x] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](../wiki/Diseno-de-interfaz.md), con renderizado mediante Spectre.Console.
 - [x] Validar la carta elegida contra las opciones de mano recibidas y el atributo contra las opciones de la solicitud.
 - [x] Presentar mano, marcador, esperas, resultados y errores según los contratos de TI.
 - [ ] Definir cómo descartar las entradas sobrantes entre solicitudes y cómo tratar una elección en curso cuando cambia la solicitud.
@@ -154,7 +154,7 @@ El cliente de consola dispone de una demostración local. Para jugar una partida
 - [ ] Preparar ambos equipos con la misma versión del proyecto y .NET 8. Arrancar el servidor, registrar su IPv4 y puerto TCP 5000, y comprobar el acceso desde el segundo equipo.
 - [ ] Cargar al menos seis personajes válidos de los alumnos, crear la partida desde la consola del servidor e incorporar a J1 y J2 desde equipos distintos con sus credenciales.
 - [ ] Jugar hasta las 15 rondas ganadas. Comprobar el reparto de tres cartas por jugador, las manos privadas, la secuencia de los combates, la alternancia y la coincidencia del marcador y del resultado final en ambas consolas.
-- [ ] Ejecutar los escenarios de red y consistencia HTTP aplicables del [plan de pruebas](wiki/Plan-de-pruebas.md#red-local-y-consistencia-http), incluidos pérdida de respuesta, desconexión, recuperación, reinicio del servidor y abandono. Ejecutar los casos con fallos inducidos en un entorno de pruebas.
+- [ ] Ejecutar los escenarios de red y consistencia HTTP aplicables del [plan de pruebas](../wiki/Plan-de-pruebas.md#red-local-y-consistencia-http), incluidos pérdida de respuesta, desconexión, recuperación, reinicio del servidor y abandono. Ejecutar los casos con fallos inducidos en un entorno de pruebas.
 - [ ] Registrar la versión, los equipos, la IP y el puerto del servidor, el resultado observado por caso y la evidencia. Resolver los fallos y repetir los casos afectados.
 
 #### Entrega de Taller
@@ -167,4 +167,4 @@ El cliente de consola dispone de una demostración local. Para jugar una partida
 - [ ] Verificar los entregables de Taller, la disponibilidad del código integrado en `src/`, las pruebas en `test/` y la documentación en la [wiki](wiki/README.md).
 - [ ] Preparar la defensa de Taller con las decisiones de diseño, las estrategias de personajes, las clases y métodos de cada integrante y la evidencia de la partida en red.
 
-Los Analistas coordinan los entregables y comunican los cambios a Taller. El flujo de GitHub está en la [guía de colaboración](../CONTRIBUTING.md).
+Los Analistas coordinan los entregables y comunican los cambios a Taller. El flujo de GitHub está en la [guía de colaboración](../../CONTRIBUTING.md).

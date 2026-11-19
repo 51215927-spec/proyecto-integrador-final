@@ -4,7 +4,7 @@ TDD, o desarrollo guiado por pruebas, consiste en escribir una prueba automatiza
 
 ## Estructura inicial
 
-Los contratos de [Arquitectura](Arquitectura.md) especifican las clases y las firmas de sus métodos. Al preparar esa estructura, los métodos pendientes lanzan `NotImplementedException`. Cada comportamiento comienza con su propia prueba.
+Los contratos de [Modelos](Modelos.md) especifican las clases y las firmas de sus métodos. Al preparar esa estructura, los métodos pendientes lanzan `NotImplementedException`. Cada comportamiento comienza con su propia prueba.
 
 ## Ciclo rojo, verde y refactorización
 

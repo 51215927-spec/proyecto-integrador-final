@@ -1,8 +1,8 @@
 # Diseño de la interfaz de Juego Guerra
 
-Trabajo de análisis y diseño para TI. La base es el cliente de consola previsto en la [consigna](Consigna.md), las [reglas](Reglas-del-juego.md) y la [arquitectura](Arquitectura.md#interfazconsola).
+Trabajo de análisis y diseño para TI. La base es el cliente de consola previsto en la [consigna](Consigna.md), las [reglas](Reglas-del-juego.md) y la [arquitectura](Arquitectura.md#proyectos).
 
-El comparador de propuestas, incluido en el ZIP del [índice](README.md), reúne cuatro maquetas estáticas para cada uno de los doce estados del cliente que se detallan abajo.
+El comparador de propuestas, incluido en el ZIP del [archivo de diagramas](diagramas/diagramas-y-maquetas.zip), reúne cuatro maquetas estáticas para cada uno de los doce estados del cliente que se detallan abajo.
 
 ## Estados del cliente
 

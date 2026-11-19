@@ -37,13 +37,13 @@ Usá una descripción en minúsculas y sin tildes. Separá las palabras de la ra
 
 ### Preparar y compartir cambios
 
-Comprobá el diff, ejecutá las verificaciones pertinentes y agregá únicamente los archivos de la tarea. Por ejemplo, para un cambio en el plan:
+Comprobá el diff, ejecutá las verificaciones pertinentes y agregá únicamente los archivos de la tarea. Por ejemplo, para un cambio en el índice SDD:
 
 ```bash
 git diff
-git add docs/plan.md
+git add specs/README.md
 git diff --cached
-git commit -m "docs: actualizar plan de trabajo"
+git commit -m "docs: actualizar indice de especificaciones"
 git push -u origin HEAD
 ```
 

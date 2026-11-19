@@ -1,4 +1,4 @@
-# Protocolo de partida web — API REST
+# API REST y operación del servidor
 
 HTTP en red local está aprobado para la entrega de la [actividad 6](Consigna.md). Este documento describe el contrato REST y la operación del servidor de la solución. Los clientes de consola y la comprobación en dos computadoras siguen pendientes.
 
@@ -16,7 +16,7 @@ El diseño prevé dos clientes de consola que se comunican con el servidor media
 
 EF Core administra la persistencia en una base SQLite local al servidor, tanto del catálogo permanente de personajes (nombre, descripción, ASCII y seis atributos) como de los datos de partidas. Los clientes acceden exclusivamente a la API. El esquema y las transacciones se definen en este documento.
 
-En el primer equipo Windows se ejecutan el servidor y el cliente J1 como procesos separados. En el segundo se ejecuta el cliente J2. Se abre primero el servidor y después ambos clientes. Las versiones acordadas están en [Tecnologías REST](Tecnologias-REST.md).
+En el primer equipo Windows se ejecutan el servidor y el cliente J1 como procesos separados. En el segundo se ejecuta el cliente J2. Se abre primero el servidor y después ambos clientes. Las versiones acordadas están en [Tecnologías REST](Tecnologias.md).
 
 La API y el dominio tienen responsabilidades distintas: la API identifica al jugador y valida el contrato recibido; el dominio decide si la elección es válida y resuelve el juego; la persistencia confirma los cambios. Los objetos de transferencia de datos (DTO) representan los mensajes de red. Las entidades de EF Core representan los registros que el servidor guarda en SQLite.
 
@@ -129,9 +129,9 @@ El error incluye `codigo`, `mensaje` e `idSeguimiento`; sus campos excluyen elec
 
 ### Alta individual de personajes
 
-`POST /api/v1/personajes` recibe JSON UTF-8 con `nombre`, `descripcion`, `ascii`, `fuerza`, `velocidad`, `resistencia`, `inteligencia`, `energia` y `habilidad`. La descripción admite texto vacío. Los puntajes son enteros y el servidor aplica las [validaciones de Personaje](Arquitectura.md#datos-y-validación-de-personajes--actividad-5). El ASCII admite hasta 25 líneas, con un máximo de 120 caracteres por línea y sin tabulaciones.
+`POST /api/v1/personajes` recibe JSON UTF-8 con `nombre`, `descripcion`, `ascii`, `fuerza`, `velocidad`, `resistencia`, `inteligencia`, `energia` y `habilidad`. La descripción admite texto vacío. Los puntajes son enteros y el servidor aplica las [validaciones de Personaje](Reglas-del-juego.md#personajes-y-preparación). El ASCII admite hasta 25 líneas, con un máximo de 120 caracteres por línea y sin tabulaciones.
 
-El operador configura una credencial de catálogo en el entorno del servidor mediante `Catalogo__Credencial`. El cliente la envía en `Authorization: Bearer`. El alta devuelve `401 credencialInvalida` si falta la configuración o la credencial recibida no coincide. Las credenciales de las plazas se usan para la partida. El cliente [`subir-personajes`](Arquitectura.md#alta-de-personajes-desde-consola) usa esta ruta.
+El operador configura una credencial de catálogo en el entorno del servidor mediante `Catalogo__Credencial`. El cliente la envía en `Authorization: Bearer`. El alta devuelve `401 credencialInvalida` si falta la configuración o la credencial recibida no coincide. Las credenciales de las plazas se usan para la partida. El cliente [`subir-personajes`](../../src/subir-personajes/README.md) usa esta ruta.
 
 | Respuesta | Significado |
 |---|---|
@@ -157,4 +157,30 @@ El usuario informó que dos procesos se comunicaron por localhost. La prueba ent
 1. En ambos equipos registrar `dotnet --info` y `dotnet --list-runtimes`. En el servidor registrar la IPv4 local con `ipconfig` y comprobar que TCP 5000 esté libre antes de iniciar y en escucha en la interfaz de red después.
 2. Desde el segundo equipo ejecutar `Test-NetConnection <IPv4-del-servidor> -Port 5000`. Si falla, comprobar primero la IP, la escucha y las condiciones de red indicadas en el apartado de conexión.
 3. Iniciar J1 y J2 con sus credenciales y direcciones configuradas. Comprobar incorporación, manos privadas, secuencia de combate y presentación de resultados desde cada equipo. Registrar fecha, equipos, dirección, versión probada, resultado por paso y evidencia.
-4. Usar los escenarios de fallos de la [actividad 7](../plan.md#actividad-7--casos-de-prueba) para cubrir indisponibilidad, desconexión, reintento y elecciones concurrentes. La ejecución queda pendiente hasta disponer del servidor y ambos equipos.
+4. Usar los escenarios de fallos de la [actividad 7](Plan-de-pruebas.md) para cubrir indisponibilidad, desconexión, reintento y elecciones concurrentes. La ejecución queda pendiente hasta disponer del servidor y ambos equipos.
+
+## Ejemplo de elección
+
+En una partida iniciada, consultá primero `GET /presentacion` con la credencial de la plaza y `X-Sesion`. Usá la revisión, la solicitud y las opciones de esa respuesta. Con las mismas cabeceras enviá `POST /elecciones` con `Content-Type: application/json`. Este ejemplo muestra una solicitud de carta y atributo con valores ilustrativos.
+
+```json
+{
+  "idOperacion": "d2f03b38-3cdf-45c1-933f-0b336ffbb79c",
+  "idSolicitud": "33c32892-c5bc-4a95-8c0a-36bd1c3c1195",
+  "revisionEsperada": 1,
+  "idPersonaje": 2,
+  "atributo": "Fuerza"
+}
+```
+
+Una elección aceptada devuelve `201 Created` y un recibo como el siguiente.
+
+```json
+{
+  "idOperacion": "d2f03b38-3cdf-45c1-933f-0b336ffbb79c",
+  "idSolicitud": "33c32892-c5bc-4a95-8c0a-36bd1c3c1195",
+  "revisionConfirmada": 2
+}
+```
+
+Si se pierde la respuesta, consultá `GET /elecciones/{idOperacion}` con la misma plaza. Si la operación ya se confirmó y reenviás los datos originales, el servidor devuelve `200` con el mismo recibo.

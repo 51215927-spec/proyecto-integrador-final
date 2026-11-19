@@ -23,4 +23,4 @@ Las convenciones de ramas, commits y Pull Requests están en la [guía de colabo
 | `.sln` | Solución de Visual Studio que agrupa los proyectos. |
 | `README.md` | Presentación del proyecto e índice de documentación. |
 
-Guardá el código de la aplicación en `src/` y las pruebas automatizadas en `test/`. Documentá la consigna, arquitectura y uso en `docs/wiki/`. Dejá el plan en `docs/plan.md` y enlazá cada documento nuevo desde el [índice de documentación](README.md). Mantené fuera del control de versiones los directorios generados `bin/` y `obj/`.
+Guardá el código de la aplicación en `src/` y las pruebas automatizadas en `test/`. Documentá la consigna, arquitectura y uso en `docs/wiki/`. Registrá el seguimiento por funcionalidad en `specs/` y enlazá cada documento nuevo desde el [índice de documentación](README.md). Mantené fuera del control de versiones los directorios generados `bin/` y `obj/`.

@@ -14,16 +14,16 @@ Antes de modificar el alcance, la arquitectura o la estructura del proyecto, lee
 
 - `README.md`
 - [Consigna](docs/wiki/Consigna.md)
-- `docs/plan.md`
+- `specs/README.md`
 - [Arquitectura](docs/wiki/Arquitectura.md)
 - `CONTRIBUTING.md`
 
 La fuente principal de requisitos es la [consigna](docs/wiki/Consigna.md). En caso de contradicción, no asumir qué interpretación es correcta: identificar el conflicto y solicitar una definición cuando sea necesario.
 
-Aplicar el skill `desarrollo-documentado` durante el trabajo en este proyecto:
+Aplicar el skill `sdd` durante el trabajo en este proyecto:
 
 - Consultar el contexto y el estado real del repositorio antes de planificar.
-- Mantener `docs/plan.md` y la página [Arquitectura](docs/wiki/Arquitectura.md) actualizados según las decisiones vigentes, exclusivamente mediante tareas documentales en ramas `docs/`.
+- Mantener las especificaciones por funcionalidad en `specs/` y la página [Arquitectura](docs/wiki/Arquitectura.md) actualizados según las decisiones vigentes, exclusivamente mediante tareas documentales en ramas `docs/`.
 - Realizar cambios acotados, coherentes y revisables.
 - Verificar los aspectos afectados por cada modificación.
 - Registrar decisiones y resultados relevantes cuando aporten trazabilidad.
@@ -32,7 +32,7 @@ Aplicar el skill `desarrollo-documentado` durante el trabajo en este proyecto:
 ### Separación de cambios documentales
 
 - Modificar documentación únicamente desde ramas cuyo nombre comience con `docs/`. Esta regla incluye `AGENTS.md`, `README.md`, `CONTRIBUTING.md` y los documentos de `docs/`.
-- No modificar `docs/plan.md` ni marcar o tachar tareas completadas desde ramas de código o pruebas.
+- No modificar las especificaciones ni marcar o tachar tareas completadas desde ramas de código o pruebas.
 - Realizar las actualizaciones documentales derivadas de una tarea en una rama `docs/` independiente, con commits exclusivamente documentales. No mezclar código y documentación en un mismo commit o PR.
 - Si una tarea de código requiere actualizar el plan, la arquitectura u otro documento, informar el pendiente al usuario y realizar la actualización en la tarea documental separada.
 - Esta separación prevalece sobre las indicaciones generales de actualizar documentación al completar una tarea y busca evitar conflictos entre ramas.
@@ -65,7 +65,8 @@ Respetar la siguiente organización:
 
 - `src/`: código fuente de la aplicación.
 - `test/`: proyectos y código de pruebas automatizadas.
-- `docs/`: plan de trabajo.
+- `docs/`: wiki y documentación histórica.
+- `specs/`: especificaciones, diseño y tareas por funcionalidad.
 - [Documentación del proyecto](docs/wiki/README.md): documentación técnica y académica.
 
 Al agregar documentación a `docs/wiki/`, enlazarla desde su índice y desde `README.md` cuando corresponda.

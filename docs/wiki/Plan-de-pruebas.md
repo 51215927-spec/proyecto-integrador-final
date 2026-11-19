@@ -4,7 +4,7 @@ Este plan de TI especifica resultados esperados. La ejecución y el registro de 
 
 **Caja negra** comprueba resultados observables por consola, API o contrato público del dominio. **Caja blanca** inspecciona el estado persistido o controla un punto de fallo para comprobar efectos que la respuesta por sí sola no demuestra.
 
-Los resultados esperados se basan en la [consigna](Consigna.md), las [reglas](Reglas-del-juego.md), la [validación de personajes](Arquitectura.md#datos-y-validación-de-personajes--actividad-5) y el [contrato HTTP](Protocolo-de-partida.md).
+Los resultados esperados se basan en la [consigna](Consigna.md), las [reglas](Reglas-del-juego.md), la [validación de personajes](Reglas-del-juego.md#personajes-y-preparación) y el [contrato HTTP](Protocolo-de-partida.md).
 
 ## Personajes y catálogo
 
@@ -58,3 +58,7 @@ Usar dos plazas, una sesión por cliente y la URL configurada del servidor. Capt
 | H12 · Caja blanca | Actualizar o desactivar un personaje del catálogo usado en una partida y recuperar el estado. | En una partida iniciada, el personaje sigue en una mano. Se cambia el catálogo y se reinicia el servidor | La partida conserva la copia y puntajes originales. Una nueva partida usa los datos vigentes y excluye los personajes desactivados. |
 
 Para la ejecución registrar el ID del caso, versión probada, entorno, resultado observado, conformidad y evidencia. Para H01 y los demás casos que se ejecuten en red, registrar también los dos equipos, dirección del servidor y puerto. Los casos con fallo inducido requieren un entorno de pruebas controlado.
+
+## Ejecución y evidencia
+
+Desde la carpeta que contiene la solución ejecutá `dotnet test proyecto-integrador-final.sln`. El reporte indica cuáles casos se ejecutaron. Para la comprobación manual en red local, registrá los equipos, condiciones iniciales, solicitud enviada, resultado esperado y observado. [Proyecto de pruebas](../../test/proyecto-integrador-final-tests/README.md) · [Verificación en dos equipos](Protocolo-de-partida.md#verificación-en-dos-equipos)

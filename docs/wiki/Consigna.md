@@ -1,6 +1,6 @@
 # Proyecto integrador: Juego Guerra
 
-> **Aclaración para la entrega del proyecto (17 de noviembre de 2026).** El usuario informó que se aprobó sustituir el archivo compartido de la actividad 6 por comunicación HTTP en red local mediante una API REST. La actividad 6 debe especificar ese intercambio y la actividad 7 debe contemplar sus casos de comunicación y concurrencia. El [protocolo HTTP](Protocolo-de-partida.md) y el [plan vigente](../plan.md) recogen la decisión.
+> **Aclaración para la entrega del proyecto (17 de noviembre de 2026).** El usuario informó que se aprobó sustituir el archivo compartido de la actividad 6 por comunicación HTTP en red local mediante una API REST. La actividad 6 debe especificar ese intercambio y la actividad 7 debe contemplar sus casos de comunicación y concurrencia. El [protocolo HTTP](Protocolo-de-partida.md) y el [plan vigente](Entrega-academica.md) recogen la decisión.
 
 ## TI — Análisis de Sistemas
 
@@ -327,3 +327,7 @@ Entregable: aplicación integrada y código fuente organizado.
 Se evaluará la correcta implementación de las especificaciones, el uso de programación orientada a objetos, el encapsulamiento, la composición, la delegación, la modularización, la validación de datos, la calidad de las pruebas y la integración del sistema.
 
 Durante la defensa, cada estudiante deberá explicar las clases y los métodos en los que trabajó, justificar las decisiones de implementación y demostrar que comprende cómo se relacionan los componentes.
+
+## Índice de entregables
+
+Consultá el [mapa de actividades y archivos](Entrega-academica.md).

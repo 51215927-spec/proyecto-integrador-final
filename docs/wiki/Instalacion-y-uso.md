@@ -67,7 +67,7 @@ dotnet run --project src/cliente
 
 El programa muestra el panel de preparación de Juego Guerra. Usá `dotnet run --project src/cliente -- --demo` para recorrer las pantallas con una [partida simulada](Diseno-de-interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
 
-Las dependencias y los comandos del servidor están en [Tecnologías REST](Tecnologias-REST.md#preparación-del-servidor).
+Las dependencias y los comandos del servidor están en [API y operación del servidor](Protocolo-de-partida.md#operación-del-servidor).
 
 ## Autores
 
@@ -99,3 +99,16 @@ dotnet run --project src/servidor/servidor.csproj
 - En la consola del servidor, escribí `iniciar <idPartida>` sustituyendo `<idPartida>` por el UUID que mostró `crear`. Si aparece «Partida iniciada.», el servidor repartió tres cartas a cada jugador y J1 puede elegir la primera carta y el atributo.
 
 La conexión del cliente de consola al servidor sigue pendiente. Podés verificar el inicio mediante la API en una computadora o recorrer las pantallas con la demostración local. [Prueba del servidor en una sola computadora](Protocolo-de-partida.md#prueba-del-servidor-en-una-sola-computadora) · [Demostración local](Diseno-de-interfaz.md#demostración-local)
+
+## Recorrer una partida
+
+Para conocer las pantallas, ejecutá la demostración local y elegí una carta y un atributo cuando se te pida. Seguí las pantallas de espera, resultado y marcador hasta el cierre de la demostración. La consola usa datos simulados en este modo.
+
+Para verificar el flujo real del servidor, cargá seis personajes, creá una partida e incorporá ambas plazas como se indica arriba. En la API, consultá `presentacion` con la sesión de J1, tomá la solicitud y enviá una carta y un atributo permitidos. Consultá la vista de J2 y respondé con una carta de su propia solicitud. Volvé a consultar ambas vistas para comprobar el resultado y el marcador. Seguí las solicitudes hasta cerrar la ronda. [Contrato HTTP](Protocolo-de-partida.md#contrato-http)
+
+## Problemas frecuentes
+
+- Si falla la restauración, comprobá el SDK con `dotnet --list-sdks` y la conexión a los orígenes NuGet.
+- Si falla la conexión, verificá que el servidor informe la escucha y que coincidan la IP y el puerto. En red local, comprobá que ambos equipos estén en la misma red y que el puerto configurado permita conexiones entrantes.
+- Si el alta devuelve 401, comprobá que la credencial de catálogo coincida en ambas terminales.
+- Si la sesión vence, repetí la incorporación y mantené activa la presencia antes de iniciar o elegir.
