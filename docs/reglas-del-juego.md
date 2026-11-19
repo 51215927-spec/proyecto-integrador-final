@@ -67,7 +67,7 @@ Dos clientes de consola se conectan al servidor mediante HTTP en la red local e 
 | Datos inválidos al dar de alta un personaje | Informar el rechazo sin guardar el personaje. |
 | Servidor inaccesible o conexión interrumpida | Informar y ofrecer reintentar o salir. Si hay una elección pendiente, conservar su identificación para el reintento. |
 | Elección inválida, solicitud consumida o estado incompatible | Rechazar sin modificar el juego. Los códigos HTTP y la actualización de la presentación se detallan en la propuesta de protocolo. |
-| Cliente ausente o proceso reiniciado | Aplicar la política de presencia, pausa, abandono y recuperación del [protocolo HTTP](Protocolo-de-partida.md#estados-presencia-y-recuperación). |
+| Cliente ausente o proceso reiniciado | Aplicar la política de presencia, pausa, abandono y recuperación del [protocolo HTTP](protocolo-de-partida.md#estados-presencia-y-recuperación). |
 
 ## Condiciones técnicas de ejecución
 
@@ -75,4 +75,4 @@ Dos clientes de consola se conectan al servidor mediante HTTP en la red local e 
 - Se inicia el servidor antes de abrir los clientes de consola. La dirección HTTP es configurable y se acordó TCP 5000.
 - El servidor administra las partidas y el catálogo en SQLite. Los clientes consultan la API.
 
-Los contratos de intercambio y sus pendientes están en el [protocolo HTTP](Protocolo-de-partida.md).
+Los contratos de intercambio y sus pendientes están en el [protocolo HTTP](protocolo-de-partida.md).

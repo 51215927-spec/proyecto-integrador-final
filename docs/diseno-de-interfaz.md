@@ -1,8 +1,8 @@
 # Diseño de la interfaz de Juego Guerra
 
-Trabajo de análisis y diseño para TI. La base es el cliente de consola previsto en la [consigna](Consigna.md), las [reglas](Reglas-del-juego.md) y la [arquitectura](Arquitectura.md#interfazconsola).
+Trabajo de análisis y diseño para TI. La base es el cliente de consola previsto en la [consigna](consigna.md), las [reglas](reglas-del-juego.md) y la [arquitectura](arquitectura.md#proyectos).
 
-El comparador de propuestas, incluido en el ZIP del [índice](README.md), reúne cuatro maquetas estáticas para cada uno de los doce estados del cliente que se detallan abajo.
+[El comparador de propuestas](diagramas/juego-guerra-propuestas.html) reúne cuatro maquetas estáticas para cada uno de los doce estados del cliente que se detallan abajo.
 
 ## Estados del cliente
 
@@ -47,7 +47,7 @@ Las siguientes respuestas son propuestas de diseño.
 - **Preparación.** Catálogo ausente, ilegible o inválido, configuración incorrecta y comunicación inaccesible. Para menos de seis cartas válidas, mostrar «No se puede jugar porque no hay suficientes cartas».
 - **Elección.** Carta no disponible, turno cambiado, solicitud consumida, rechazo o confirmación perdida. Una pérdida de comunicación tras el envío deja el resultado incierto hasta comprobarlo.
 - **Espera.** Distinguir ausencia del rival, servidor inaccesible, estado desactualizado y respuesta inválida cuando el protocolo permita identificarlos.
-- **Cierre.** Distinguir victoria, salida solicitada, abandono y fallo fatal. El [protocolo HTTP](Protocolo-de-partida.md#estados-presencia-y-recuperación) define pausa, abandono y cancelación.
+- **Cierre.** Distinguir victoria, salida solicitada, abandono y fallo fatal. El [protocolo HTTP](protocolo-de-partida.md#estados-presencia-y-recuperación) define pausa, abandono y cancelación.
 
 ## Controles de la implementación
 
