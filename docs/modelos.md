@@ -2,64 +2,64 @@
 
 Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valores por defecto y el retorno. Los constructores se identifican por el nombre del tipo y devuelven la instancia creada. La visibilidad efectiva queda limitada por la del tipo contenedor.
 
-## Firmas declaradas
+## Aplicación
 
 ### [src/cliente/DemostracionConsola.cs](../src/cliente/DemostracionConsola.cs)
 
 **`internal sealed class DemostracionConsola(InterfazConsola interfaz, TextReader entrada, TextWriter salida, bool interactiva)`**
 
-- `public void Recorrer(string? cierre)` El constructor primario de `DemostracionConsola` recibe la interfaz y las entradas y salidas. `Recorrer` crea una mesa ficticia con 14 rondas por jugador, muestra la preparación y pide elecciones. Calcula el puntaje de cada combate con datos locales y actualiza los records mediante `with`. Termina cuando uno gana dos combates y muestra una victoria de partida.
-- `private void MostrarCierreSimulado(MesaVisible mesa, string cierre)` `MostrarCierreSimulado` presenta la pausa o simula abandono, cancelación o salida local. `Continuar` espera Enter en modo interactivo y señala el fin de entrada si falta una línea. `Carta` construye un record de presentación a partir de los seis valores.
-- `private void Continuar()`. Errores explícitos en el cuerpo: `EndOfStreamException`. `MostrarCierreSimulado` presenta la pausa o simula abandono, cancelación o salida local. `Continuar` espera Enter en modo interactivo y señala el fin de entrada si falta una línea. `Carta` construye un record de presentación a partir de los seis valores.
-- `private static CartaVisible Carta(int id, string nombre, int fuerza, int velocidad, int resistencia, int inteligencia, int energia, int habilidad)` `MostrarCierreSimulado` presenta la pausa o simula abandono, cancelación o salida local. `Continuar` espera Enter en modo interactivo y señala el fin de entrada si falta una línea. `Carta` construye un record de presentación a partir de los seis valores.
+- `public void Recorrer(string? cierre)` — Ejecuta una partida simulada con marcador inicial de 14 rondas por plaza. `cierre` selecciona una interrupción simulada o, si es nulo, el recorrido hasta la victoria. La entrada de consola puede terminar con `EndOfStreamException`.
+- `private void MostrarCierreSimulado(MesaVisible mesa, string cierre)` — Presenta en `mesa` la pausa, el abandono, la cancelación o la salida local seleccionada por `cierre`.
+- `private void Continuar()` — Espera una línea en modo interactivo. Lanza `EndOfStreamException` si se cierra la entrada durante la espera.
+- `private static CartaVisible Carta(int id, string nombre, int fuerza, int velocidad, int resistencia, int inteligencia, int energia, int habilidad)` — Construye una carta visible de demostración con el identificador, el nombre y el mapa de los seis puntajes recibidos.
 
 ### [src/cliente/InterfazConsola.cs](../src/cliente/InterfazConsola.cs)
 
 **`internal sealed class InterfazConsola`**
 
-- `public InterfazConsola(TextReader? entrada = null, TextWriter? salida = null, int? ancho = null)` `InterfazConsola(...)` configura la lectura por teclas o líneas, crea el `IAnsiConsole` con su salida y permite fijar el ancho para pruebas. Si la salida está redirigida y no hay ancho explícito, usa presentación lineal.
-- `public void MostrarPreparacion(string? local, string estado)` `MostrarPreparacion` coloca identidad y estado en paneles. `MostrarEsperaInicial` presenta participantes, motivo y comienzo a cargo del operador. `MostrarInicioRonda` muestra quién abre, la mano resumida y el marcador.
-- `public void MostrarEsperaInicial(string local, string participantes, string motivo)` `MostrarPreparacion` coloca identidad y estado en paneles. `MostrarEsperaInicial` presenta participantes, motivo y comienzo a cargo del operador. `MostrarInicioRonda` muestra quién abre, la mano resumida y el marcador.
-- `public void MostrarInicioRonda(MesaVisible mesa, string mano, IReadOnlyList<CartaVisible> cartas)` `MostrarPreparacion` coloca identidad y estado en paneles. `MostrarEsperaInicial` presenta participantes, motivo y comienzo a cargo del operador. `MostrarInicioRonda` muestra quién abre, la mano resumida y el marcador.
-- `public void MostrarMano(IReadOnlyList<CartaVisible> mano)` La sobrecarga pública de `MostrarMano` llama a la privada sin foco. La privada imprime la cantidad, trata la mano vacía y crea una ficha por carta. `MostrarEsperaRival` presenta la mano propia y el marcador mientras el rival elige.
-- `private void MostrarMano(IReadOnlyList<CartaVisible> mano, int? foco, string titulo = "Tu mano")` La sobrecarga pública de `MostrarMano` llama a la privada sin foco. La privada imprime la cantidad, trata la mano vacía y crea una ficha por carta. `MostrarEsperaRival` presenta la mano propia y el marcador mientras el rival elige.
-- `public void MostrarEsperaRival(MesaVisible mesa, string rival, IReadOnlyList<CartaVisible> cartas)` La sobrecarga pública de `MostrarMano` llama a la privada sin foco. La privada imprime la cantidad, trata la mano vacía y crea una ficha por carta. `MostrarEsperaRival` presenta la mano propia y el marcador mientras el rival elige.
-- `public CartaVisible PedirCarta(IReadOnlyList<CartaVisible> mano)` Las dos sobrecargas de `PedirCarta` copian las opciones, llaman a `Elegir` y devuelven la carta del índice confirmado. La que recibe `MesaVisible` ajusta texto, marcador y ayuda según si abre el turno o responde.
-- `public CartaVisible PedirCarta(MesaVisible mesa, IReadOnlyList<CartaVisible> cartas, bool abre)` Las dos sobrecargas de `PedirCarta` copian las opciones, llaman a `Elegir` y devuelven la carta del índice confirmado. La que recibe `MesaVisible` ajusta texto, marcador y ayuda según si abre el turno o responde.
-- `public string PedirAtributo(IReadOnlyList<string>? permitidos = null, MesaVisible? mesa = null)`. Errores explícitos en el cuerpo: `InvalidOperationException`. `PedirAtributo` usa las opciones autorizadas cuando se proporcionan y, si faltan, usa los seis nombres de atributo. Dibuja la lista y devuelve la opción confirmada.
-- `public void MostrarEnvio(MesaVisible mesa, EstadoEnvio estado)`. Errores explícitos en el cuerpo: `ArgumentOutOfRangeException`. `MostrarEnvio` usa `EstadoEnvio` para elegir el texto y presentarlo en el cuerpo o al pie de la pantalla. `MostrarCombate(MesaVisible, CombateVisible)` añade el encabezado de la mesa y llama a la sobrecarga que dibuja el atributo, las dos jugadas, el ganador y el marcador.
-- `public void MostrarCombate(MesaVisible mesa, CombateVisible combate)` `MostrarEnvio` usa `EstadoEnvio` para elegir el texto y presentarlo en el cuerpo o al pie de la pantalla. `MostrarCombate(MesaVisible, CombateVisible)` añade el encabezado de la mesa y llama a la sobrecarga que dibuja el atributo, las dos jugadas, el ganador y el marcador.
-- `public void MostrarCombate(CombateVisible combate)` `MostrarEnvio` usa `EstadoEnvio` para elegir el texto y presentarlo en el cuerpo o al pie de la pantalla. `MostrarCombate(MesaVisible, CombateVisible)` añade el encabezado de la mesa y llama a la sobrecarga que dibuja el atributo, las dos jugadas, el ganador y el marcador.
-- `public void MostrarCierreRonda(MesaVisible mesa, string ganador, string? proximoMano)` `MostrarCierreRonda` presenta el ganador y el próximo jugador mano si existe. `MostrarCierrePartida` crea la planilla de ambos marcadores. `MostrarSuspension` y `MostrarInterrupcion` distinguen la información confirmada de la que sigue pendiente.
-- `public void MostrarCierrePartida(string local, string ganador, JugadorVisible j1, JugadorVisible j2)` `MostrarCierreRonda` presenta el ganador y el próximo jugador mano si existe. `MostrarCierrePartida` crea la planilla de ambos marcadores. `MostrarSuspension` y `MostrarInterrupcion` distinguen la información confirmada de la que sigue pendiente.
-- `public void MostrarSuspension(MesaVisible mesa, string motivo, bool confirmada)` `MostrarCierreRonda` presenta el ganador y el próximo jugador mano si existe. `MostrarCierrePartida` crea la planilla de ambos marcadores. `MostrarSuspension` y `MostrarInterrupcion` distinguen la información confirmada de la que sigue pendiente.
-- `public void MostrarInterrupcion(string local, string causa, string efecto, bool confirmada)` `MostrarCierreRonda` presenta el ganador y el próximo jugador mano si existe. `MostrarCierrePartida` crea la planilla de ambos marcadores. `MostrarSuspension` y `MostrarInterrupcion` distinguen la información confirmada de la que sigue pendiente.
-- `public void MostrarMarcador(JugadorVisible j1, JugadorVisible j2, int ronda)` `MostrarMarcador` imprime nombres, victorias y ronda. `MostrarEsperando` evita repetir el mismo mensaje consecutivo. `MostrarGanadorRonda`, `MostrarGanadorPartida` y `MostrarError` escriben mensajes especializados. `MostrarEstado` arma un encabezado y escribe el mensaje.
-- `public void MostrarEsperando(string mensaje)` `MostrarMarcador` imprime nombres, victorias y ronda. `MostrarEsperando` evita repetir el mismo mensaje consecutivo. `MostrarGanadorRonda`, `MostrarGanadorPartida` y `MostrarError` escriben mensajes especializados. `MostrarEstado` arma un encabezado y escribe el mensaje.
-- `public void MostrarGanadorRonda(JugadorVisible ganador)` `MostrarMarcador` imprime nombres, victorias y ronda. `MostrarEsperando` evita repetir el mismo mensaje consecutivo. `MostrarGanadorRonda`, `MostrarGanadorPartida` y `MostrarError` escriben mensajes especializados. `MostrarEstado` arma un encabezado y escribe el mensaje.
-- `public void MostrarGanadorPartida(JugadorVisible ganador)` `MostrarMarcador` imprime nombres, victorias y ronda. `MostrarEsperando` evita repetir el mismo mensaje consecutivo. `MostrarGanadorRonda`, `MostrarGanadorPartida` y `MostrarError` escriben mensajes especializados. `MostrarEstado` arma un encabezado y escribe el mensaje.
-- `public void MostrarError(string mensaje)` `MostrarMarcador` imprime nombres, victorias y ronda. `MostrarEsperando` evita repetir el mismo mensaje consecutivo. `MostrarGanadorRonda`, `MostrarGanadorPartida` y `MostrarError` escriben mensajes especializados. `MostrarEstado` arma un encabezado y escribe el mensaje.
-- `public void MostrarEstado(string titulo, string mensaje)` `MostrarMarcador` imprime nombres, victorias y ronda. `MostrarEsperando` evita repetir el mismo mensaje consecutivo. `MostrarGanadorRonda`, `MostrarGanadorPartida` y `MostrarError` escriben mensajes especializados. `MostrarEstado` arma un encabezado y escribe el mensaje.
-- `private void Encabezado(MesaVisible mesa, string? detalle = null)` Las dos sobrecargas de `Encabezado` convierten los datos de mesa en etiquetas y dibujan la barra de contexto. `Pie` imprime la acción o ayuda disponible. `Paneles` coloca los paneles juntos cuando el ancho alcanza y los organiza en filas cuando hace falta.
-- `private void Encabezado(string? local, string situacion, string? detalle = null)` Las dos sobrecargas de `Encabezado` convierten los datos de mesa en etiquetas y dibujan la barra de contexto. `Pie` imprime la acción o ayuda disponible. `Paneles` coloca los paneles juntos cuando el ancho alcanza y los organiza en filas cuando hace falta.
-- `private void Pie(string mensaje)` Las dos sobrecargas de `Encabezado` convierten los datos de mesa en etiquetas y dibujan la barra de contexto. `Pie` imprime la acción o ayuda disponible. `Paneles` coloca los paneles juntos cuando el ancho alcanza y los organiza en filas cuando hace falta.
-- `private void Paneles(params Panel[] paneles)` Las dos sobrecargas de `Encabezado` convierten los datos de mesa en etiquetas y dibujan la barra de contexto. `Pie` imprime la acción o ayuda disponible. `Paneles` coloca los paneles juntos cuando el ancho alcanza y los organiza en filas cuando hace falta.
-- `private static Panel PanelInfo(string titulo, string detalle)` `PanelInfo` convierte una cadena a texto visible o envuelve un objeto renderizable en un panel. `Ficha` compone nombre y atributos en una cuadrícula. `FichaJugada` dibuja nombre, puntaje y señal del ganador al presentar un resultado.
-- `private static Panel PanelInfo(string titulo, IRenderable detalle)` `PanelInfo` convierte una cadena a texto visible o envuelve un objeto renderizable en un panel. `Ficha` compone nombre y atributos en una cuadrícula. `FichaJugada` dibuja nombre, puntaje y señal del ganador al presentar un resultado.
-- `private static Panel Ficha(CartaVisible carta, bool enfocada)` `PanelInfo` convierte una cadena a texto visible o envuelve un objeto renderizable en un panel. `Ficha` compone nombre y atributos en una cuadrícula. `FichaJugada` dibuja nombre, puntaje y señal del ganador al presentar un resultado.
-- `private static Panel FichaJugada(CartaJugada jugada, bool ganadora)` `PanelInfo` convierte una cadena a texto visible o envuelve un objeto renderizable en un panel. `Ficha` compone nombre y atributos en una cuadrícula. `FichaJugada` dibuja nombre, puntaje y señal del ganador al presentar un resultado.
-- `private static string ResumenMano(IReadOnlyList<CartaVisible> cartas)` `ResumenMano` lista nombres o indica que está vacía. `Rondas` y `Combates` formatean los dos marcadores. `Marcador` combina ambas cadenas.
-- `private static string Rondas(MesaVisible mesa)` `ResumenMano` lista nombres o indica que está vacía. `Rondas` y `Combates` formatean los dos marcadores. `Marcador` combina ambas cadenas.
-- `private static string Combates(MesaVisible mesa)` `ResumenMano` lista nombres o indica que está vacía. `Rondas` y `Combates` formatean los dos marcadores. `Marcador` combina ambas cadenas.
-- `private static string Marcador(MesaVisible mesa)` `ResumenMano` lista nombres o indica que está vacía. `Rondas` y `Combates` formatean los dos marcadores. `Marcador` combina ambas cadenas.
-- `private static CartaVisible[] CopiarOpciones(IReadOnlyList<CartaVisible> mano)`. Errores explícitos en el cuerpo: `InvalidOperationException`. `CopiarOpciones` materializa la mano en un arreglo y rechaza una lista vacía. `ListaOpciones` construye filas y `Opcion` marca visualmente la enfocada, incluida una señal textual.
-- `private static Rows ListaOpciones(IEnumerable<string> opciones, int foco)` `CopiarOpciones` materializa la mano en un arreglo y rechaza una lista vacía. `ListaOpciones` construye filas y `Opcion` marca visualmente la enfocada, incluida una señal textual.
-- `private static Text Opcion(string opcion, bool enfocada)` `CopiarOpciones` materializa la mano en un arreglo y rechaza una lista vacía. `ListaOpciones` construye filas y `Opcion` marca visualmente la enfocada, incluida una señal textual.
-- `private int Elegir(int cantidad, Action<int> dibujar)` `Elegir` empieza en índice cero, llama a la función de dibujo y lee teclas. Enter confirma. Las flechas y las teclas equivalentes desplazan el foco. `Math.Clamp` mantiene el índice dentro de la lista.
-- `private ConsoleKey LeerTecla()`. Errores explícitos en el cuerpo: `EndOfStreamException`. `LeerTecla` usa `Console.ReadKey` en terminal interactiva. En entrada redirigida traduce líneas como `s` a teclas y una línea vacía a Enter. Si se acaba la entrada, lanza `EndOfStreamException`.
-- `private static string TextoVisible(string texto)` `TextoVisible` cambia caracteres de control y formato por espacios. `Escribir` divide el mensaje en líneas y construye filas de texto. `Renderizar` escribe los componentes en Spectre.Console e invalida el recuerdo del último mensaje de espera.
-- `private void Escribir(string texto, Style? estilo = null)` `TextoVisible` cambia caracteres de control y formato por espacios. `Escribir` divide el mensaje en líneas y construye filas de texto. `Renderizar` escribe los componentes en Spectre.Console e invalida el recuerdo del último mensaje de espera.
-- `private void Renderizar(IRenderable contenido)` `TextoVisible` cambia caracteres de control y formato por espacios. `Escribir` divide el mensaje en líneas y construye filas de texto. `Renderizar` escribe los componentes en Spectre.Console e invalida el recuerdo del último mensaje de espera.
+- `public InterfazConsola(TextReader? entrada = null, TextWriter? salida = null, int? ancho = null)` — Usa los flujos y el ancho provistos o toma los valores de la terminal. Con salida redirigida y ancho sin especificar muestra los paneles en forma lineal.
+- `public void MostrarPreparacion(string? local, string estado)` — Muestra el estado de preparación y la identidad local si está disponible.
+- `public void MostrarEsperaInicial(string local, string participantes, string motivo)` — Muestra los participantes, el motivo de la espera y que el inicio depende del operador.
+- `public void MostrarInicioRonda(MesaVisible mesa, string mano, IReadOnlyList<CartaVisible> cartas)` — Presenta en la mesa quién abre, la mano propia y el marcador inicial.
+- `public void MostrarMano(IReadOnlyList<CartaVisible> mano)` — Dibuja la mano sin resaltar una carta. Admite una colección vacía.
+- `private void MostrarMano(IReadOnlyList<CartaVisible> mano, int? foco, string titulo = "Tu mano")` — Presenta la cantidad de cartas y sus fichas bajo `titulo`. Resalta el índice `foco` cuando se proporciona.
+- `public void MostrarEsperaRival(MesaVisible mesa, string rival, IReadOnlyList<CartaVisible> cartas)` — Presenta la mano propia y el marcador mientras el rival indicado realiza su elección.
+- `public CartaVisible PedirCarta(IReadOnlyList<CartaVisible> mano)` — Copia las opciones de la mano y devuelve la carta que se confirma. Lanza `InvalidOperationException` si la mano está vacía y `EndOfStreamException` si se cierra la entrada antes de confirmar.
+- `public CartaVisible PedirCarta(MesaVisible mesa, IReadOnlyList<CartaVisible> cartas, bool abre)` — Devuelve la carta confirmada y usa `abre` para distinguir apertura de respuesta al dibujar la mesa. Una lista vacía produce `InvalidOperationException`. El fin de entrada produce `EndOfStreamException`.
+- `public string PedirAtributo(IReadOnlyList<string>? permitidos = null, MesaVisible? mesa = null)` — Devuelve el atributo confirmado de `permitidos`. Si la lista es nula, ofrece los seis atributos. Usa `mesa` cuando está disponible. Una lista vacía produce `InvalidOperationException`. El fin de entrada produce `EndOfStreamException`.
+- `public void MostrarEnvio(MesaVisible mesa, EstadoEnvio estado)` — Selecciona el mensaje de la jugada según `estado`. Lanza `ArgumentOutOfRangeException` para un valor de enumeración desconocido.
+- `public void MostrarCombate(MesaVisible mesa, CombateVisible combate)` — Dibuja el encabezado de la mesa y delega la presentación del resultado en la otra sobrecarga.
+- `public void MostrarCombate(CombateVisible combate)` — Presenta el atributo disputado, las cartas jugadas, sus puntajes y el ganador del combate.
+- `public void MostrarCierreRonda(MesaVisible mesa, string ganador, string? proximoMano)` — Muestra el ganador de la ronda y, si `proximoMano` está presente, quién abre la siguiente.
+- `public void MostrarCierrePartida(string local, string ganador, JugadorVisible j1, JugadorVisible j2)` — Presenta el ganador y las rondas ganadas por ambos jugadores.
+- `public void MostrarSuspension(MesaVisible mesa, string motivo, bool confirmada)` — Presenta el motivo, si la pausa fue confirmada y el último marcador de la mesa.
+- `public void MostrarInterrupcion(string local, string causa, string efecto, bool confirmada)` — Muestra una salida local o un final confirmado según `confirmada`, junto con la causa y su efecto.
+- `public void MostrarMarcador(JugadorVisible j1, JugadorVisible j2, int ronda)` — Muestra el número de ronda y las rondas ganadas por cada jugador.
+- `public void MostrarEsperando(string mensaje)` — Muestra el mensaje de espera si difiere del último guardado y actualiza ese registro.
+- `public void MostrarGanadorRonda(JugadorVisible ganador)` — Muestra el nombre del ganador de la ronda y su total de rondas ganadas.
+- `public void MostrarGanadorPartida(JugadorVisible ganador)` — Muestra el nombre del ganador de la partida y su total de rondas ganadas.
+- `public void MostrarError(string mensaje)` — Escribe el mensaje con estilo de error.
+- `public void MostrarEstado(string titulo, string mensaje)` — Dibuja el encabezado con `titulo` y escribe el mensaje.
+- `private void Encabezado(MesaVisible mesa, string? detalle = null)` — Extrae la identidad local y los números de ronda y combate de la mesa para dibujar el encabezado.
+- `private void Encabezado(string? local, string situacion, string? detalle = null)` — Limpia la pantalla cuando la terminal está configurada para ello. Presenta identidad, situación y detalle opcional en una línea o en filas según el ancho.
+- `private void Pie(string mensaje)` — Dibuja una separación y escribe el mensaje al pie.
+- `private void Paneles(params Panel[] paneles)` — Distribuye los paneles en columnas cuando hay ancho suficiente y la salida admite esa disposición. En los demás casos dibuja cada panel por separado.
+- `private static Panel PanelInfo(string titulo, string detalle)` — Convierte el texto del detalle en filas y devuelve un panel con encabezado.
+- `private static Panel PanelInfo(string titulo, IRenderable detalle)` — Envuelve el contenido renderizable y devuelve un panel expandible con encabezado.
+- `private static Panel Ficha(CartaVisible carta, bool enfocada)` — Construye un panel con el nombre y los atributos de la carta. Aplica el estilo de foco cuando `enfocada` es verdadero.
+- `private static Panel FichaJugada(CartaJugada jugada, bool ganadora)` — Construye un panel con jugador, carta y puntaje. Resalta la jugada ganadora según `ganadora`.
+- `private static string ResumenMano(IReadOnlyList<CartaVisible> cartas)` — Devuelve los nombres de las cartas en orden o el mensaje de mano vacía.
+- `private static string Rondas(MesaVisible mesa)` — Devuelve el marcador de rondas ganadas de ambas plazas.
+- `private static string Combates(MesaVisible mesa)` — Devuelve el marcador de combates ganados en la ronda actual.
+- `private static string Marcador(MesaVisible mesa)` — Devuelve una línea para los combates y otra para las rondas.
+- `private static CartaVisible[] CopiarOpciones(IReadOnlyList<CartaVisible> mano)` — Devuelve una copia superficial de la lista seleccionable. Lanza `InvalidOperationException` si está vacía.
+- `private static Rows ListaOpciones(IEnumerable<string> opciones, int foco)` — Devuelve las filas de opciones resaltando el índice indicado por `foco`.
+- `private static Text Opcion(string opcion, bool enfocada)` — Devuelve el texto de una opción, con indicador y estilo cuando tiene el foco.
+- `private int Elegir(int cantidad, Action<int> dibujar)` — Invoca `dibujar` con el foco inicial y después de cada movimiento válido. Limita el índice a `[0, cantidad - 1]` y lo devuelve al confirmar. Propaga `EndOfStreamException` si se cierra la entrada.
+- `private ConsoleKey LeerTecla()` — Devuelve una tecla física o interpreta una línea de entrada redirigida. Una línea vacía equivale a Enter y una entrada desconocida a `ConsoleKey.NoName`. Lanza `EndOfStreamException` al agotar las líneas.
+- `private static string TextoVisible(string texto)` — Devuelve el texto con los caracteres de control, formato y separación de líneas o párrafos sustituidos por espacios.
+- `private void Escribir(string texto, Style? estilo = null)` — Divide el texto en líneas y las envía a la terminal con el estilo indicado.
+- `private void Renderizar(IRenderable contenido)` — Escribe el contenido renderizable en la terminal configurada.
 
 ### [src/cliente/Program.cs](../src/cliente/Program.cs)
 
@@ -71,231 +71,268 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 **`internal sealed record CartaVisible( int IdPersonaje, string Nombre, IReadOnlyDictionary<string, int> Atributos)`**
 
+Datos de una ficha seleccionable. El ID distingue cartas con el mismo nombre.
 
 **`internal sealed record JugadorVisible(string Nombre, int RondasGanadas)`**
 
+Nombre y marcador de rondas de una plaza.
 
 **`internal sealed record CartaJugada(string Jugador, string Carta, int Valor)`**
 
+Jugador, nombre de la carta y valor del atributo disputado que se muestran al resolver el combate.
 
 **`internal sealed record CombateVisible( string Atributo, CartaJugada J1, CartaJugada J2, string Ganador, int CombatesGanadosJ1, int CombatesGanadosJ2, string? ProximoEnElegir, bool? GanaJ1 = null)`**
 
+Resultado para la pantalla del combate. `GanaJ1` identifica la plaza ganadora cuando se conoce. Si es nulo, la interfaz compara el nombre de J1 con `Ganador`. `ProximoEnElegir` se omite cuando no hay próximo elector.
 
 **`internal sealed record MesaVisible( string Local, JugadorVisible J1, JugadorVisible J2, int Ronda, int Combate, int CombatesJ1, int CombatesJ2)`**
 
+Contexto compartido por las pantallas. Identifica al usuario local, ambos marcadores, la ronda, el combate y las victorias de cada plaza en la ronda.
 
 **`internal enum EstadoEnvio`**
+
+Estados de presentación de una elección. Admite `Enviando`, `Recibido` y `Pendiente` de confirmación.
 
 ### [src/servidor/Api/BaseJuego.cs](../src/servidor/Api/BaseJuego.cs)
 
 **`internal sealed class BaseJuego(DbContextOptions<BaseJuego> opciones)`**
 
-- `protected override void OnModelCreating(ModelBuilder modelo)` `OnModelCreating` especifica nombres de tablas, claves principales simples o compuestas, relaciones y el índice de las solicitudes por partida. El ID del catálogo lo asigna el repositorio.
+Contexto EF Core que registra las ocho entidades de SQLite. Recibe las opciones del proveedor.
+
+- `protected override void OnModelCreating(ModelBuilder modelo)` — Configura los nombres de tablas, claves, relaciones e índices de las entidades persistidas. El ID de catálogo se asigna fuera de EF Core. Los detalles del esquema están en [Bases de datos](bases-de-datos.md).
 
 **`internal sealed class PartidaGuardada`**
 
+Raíz del estado persistido. Conserva la fase, la revisión, el turno activo y el resultado final.
 
 **`internal sealed class ParticipanteGuardado`**
 
+Plaza persistida de la partida. Conserva nombre, hash de credencial y rondas ganadas. La vigencia de la sesión se mantiene en el repositorio en memoria.
 
 ### [src/servidor/Api/ConsolaServidor.cs](../src/servidor/Api/ConsolaServidor.cs)
 
 **`internal static class ConsolaServidor`**
 
-- `internal static void Ejecutar(RepositorioJuego juego, TextReader entrada, TextWriter salida, CancellationToken detener)` `Ejecutar` escribe la ayuda y lee entradas hasta cancelación o fin de flujo. Muestra errores de negocio y de persistencia.
-- `private static void Comando(RepositorioJuego juego, string linea, TextWriter salida)` `Comando` separa el verbo de sus argumentos, interpreta UUID, plaza o ID entero y llama a la operación correspondiente. `crear` imprime UUID y credenciales. `iniciar`, `cancelar`, `cerrar-sesion`, `reemplazar-credencial` y `desactivar` operan sobre la partida, sesión o catálogo.
-- `private static void Ayuda(TextWriter salida)` `Ayuda` escribe la lista de órdenes y su sintaxis.
+- `internal static void Ejecutar(RepositorioJuego juego, TextReader entrada, TextWriter salida, CancellationToken detener)` — Muestra la ayuda y procesa líneas de `entrada` hasta el fin de flujo o la cancelación. Informa los errores de negocio y los fallos de SQLite o EF Core en `salida`.
+- `private static void Comando(RepositorioJuego juego, string linea, TextWriter salida)` — Interpreta la orden del operador y sus identificadores antes de invocar el repositorio. Imprime el resultado o la sintaxis esperada si la orden es inválida.
+- `private static void Ayuda(TextWriter salida)` — Escribe los comandos disponibles, agrupados por función, con su sintaxis y efecto.
 
 ### [src/servidor/Api/EstadoPartida.cs](../src/servidor/Api/EstadoPartida.cs)
 
 **`internal sealed class PersonajePartida`**
 
-- `internal static PersonajePartida Copiar(Guid partida, PersonajeCatalogo origen)`
-- `internal Personaje Dominio()` `PersonajePartida.Copiar` toma los datos del catálogo para una partida. `Dominio` construye el `Personaje` con el que se evalúa un combate. `Vista` produce la carta que se puede enviar, con ID, texto y diccionario de atributos.
-- `internal CartaVisible Vista()` `PersonajePartida.Copiar` toma los datos del catálogo para una partida. `Dominio` construye el `Personaje` con el que se evalúa un combate. `Vista` produce la carta que se puede enviar, con ID, texto y diccionario de atributos.
+Copia del personaje para una partida, con ubicación y orden de reparto propios.
+
+- `internal static PersonajePartida Copiar(Guid partida, PersonajeCatalogo origen)` — Devuelve una instantánea de los datos del catálogo para la partida indicada. Conserva el ID del personaje y comienza con ubicación de mazo.
+- `internal Personaje Dominio()` — Construye el `Personaje` que emplea el combate de dominio. Propaga su validación si los datos persistidos incumplen las reglas del personaje.
+- `internal CartaVisible Vista()` — Proyecta el ID, los textos y el mapa de los seis atributos al formato visible de la API.
 
 **`internal sealed record CartaVisible(int IdPersonaje, string Nombre, string Descripcion, string Ascii, Dictionary<string, int> Atributos)`**
 
+Proyección de una carta para el contrato HTTP, con los datos descriptivos y los atributos publicados.
 
 **`internal sealed class RondaGuardada`**
 
+Fila de una ronda. Registra la plaza mano, las victorias por plaza y el ganador si se definió.
 
 **`internal sealed class CombateGuardado`**
 
+Fila de combate con el elector, ambas cartas, atributo y resultados a medida que se confirman.
 
 **`internal sealed class SolicitudGuardada`**
 
+Acción pendiente o consumida, asociada a una plaza y un combate. [Claves y ciclo de vida](bases-de-datos.md#solicitud)
 
 **`internal sealed record Eleccion(Guid IdOperacion, Guid IdSolicitud, int? RevisionEsperada, int? IdPersonaje, string? Atributo)`**
 
+Cuerpo de entrada de la API. La revisión y la carta admiten nulo en el tipo para detectar una omisión en la validación. El atributo es opcional cuando el turno solo pide carta.
 
 **`internal sealed record Recibo(Guid IdOperacion, Guid IdSolicitud, int RevisionConfirmada)`**
 
+Identificadores de operación y solicitud con la revisión que confirmó la elección.
 
 **`internal sealed record Confirmacion(Recibo Recibo, bool Repetida)`**
 
+Resultado interno del registro. `Repetida` distingue un recibo recuperado de un alta de operación.
 
 **`internal sealed class OperacionGuardada`**
 
-- `internal Eleccion Datos()`
-- `internal Recibo Recibo()` `OperacionGuardada.Datos` reconstruye la elección normalizada para compararla con un reintento. `Recibo` reconstruye el UUID de solicitud y operación y la revisión que se confirmó.
+Elección confirmada persistida por partida, plaza e ID de operación. [Claves y transacción](bases-de-datos.md#operacion)
+
+- `internal Eleccion Datos()` — Reconstruye la elección confirmada con la revisión esperada y el atributo normalizado para comparar un reintento.
+- `internal Recibo Recibo()` — Proyecta los IDs de operación y solicitud y la revisión confirmada al recibo HTTP.
 
 ### [src/servidor/Api/PersonajeCatalogo.cs](../src/servidor/Api/PersonajeCatalogo.cs)
 
 **`internal sealed record AltaPersonaje( string? Nombre, string? Descripcion, string? Ascii, int Fuerza, int Velocidad, int Resistencia, int Inteligencia, int Energia, int Habilidad)`**
 
-- `internal PersonajeCatalogo Validar()`. Errores explícitos en el cuerpo: `ErrorApi.Entrada()`.
+Cuerpo del alta de catálogo. La validación convierte los campos de entrada en una entidad persistible.
+
+- `internal PersonajeCatalogo Validar()` — Devuelve la entidad de catálogo sin asignar su ID. Responde con `400 entradaInvalida` si faltan descripción o ASCII, el dibujo contiene tabulaciones o supera 25 líneas de 120 caracteres, o el nombre o los atributos incumplen el contrato de `Personaje`.
 
 **`internal sealed class PersonajeCatalogo`**
 
+Entrada del catálogo. Conserva los datos descriptivos, puntajes e indicador de disponibilidad para nuevas partidas.
 
 ### [src/servidor/Api/PresentacionPartida.cs](../src/servidor/Api/PresentacionPartida.cs)
 
 **`internal sealed record SolicitudVisible(Guid IdSolicitud, string Tipo, int[] IdsPersonajePermitidos, string[] AtributosPermitidos)`**
 
+Acción expuesta a la plaza autorizada y opciones de carta y atributo que puede enviar.
 
 **`internal sealed record ResultadoVisible(int NumeroRonda, int NumeroCombate, Dictionary<string, CartaVisible> Cartas, string Atributo, Dictionary<string, int> Puntajes, string GanadorCombate, string? GanadorRonda)`**
 
+Combate resuelto con cartas y puntajes por plaza. Incluye ganador de ronda en el combate que la cierra.
 
 **`internal sealed record PresentacionVisible(Guid IdPartida, int Revision, string Fase, bool Pausada, string RolPropio, Dictionary<string, string?> Nombres, int? NumeroRonda, int? NumeroCombate, Dictionary<string, int> Marcador, CartaVisible[] Mano, SolicitudVisible? Solicitud, ResultadoVisible[] Resultados, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? MotivoFin, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Ganador)`**
 
+Respuesta de consulta por plaza. Reúne la mano propia, fase, revisión, opción vigente, marcador e historial. Los campos finales nulos se omiten del JSON.
 
 **`internal sealed partial class RepositorioJuego`**
 
-- `internal PresentacionVisible Presentacion(Guid id, string? credencial, Guid idSesion)` `Presentacion` abre una lectura autenticada, consulta participantes y cartas y filtra la mano por plaza. Incluye la solicitud solo para su titular cuando hay presencia. Construye el historial a partir de combates con ganador, agrega el ganador de ronda al último combate correspondiente y devuelve los datos de fase y marcador sin revelar manos rivales.
+- `internal PresentacionVisible Presentacion(Guid id, string? credencial, Guid idSesion)` — Valida la credencial y la sesión de la plaza y devuelve una vista con su mano, marcador e historial de combates resueltos. Incluye la solicitud solo para la plaza habilitada cuando la partida no está pausada. Propaga los errores de acceso de `Acceso`.
 
 ### [src/servidor/Api/RepositorioJuego.cs](../src/servidor/Api/RepositorioJuego.cs)
 
 **`internal sealed record PartidaCreada(Guid Id, string CredencialJ1, string CredencialJ2)`**
 
+Identidad de una partida nueva y credenciales originales de sus dos plazas para el operador.
 
 **`internal sealed record Incorporacion(Guid IdSesion, string? Nombre)`**
 
+Entrada de incorporación con UUID de sesión y nombre de jugador.
 
 **`internal sealed record Sesion(string Rol, Guid IdSesion, DateTimeOffset VenceUtc)`**
 
+Reserva en memoria de una plaza hasta `VenceUtc`. El UUID distingue sesiones de la misma plaza.
 
 **`internal sealed partial class RepositorioJuego`**
 
-- `internal RepositorioJuego(string cadena, TimeProvider reloj)` El constructor de `RepositorioJuego` conserva cadena y reloj, mantiene abierta la conexión si SQLite está en memoria y ejecuta `EnsureCreated`.
-- `internal int DarDeAlta(AltaPersonaje datos)`. Errores explícitos en el cuerpo: `new ErrorApi(409, "operacionIncompatible", "Se agotaron los IDs de alta automática.")`. `DarDeAlta` valida la entrada, calcula el siguiente ID positivo dentro de una escritura, agrega la fila y devuelve el ID. `CrearPartida` guarda una partida nueva y dos plazas con hashes de credenciales, y devuelve las credenciales originales al operador.
-- `internal PartidaCreada CrearPartida()` `DarDeAlta` valida la entrada, calcula el siguiente ID positivo dentro de una escritura, agrega la fila y devuelve el ID. `CrearPartida` guarda una partida nueva y dos plazas con hashes de credenciales, y devuelve las credenciales originales al operador.
-- `internal void Desactivar(int id)`. Errores explícitos en el cuerpo: `ErrorApi.NoEncontrado()`. `Desactivar` pone `Activo` en falso. `CerrarSesion` verifica la plaza y quita su sesión en memoria. `ReemplazarCredencial` guarda el hash de una credencial nueva y revoca la sesión de esa plaza. `Cancelar` exige una partida sin finalizar, aumenta su revisión y delega en `Finalizar`.
-- `internal void CerrarSesion(Guid id, string rol)` `Desactivar` pone `Activo` en falso. `CerrarSesion` verifica la plaza y quita su sesión en memoria. `ReemplazarCredencial` guarda el hash de una credencial nueva y revoca la sesión de esa plaza. `Cancelar` exige una partida sin finalizar, aumenta su revisión y delega en `Finalizar`.
-- `internal string ReemplazarCredencial(Guid id, string rol)` `Desactivar` pone `Activo` en falso. `CerrarSesion` verifica la plaza y quita su sesión en memoria. `ReemplazarCredencial` guarda el hash de una credencial nueva y revoca la sesión de esa plaza. `Cancelar` exige una partida sin finalizar, aumenta su revisión y delega en `Finalizar`.
-- `internal void Cancelar(Guid id)`. Errores explícitos en el cuerpo: `new ErrorApi(409, "operacionIncompatible", "La partida ya finalizó.")`. `Desactivar` pone `Activo` en falso. `CerrarSesion` verifica la plaza y quita su sesión en memoria. `ReemplazarCredencial` guarda el hash de una credencial nueva y revoca la sesión de esa plaza. `Cancelar` exige una partida sin finalizar, aumenta su revisión y delega en `Finalizar`.
-- `private static ParticipanteGuardado BuscarParticipante(BaseJuego db, Guid id, string rol)`. Errores explícitos en el cuerpo: `ErrorApi.NoEncontrado()`. `Abrir` configura EF Core con la cadena de archivo o la conexión en memoria. `Buscar` y `BuscarParticipante` consultan por clave y responden con error 404 si falta la fila.
-- `internal Sesion Incorporar(Guid id, string? credencial, Incorporacion datos)`. Errores explícitos en el cuerpo: `ErrorApi.Entrada()`, `new ErrorApi(409, "sesionOcupada", "La plaza tiene una sesión vigente.")`, `new ErrorApi(403, "sinPermiso", "El nombre registrado debe coincidir.")`. `Incorporar` valida nombre y UUID, identifica la plaza por credencial y rechaza otra sesión vigente o un nombre distinto al guardado. Confirma los datos persistentes y luego instala la sesión con 15 segundos de vigencia.
-- `internal void Renovar(Guid id, string? credencial, Guid idSesion)` `Renovar` comprueba credencial y sesión vigentes, y actualiza su vencimiento en memoria. `Vigente` busca por partida y plaza y consulta el reloj. `ExigirSesion` exige además el UUID correcto.
-- `private T Ejecutar<T>(bool escritura, Func<BaseJuego, T> operacion)`
-- `private BaseJuego Abrir()` `Abrir` configura EF Core con la cadena de archivo o la conexión en memoria. `Buscar` y `BuscarParticipante` consultan por clave y responden con error 404 si falta la fila.
-- `private static PartidaGuardada Buscar(BaseJuego db, Guid id)`. Errores explícitos en el cuerpo: `ErrorApi.NoEncontrado()`. `Abrir` configura EF Core con la cadena de archivo o la conexión en memoria. `Buscar` y `BuscarParticipante` consultan por clave y responden con error 404 si falta la fila.
-- `private static ParticipanteGuardado Autenticar(BaseJuego db, Guid id, string? credencial)`. Errores explícitos en el cuerpo: `new ErrorApi(401, "credencialInvalida", "La credencial no es válida.")`. `Autenticar` calcula el hash de la credencial entregada y lo compara con los de la partida. `Hash` convierte a UTF-8 y aplica SHA-256. `NuevaCredencial` genera 32 bytes aleatorios y los representa en hexadecimal. `Dispose` libera la conexión en memoria si existe.
-- `private Sesion? Vigente(Guid id, string rol)` `Renovar` comprueba credencial y sesión vigentes, y actualiza su vencimiento en memoria. `Vigente` busca por partida y plaza y consulta el reloj. `ExigirSesion` exige además el UUID correcto.
-- `private Sesion ExigirSesion(Guid id, string rol, Guid idSesion)`. Errores explícitos en el cuerpo: `new ErrorApi(409, "sesionVencida", "Se requiere una sesión vigente.")`. `Renovar` comprueba credencial y sesión vigentes, y actualiza su vencimiento en memoria. `Vigente` busca por partida y plaza y consulta el reloj. `ExigirSesion` exige además el UUID correcto.
-- `private static byte[] Hash(string credencial)` `Autenticar` calcula el hash de la credencial entregada y lo compara con los de la partida. `Hash` convierte a UTF-8 y aplica SHA-256. `NuevaCredencial` genera 32 bytes aleatorios y los representa en hexadecimal. `Dispose` libera la conexión en memoria si existe.
-- `private static string NuevaCredencial()` `Autenticar` calcula el hash de la credencial entregada y lo compara con los de la partida. `Hash` convierte a UTF-8 y aplica SHA-256. `NuevaCredencial` genera 32 bytes aleatorios y los representa en hexadecimal. `Dispose` libera la conexión en memoria si existe.
-- `public void Dispose()` `Autenticar` calcula el hash de la credencial entregada y lo compara con los de la partida. `Hash` convierte a UTF-8 y aplica SHA-256. `NuevaCredencial` genera 32 bytes aleatorios y los representa en hexadecimal. `Dispose` libera la conexión en memoria si existe.
+Coordina la persistencia de partidas y catálogo y administra las sesiones en memoria.
+
+- `internal RepositorioJuego(string cadena, TimeProvider reloj)` — Configura persistencia y vencimiento de sesiones con `cadena` y `reloj`. Abre y conserva la conexión para SQLite en memoria y crea el esquema si corresponde. Propaga los fallos de apertura o inicialización.
+- `internal int DarDeAlta(AltaPersonaje datos)` — Valida `datos`, reserva el siguiente ID positivo y guarda el personaje. Devuelve el ID. Propaga `400 entradaInvalida` y devuelve `409 operacionIncompatible` si se agotaron los IDs.
+- `internal PartidaCreada CrearPartida()` — Persiste la partida inicial y dos plazas con hashes de credenciales. Devuelve el UUID y las credenciales originales de J1 y J2 al operador.
+- `internal void Desactivar(int id)` — Marca como inactivo el personaje identificado por `id` para futuros repartos. Devuelve `404 recursoNoEncontrado` si falta la fila.
+- `internal void CerrarSesion(Guid id, string rol)` — Verifica que la plaza exista y elimina su sesión en memoria. Devuelve `404 recursoNoEncontrado` si la plaza no existe.
+- `internal string ReemplazarCredencial(Guid id, string rol)` — Persiste el hash de una credencial nueva para la plaza y revoca su sesión vigente. Devuelve la credencial nueva. Devuelve `404 recursoNoEncontrado` si falta la plaza.
+- `internal void Cancelar(Guid id)` — Incrementa la revisión y finaliza la partida con motivo `cancelacion`. Devuelve `404 recursoNoEncontrado` si falta la partida o `409 operacionIncompatible` si ya finalizó.
+- `private static ParticipanteGuardado BuscarParticipante(BaseJuego db, Guid id, string rol)` — Devuelve la entidad de la plaza por clave `(id, rol)` o genera `404 recursoNoEncontrado`.
+- `internal Sesion Incorporar(Guid id, string? credencial, Incorporacion datos)` — Identifica la plaza por credencial, registra el nombre y devuelve una sesión de 15 segundos. Devuelve 400 para nombre o UUID de sesión inválidos, 403 si el nombre registrado difiere y 409 si otra sesión ocupa la plaza. Propaga los errores de búsqueda y autenticación.
+- `internal void Renovar(Guid id, string? credencial, Guid idSesion)` — Verifica partida, credencial y UUID de sesión y extiende el vencimiento en memoria. Conserva la revisión. Propaga los errores de acceso de `Acceso`.
+- `private T Ejecutar<T>(bool escritura, Func<BaseJuego, T> operacion)` — Serializa el acceso, abre un contexto y ejecuta `operacion` en una transacción. Para escritura reserva el turno de SQLite antes de leer y llama a `SaveChanges` antes de confirmar. Devuelve el resultado de la función y propaga los fallos de la operación o del almacenamiento.
+- `private BaseJuego Abrir()` — Devuelve un contexto EF Core configurado con la conexión en memoria o la cadena del repositorio.
+- `private static PartidaGuardada Buscar(BaseJuego db, Guid id)` — Devuelve la partida identificada por `id` o genera `404 recursoNoEncontrado`.
+- `private static ParticipanteGuardado Autenticar(BaseJuego db, Guid id, string? credencial)` — Compara el hash de la credencial con los de las plazas de la partida. Devuelve la plaza correspondiente o genera `401 credencialInvalida`.
+- `private Sesion? Vigente(Guid id, string rol)` — Devuelve la sesión de la partida y plaza si todavía está vigente según el reloj. En los demás casos devuelve `null`.
+- `private Sesion ExigirSesion(Guid id, string rol, Guid idSesion)` — Devuelve la sesión vigente si su UUID coincide con `idSesion`. Genera `409 sesionVencida` cuando falta, venció o su UUID difiere.
+- `private static byte[] Hash(string credencial)` — Devuelve el resumen SHA-256 de la codificación UTF-8 de la credencial.
+- `private static string NuevaCredencial()` — Genera 32 bytes aleatorios y devuelve su representación hexadecimal.
+- `public void Dispose()` — Libera la conexión SQLite en memoria si el repositorio conserva una.
 
 ### [src/servidor/Api/ServidorHttp.cs](../src/servidor/Api/ServidorHttp.cs)
 
 **`internal sealed class ErrorApi(int estado, string codigo, string mensaje)`**
 
-- `internal static ErrorApi Entrada()` El constructor primario de `ErrorApi` conserva el estado y código. `Entrada`, `NoEncontrado` e `Indisponible` construyen los errores 400, 404 y 503. `Responder` fija el estado y escribe código, mensaje e identificador de seguimiento en JSON.
-- `internal static ErrorApi NoEncontrado()` El constructor primario de `ErrorApi` conserva el estado y código. `Entrada`, `NoEncontrado` e `Indisponible` construyen los errores 400, 404 y 503. `Responder` fija el estado y escribe código, mensaje e identificador de seguimiento en JSON.
-- `internal static ErrorApi Indisponible()` El constructor primario de `ErrorApi` conserva el estado y código. `Entrada`, `NoEncontrado` e `Indisponible` construyen los errores 400, 404 y 503. `Responder` fija el estado y escribe código, mensaje e identificador de seguimiento en JSON.
-- `internal Task Responder(HttpContext contexto)` El constructor primario de `ErrorApi` conserva el estado y código. `Entrada`, `NoEncontrado` e `Indisponible` construyen los errores 400, 404 y 503. `Responder` fija el estado y escribe código, mensaje e identificador de seguimiento en JSON.
+Excepción con estado HTTP, código estable y mensaje para el contrato REST.
+
+- `internal static ErrorApi Entrada()` — Construye el error HTTP `400 entradaInvalida`.
+- `internal static ErrorApi NoEncontrado()` — Construye el error HTTP `404 recursoNoEncontrado`.
+- `internal static ErrorApi Indisponible()` — Construye el error HTTP `503 servicioNoDisponible`.
+- `internal Task Responder(HttpContext contexto)` — Escribe en la respuesta de `contexto` el estado y el JSON con código, mensaje e identificador de seguimiento. Devuelve la tarea de escritura.
 
 **`internal static class ServidorHttp`**
 
-- `internal static WebApplication Crear(string[] args, TimeProvider? reloj = null)`. Errores explícitos en el cuerpo: `new ErrorApi(401, "credencialInvalida", "La credencial no es válida.")`. `Crear` construye el host, configura la escucha por defecto, registra repositorio y reloj como instancias compartidas, y exige tipos numéricos JSON estrictos. El middleware envuelve los handlers y traduce excepciones de entrada y SQLite al contrato de error.
-- `private static string? Credencial(HttpContext contexto)` `Credencial` lee la cabecera de autorización como esquema Bearer. `IdSesion` interpreta `X-Sesion` como UUID o devuelve `Guid.Empty`.
-- `private static Guid IdSesion(HttpContext contexto)` `Credencial` lee la cabecera de autorización como esquema Bearer. `IdSesion` interpreta `X-Sesion` como UUID o devuelve `Guid.Empty`.
+- `internal static WebApplication Crear(string[] args, TimeProvider? reloj = null)` — Configura y devuelve el host con sus rutas, repositorio y reloj. Usa los argumentos para la configuración y el reloj del sistema si no se inyecta uno. El middleware traduce errores de entrada y almacenamiento al contrato HTTP.
+- `private static string? Credencial(HttpContext contexto)` — Extrae la credencial de una cabecera `Authorization` con esquema Bearer, o devuelve `null`.
+- `private static Guid IdSesion(HttpContext contexto)` — Interpreta `X-Sesion` como UUID o devuelve `Guid.Empty`.
 
 ### [src/servidor/Api/TransicionesPartida.cs](../src/servidor/Api/TransicionesPartida.cs)
 
 **`internal sealed partial class RepositorioJuego`**
 
-- `internal void Iniciar(Guid id)`. Errores explícitos en el cuerpo: `new ErrorApi(409, "operacionIncompatible", "La partida ya se inició o finalizó.")`, `new ErrorApi(409, "partidaPausada", "Se necesitan los dos participantes presentes.")`, `new ErrorApi(409, "operacionIncompatible", "Se necesitan seis personajes activos.")`. `Iniciar` exige fase inicial, dos sesiones y seis personajes activos. Copia el catálogo a la partida, llama a `Repartir` y aumenta la revisión.
-- `internal Confirmacion Elegir(Guid id, string? credencial, Guid idSesion, Eleccion datos)`. Errores explícitos en el cuerpo: `ErrorApi.Entrada()`, `new ErrorApi(409, "operacionIncompatible", "La operación ya tiene otros datos.")`, `new ErrorApi(409, "partidaPausada", "Se necesitan los dos participantes presentes.")`, `new ErrorApi(409, "revisionDesactualizada", "La revisión ya cambió.")`, `new ErrorApi(409, "solicitudNoVigente", "La solicitud no está vigente para esta plaza.")`, `new ErrorApi(422, "eleccionInvalida", "La carta o el atributo no está entre las opciones.")`. `Elegir` valida IDs, revisión y carta presentes, normaliza el atributo y abre una transacción de escritura. Primero autentica y busca el ID de operación por partida y plaza. Si ya existe, compara los datos y devuelve el recibo original o rechaza la reutilización incompatible.
-- `internal Recibo ConsultarRecibo(Guid id, string? credencial, Guid idSesion, Guid idOperacion)`. Errores explícitos en el cuerpo: `ErrorApi.NoEncontrado()`. `ConsultarRecibo` autentica y recupera únicamente recibos de la propia plaza. `Abandonar` admite repetir el abandono del mismo jugador y, en una partida vigente, aumenta la revisión y finaliza sin adjudicar victoria.
-- `internal void Abandonar(Guid id, string? credencial, Guid idSesion)`. Errores explícitos en el cuerpo: `new ErrorApi(409, "operacionIncompatible", "La partida ya finalizó.")`. `ConsultarRecibo` autentica y recupera únicamente recibos de la propia plaza. `Abandonar` admite repetir el abandono del mismo jugador y, en una partida vigente, aumenta la revisión y finaliza sin adjudicar victoria.
-- `private (PartidaGuardada Partida, ParticipanteGuardado Jugador) Acceso( BaseJuego db, Guid id, string? credencial, Guid idSesion)`
-- `private bool AmbosPresentes(Guid id)` `Acceso` combina búsqueda de partida, autenticación y validación de sesión. `AmbosPresentes` comprueba dos sesiones. `Pausada` requiere una fase de elección y al menos un ausente. `Otro` intercambia J1 y J2.
-- `private bool Pausada(PartidaGuardada partida)` `Acceso` combina búsqueda de partida, autenticación y validación de sesión. `AmbosPresentes` comprueba dos sesiones. `Pausada` requiere una fase de elección y al menos un ausente. `Otro` intercambia J1 y J2.
-- `private static string Otro(string rol)` `Acceso` combina búsqueda de partida, autenticación y validación de sesión. `AmbosPresentes` comprueba dos sesiones. `Pausada` requiere una fase de elección y al menos un ausente. `Otro` intercambia J1 y J2.
-- `private static string? NormalizarAtributo(string? atributo)` `NormalizarAtributo` conserva el nulo, recorta espacios, normaliza Unicode y unifica mayúsculas y el caso especial de Energía.
-- `private static void Repartir(BaseJuego db, PartidaGuardada partida, PersonajePartida[] cartas, int numero, string mano)` `Repartir` mezcla las fichas, asigna orden y ubicación, añade la ronda y llama a `AbrirCombate`. `AbrirCombate` agrega el combate con su elector y abre una solicitud de carta y atributo. `AbrirSolicitud` crea el UUID, registra la plaza y ajusta la fase según el tipo de acción.
-- `private static void AbrirCombate(BaseJuego db, PartidaGuardada partida, int numero, string elector)` `Repartir` mezcla las fichas, asigna orden y ubicación, añade la ronda y llama a `AbrirCombate`. `AbrirCombate` agrega el combate con su elector y abre una solicitud de carta y atributo. `AbrirSolicitud` crea el UUID, registra la plaza y ajusta la fase según el tipo de acción.
-- `private static void AbrirSolicitud(BaseJuego db, PartidaGuardada partida, CombateGuardado combate, string rol, string tipo)` `Repartir` mezcla las fichas, asigna orden y ubicación, añade la ronda y llama a `AbrirCombate`. `AbrirCombate` agrega el combate con su elector y abre una solicitud de carta y atributo. `AbrirSolicitud` crea el UUID, registra la plaza y ajusta la fase según el tipo de acción.
-- `private static void Resolver(BaseJuego db, PartidaGuardada partida, CombateGuardado guardado, PersonajePartida cartaRival)` `Resolver` materializa ambos personajes, arma un `Combate` de dominio, compara y traslada resultado, puntajes y ubicación a las filas. Si la ronda sigue, alterna elector y abre otro combate. Si se cierra, suma la ronda y alterna la mano o finaliza al llegar a 15.
-- `private static void Finalizar(BaseJuego db, PartidaGuardada partida, string motivo, string? ganador = null)` `Finalizar` consume la solicitud activa, limpia su referencia y conserva fase final, motivo y ganador cuando corresponde.
+- `internal void Iniciar(Guid id)` — Copia el catálogo activo, reparte la primera ronda y aumenta la revisión. Requiere fase inicial, dos sesiones vigentes y seis personajes activos. Genera 404 para una partida inexistente y 409 si una precondición de estado falla.
+- `internal Confirmacion Elegir(Guid id, string? credencial, Guid idSesion, Eleccion datos)` — Valida entrada y acceso. Devuelve el recibo previo si los datos normalizados coinciden con la operación registrada. Para una elección nueva consume la solicitud, aplica la jugada y guarda el recibo en la misma transacción. Los rechazos por cuerpo, estado o selección se definen en el [contrato HTTP](protocolo-de-partida.md#contrato-http).
+- `internal Recibo ConsultarRecibo(Guid id, string? credencial, Guid idSesion, Guid idOperacion)` — Valida el acceso y devuelve el recibo por ID de operación de la plaza autenticada. Genera 404 si esa plaza no tiene el recibo solicitado.
+- `internal void Abandonar(Guid id, string? credencial, Guid idSesion)` — Finaliza con motivo `abandono` e incrementa la revisión. Repetir el abandono desde la misma plaza conserva el estado. Genera 409 si la partida finalizó por otra causa y propaga los errores de acceso.
+- `private (PartidaGuardada Partida, ParticipanteGuardado Jugador) Acceso( BaseJuego db, Guid id, string? credencial, Guid idSesion)` — Devuelve la partida y su participante tras buscar la partida, autenticar la credencial y exigir la sesión indicada. Genera 404, 401 o 409 según qué comprobación falle.
+- `private bool AmbosPresentes(Guid id)` — Devuelve si J1 y J2 tienen sesiones vigentes para la partida.
+- `private bool Pausada(PartidaGuardada partida)` — Devuelve verdadero si la fase espera una elección y falta al menos una sesión vigente.
+- `private static string Otro(string rol)` — Devuelve la plaza opuesta a `rol`. El llamador usa exclusivamente `J1` o `J2`.
+- `private static string? NormalizarAtributo(string? atributo)` — Conserva el nulo. Para texto, recorta espacios, normaliza Unicode y equipara mayúsculas y las variantes de Energía.
+- `private static void Repartir(BaseJuego db, PartidaGuardada partida, PersonajePartida[] cartas, int numero, string mano)` — Mezcla las cartas, asigna orden y ubicación, registra la ronda con su plaza mano y abre el primer combate.
+- `private static void AbrirCombate(BaseJuego db, PartidaGuardada partida, int numero, string elector)` — Agrega el combate numerado a la ronda actual y abre una solicitud de carta y atributo para el elector.
+- `private static void AbrirSolicitud(BaseJuego db, PartidaGuardada partida, CombateGuardado combate, string rol, string tipo)` — Crea y vincula la solicitud al combate. Actualiza el ID activo y la fase de la partida según el tipo de elección.
+- `private static void Resolver(BaseJuego db, PartidaGuardada partida, CombateGuardado guardado, PersonajePartida cartaRival)` — Compara las cartas con el atributo elegido mediante `Combate`. Persiste resultado, puntajes y ubicación de las cartas. Alterna elector, abre otra ronda o finaliza según el marcador.
+- `private static void Finalizar(BaseJuego db, PartidaGuardada partida, string motivo, string? ganador = null)` — Consume la solicitud activa si existe, limpia su ID y guarda la fase final, el motivo y el ganador opcional. El llamador administra el incremento de revisión.
 
 ### [src/servidor/Combate.cs](../src/servidor/Combate.cs)
 
 **`internal class Combate`**
 
-- `public Combate(Jugador quienElige, Jugador rival)`. Errores explícitos en el cuerpo: `ArgumentException`. `Combate(...)` comprueba que ambos jugadores existan y que sean instancias distintas. Conserva el elector y el rival en campos separados.
-- `public void SetAtributo(TipoAtributo tipo)`. Errores explícitos en el cuerpo: `InvalidOperationException`, `ArgumentOutOfRangeException`. `SetAtributo` exige un valor definido en `TipoAtributo` y permite registrarlo una vez.
-- `public void SetCarta(Jugador jugador, Personaje personaje)` `SetCarta` valida jugador y carta, comprueba la pertenencia y disponibilidad con los métodos privados, retira la carta de la mano y la registra.
-- `public bool EstaCompleto()` `EstaCompleto` comprueba si hay atributo y una carta por participante.
-- `public Jugador Resolver()`. Errores explícitos en el cuerpo: `InvalidOperationException`. `Resolver` exige un combate completo y sin resultado previo. Obtiene el mismo atributo de las dos cartas. Si el puntaje del elector es estrictamente mayor, gana él. En los demás casos gana el rival.
-- `public Jugador GetGanador()`. Errores explícitos en el cuerpo: `InvalidOperationException`. `GetGanador` y `GetAtributo` leen sus campos y arrojan una excepción si todavía faltan. `GetCarta` valida al participante y exige que su carta ya esté registrada.
-- `public TipoAtributo GetAtributo()`. Errores explícitos en el cuerpo: `InvalidOperationException`. `GetGanador` y `GetAtributo` leen sus campos y arrojan una excepción si todavía faltan. `GetCarta` valida al participante y exige que su carta ya esté registrada.
-- `public Personaje GetCarta(Jugador jugador)`. Errores explícitos en el cuerpo: `InvalidOperationException`, `ArgumentException`. `GetGanador` y `GetAtributo` leen sus campos y arrojan una excepción si todavía faltan. `GetCarta` valida al participante y exige que su carta ya esté registrada.
-- `public Jugador[] GetParticipantes()` `GetParticipantes` crea un arreglo con elector primero y rival segundo.
-- `private void ValidarParticipante(Jugador jugador)`. Errores explícitos en el cuerpo: `ArgumentException`. `ValidarParticipante` compara identidad de objeto con ambas plazas. `ValidarCartaDisponible` comprueba que el jugador no haya registrado otra carta y que la elegida esté en su mano. `RegistrarCarta` guarda en el campo del elector o del rival.
-- `private void ValidarCartaDisponible(Jugador jugador, Personaje personaje)`. Errores explícitos en el cuerpo: `InvalidOperationException`, `ArgumentException`. `ValidarParticipante` compara identidad de objeto con ambas plazas. `ValidarCartaDisponible` comprueba que el jugador no haya registrado otra carta y que la elegida esté en su mano. `RegistrarCarta` guarda en el campo del elector o del rival.
-- `private void RegistrarCarta(Jugador jugador, Personaje personaje)` `ValidarParticipante` compara identidad de objeto con ambas plazas. `ValidarCartaDisponible` comprueba que el jugador no haya registrado otra carta y que la elegida esté en su mano. `RegistrarCarta` guarda en el campo del elector o del rival.
+- `public Combate(Jugador quienElige, Jugador rival)` — Registra el elector y el rival como instancias distintas. Lanza `ArgumentNullException` si falta un jugador y `ArgumentException` si ambos son la misma instancia.
+- `public void SetAtributo(TipoAtributo tipo)` — Registra `tipo` una sola vez. Lanza `InvalidOperationException` si ya se eligió y `ArgumentOutOfRangeException` si el valor no pertenece a `TipoAtributo`.
+- `public void SetCarta(Jugador jugador, Personaje personaje)` — Retira de la mano y registra la carta del participante tras validarla. Lanza `ArgumentNullException` por valores nulos, `ArgumentException` si el jugador es ajeno o la carta no está en su mano, e `InvalidOperationException` si ya registró una carta. Una validación fallida conserva la mano.
+- `public bool EstaCompleto()` — Devuelve verdadero cuando el combate tiene atributo y ambas cartas.
+- `public Jugador Resolver()` — Compara el atributo elegido, guarda y devuelve al ganador. El empate favorece al rival. Lanza `InvalidOperationException` si faltan elecciones o si el combate ya se resolvió.
+- `public Jugador GetGanador()` — Devuelve el ganador guardado o lanza `InvalidOperationException` si el combate sigue sin resolver.
+- `public TipoAtributo GetAtributo()` — Devuelve el atributo elegido o lanza `InvalidOperationException` si todavía falta.
+- `public Personaje GetCarta(Jugador jugador)` — Devuelve la carta de `jugador` una vez completo el combate. Lanza `ArgumentNullException` si el jugador es nulo, `InvalidOperationException` si falta completar el combate y `ArgumentException` si el jugador no participa.
+- `public Jugador[] GetParticipantes()` — Devuelve un arreglo nuevo con el elector primero y el rival segundo.
+- `private void ValidarParticipante(Jugador jugador)` — Comprueba pertenencia por identidad de instancia. Lanza `ArgumentException` si el jugador es ajeno al combate.
+- `private void ValidarCartaDisponible(Jugador jugador, Personaje personaje)` — Lanza `InvalidOperationException` si el participante ya registró una carta y `ArgumentException` si el personaje no está en su mano.
+- `private void RegistrarCarta(Jugador jugador, Personaje personaje)` — Guarda el personaje en el campo del elector o del rival. Recibe un participante previamente validado.
 
 ### [src/servidor/Jugador.cs](../src/servidor/Jugador.cs)
 
 **`internal class Jugador`**
 
-- `public Jugador(string nombre)`. Errores explícitos en el cuerpo: `ArgumentException`. `Jugador(...)` valida el nombre y comienza con mano vacía y cero rondas ganadas.
-- `public void RecibirCartas(Personaje[] personajes)` `RecibirCartas` comprueba el arreglo y agrega sus elementos a la mano. `QuitarCarta` quita una instancia de esa lista.
-- `public void QuitarCarta(Personaje personaje)` `RecibirCartas` comprueba el arreglo y agrega sus elementos a la mano. `QuitarCarta` quita una instancia de esa lista.
-- `public Personaje[] EntregarCartas()` `EntregarCartas` copia la mano, vacía la lista y devuelve el arreglo. `GetCartas` entrega una copia sin vaciarla.
-- `public Personaje[] GetCartas()` `EntregarCartas` copia la mano, vacía la lista y devuelve el arreglo. `GetCartas` entrega una copia sin vaciarla.
-- `public void SumarRondaGanada()` `SumarRondaGanada` incrementa el contador. `GetRondasGanadas` y `GetNombre` leen esos campos.
-- `public int GetRondasGanadas()` `SumarRondaGanada` incrementa el contador. `GetRondasGanadas` y `GetNombre` leen esos campos.
-- `public string GetNombre()` `SumarRondaGanada` incrementa el contador. `GetRondasGanadas` y `GetNombre` leen esos campos.
-- `public bool TieneCarta(Personaje personaje)` `TieneCarta` consulta si la mano contiene la instancia de `Personaje`.
+- `public Jugador(string nombre)` — Inicializa una mano vacía y cero rondas ganadas. Lanza `ArgumentException` si el nombre es nulo, vacío o solo contiene espacios.
+- `public void RecibirCartas(Personaje[] personajes)` — Agrega las cartas al final de la mano en el orden recibido. Lanza `ArgumentNullException` si el arreglo es nulo.
+- `public void QuitarCarta(Personaje personaje)` — Elimina la primera coincidencia de la carta en la mano. Si está ausente, conserva la mano. Lanza `ArgumentNullException` si el personaje es nulo.
+- `public Personaje[] EntregarCartas()` — Devuelve una copia de la mano y vacía la colección interna.
+- `public Personaje[] GetCartas()` — Devuelve una copia superficial de la mano y conserva sus elementos.
+- `public void SumarRondaGanada()` — Incrementa el contador de rondas ganadas.
+- `public int GetRondasGanadas()` — Devuelve el contador de rondas ganadas.
+- `public string GetNombre()` — Devuelve el nombre registrado en el constructor.
+- `public bool TieneCarta(Personaje personaje)` — Devuelve si la mano contiene la instancia de `personaje`. Lanza `ArgumentNullException` para una referencia nula.
 
 ### [src/servidor/Mazo.cs](../src/servidor/Mazo.cs)
 
 **`internal class Mazo`**
 
-- `public Mazo(List<Personaje> personajes)` `Mazo(...)` copia la lista recibida para que las operaciones sobre el mazo tengan su propia colección.
-- `public void Mezclar()` `Mezclar` recorre desde el final e intercambia cada posición con una elegida al azar entre el inicio y esa posición. Es una mezcla de Fisher–Yates.
-- `public Personaje[] Repartir(int cantidad)` `Repartir` toma las primeras `cantidad` cartas y elimina ese tramo. Si se piden más de las disponibles, `RemoveRange` rechaza el rango.
-- `public void Devolver(Personaje[] personajes)` `Devolver` agrega las cartas al final de la lista. `GetCantidad` devuelve su tamaño.
-- `public int GetCantidad()` `Devolver` agrega las cartas al final de la lista. `GetCantidad` devuelve su tamaño.
+- `public Mazo(List<Personaje> personajes)` — Copia la lista de origen y conserva su orden. Lanza `ArgumentNullException` si la lista es nula.
+- `public void Mezclar()` — Reordena el mazo en el lugar mediante Fisher–Yates con `Random.Shared`. Conserva sus cartas.
+- `public Personaje[] Repartir(int cantidad)` — Devuelve y retira las primeras `cantidad` cartas. Un valor negativo produce `ArgumentOutOfRangeException` y uno superior al tamaño produce `ArgumentException`. En ambos casos el mazo conserva su contenido.
+- `public void Devolver(Personaje[] personajes)` — Agrega las cartas al final del mazo, en el orden recibido. Lanza `ArgumentNullException` si el arreglo es nulo.
+- `public int GetCantidad()` — Devuelve la cantidad actual de cartas.
 
 ### [src/servidor/Partida.cs](../src/servidor/Partida.cs)
 
 **`internal class Partida`**
 
-- `public Partida(Jugador j1, Jugador j2, Mazo mazo)` `Partida(...)` guarda las referencias validadas de ambos jugadores y el mazo. Define `RondasParaGanar` en 15.
-- `public Jugador Jugar()` `Jugar` llama a `Iniciar`, luego repite ronda y recuperación de cartas, comprueba la victoria y prepara la siguiente ronda con el jugador mano alternado.
-- `private void Iniciar()`. Errores explícitos en el cuerpo: `InvalidOperationException`. `Iniciar` exige seis cartas, crea la ronda 1 con J1 como mano y llama a `RepartirCartas`. Este último mezcla y entrega tres cartas a cada jugador.
-- `private void RepartirCartas()` `Iniciar` exige seis cartas, crea la ronda 1 con J1 como mano y llama a `RepartirCartas`. Este último mezcla y entrega tres cartas a cada jugador.
-- `private void JugarRonda()`. Errores explícitos en el cuerpo: `InvalidOperationException`. `JugarRonda` construye el próximo combate. La entrada de elecciones sigue pendiente en este bucle en memoria, por lo que el combate queda incompleto y se lanza una excepción. El servidor HTTP registra las elecciones en `TransicionesPartida.cs`.
-- `private void RecogerCartas()` `RecogerCartas` reúne lo usado en los combates y lo que sigue en ambas manos, y devuelve todo al mazo.
-- `private bool EstaTerminada()` `EstaTerminada` compara ambos marcadores con 15. `DeterminarGanadorPartida` devuelve el jugador que alcanzó el umbral.
-- `private Jugador DeterminarGanadorPartida()` `EstaTerminada` compara ambos marcadores con 15. `DeterminarGanadorPartida` devuelve el jugador que alcanzó el umbral.
+- `public Partida(Jugador j1, Jugador j2, Mazo mazo)` — Conserva los jugadores y el mazo e inicializa la partida sin ronda activa. Lanza `ArgumentNullException` si alguna referencia es nula.
+- `public Jugador Jugar()` — Intenta iniciar el flujo en memoria y devolver al primer jugador que alcance 15 rondas. En el código actual, tras un reparto válido, `JugarRonda` lanza `InvalidOperationException` en el primer combate porque el flujo todavía carece de entrada de elecciones.
+- `private void Iniciar()` — Exige seis cartas, crea la primera ronda con J1 como mano y reparte. Si el mazo es insuficiente, lanza `InvalidOperationException` antes de cambiar el estado.
+- `private void RepartirCartas()` — Mezcla el mazo y entrega tres cartas a cada jugador. Requiere al menos seis cartas disponibles.
+- `private void JugarRonda()` — Crea un combate para el próximo elector. El flujo actual lanza `InvalidOperationException` al comprobar que ese combate recién creado todavía carece de carta y atributo.
+- `private void RecogerCartas()` — Reúne las cartas de los combates de la ronda y vacía ambas manos. Devuelve todas las cartas reunidas al mazo. Requiere una ronda actual y combates completos.
+- `private bool EstaTerminada()` — Devuelve si al menos uno de los jugadores alcanzó 15 rondas ganadas.
+- `private Jugador DeterminarGanadorPartida()` — Devuelve a J1 si alcanzó el umbral y a J2 en el otro caso. Se usa después de comprobar que la partida terminó.
 
 ### [src/servidor/Personaje.cs](../src/servidor/Personaje.cs)
 
 **`internal enum TipoAtributo`**
 
+Identifica fuerza, velocidad, resistencia, inteligencia, energía y habilidad.
+
 **`internal class Personaje`**
 
-- `public Personaje( string nombre, string ascii, int fuerza, int velocidad, int resistencia, int inteligencia, int energia, int habilidad)`. Errores explícitos en el cuerpo: `ArgumentException`. `Personaje(...)` guarda los datos y llama a `Validar` antes de entregar el objeto.
-- `private void Validar()`. Errores explícitos en el cuerpo: `ArgumentException`. `Validar` rechaza un nombre sin texto o un dibujo nulo. En los seis puntajes comprueba el intervalo 250–750, la suma 3000 y la existencia de al menos un valor ≥650 y otro ≤350.
-- `public string GetNombre()` `GetNombre` y `GetAscii` devuelven los campos respectivos. El dibujo puede ser una cadena vacía.
-- `public string GetAscii()` `GetNombre` y `GetAscii` devuelven los campos respectivos. El dibujo puede ser una cadena vacía.
-- `public int GetAtributo(TipoAtributo tipo)`. Errores explícitos en el cuerpo: `ArgumentOutOfRangeException`. `GetAtributo` traduce el valor de la enumeración al campo correspondiente mediante un `switch` y rechaza un valor fuera de la enumeración.
+- `public Personaje( string nombre, string ascii, int fuerza, int velocidad, int resistencia, int inteligencia, int energia, int habilidad)` — Guarda el nombre, el ASCII y los seis puntajes. Valida los datos antes de completar la construcción y propaga `ArgumentException` si incumplen alguna regla.
+- `private void Validar()` — Comprueba nombre con texto, ASCII no nulo, seis puntajes entre 250 y 750 inclusive, suma exacta de 3000, al menos uno ≥650 y otro ≤350. Lanza `ArgumentException` si falla una regla.
+- `public string GetNombre()` — Devuelve el nombre validado.
+- `public string GetAscii()` — Devuelve el arte ASCII original. Puede ser una cadena vacía.
+- `public int GetAtributo(TipoAtributo tipo)` — Devuelve el puntaje correspondiente a `tipo`. Lanza `ArgumentOutOfRangeException` para valores ajenos a la enumeración.
 
 ### [src/servidor/Program.cs](../src/servidor/Program.cs)
 
@@ -307,12 +344,12 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 **`internal class Ronda`**
 
-- `public Ronda(Jugador mano, Jugador rival)`. Errores explícitos en el cuerpo: `ArgumentException`. `Ronda(...)` valida la pareja y conserva qué jugador abre como mano.
-- `public void AgregarCombate(Combate combate)`. Errores explícitos en el cuerpo: `InvalidOperationException`. `AgregarCombate` rechaza valores nulos, una ronda ya definida o más de tres combates. Agrega el objeto al historial. Las consultas de marcador dependen de que cada combate agregado ya tenga ganador.
-- `public bool EstaDefinida()` `EstaDefinida` cuenta los combates ganados por cada participante y compara los resultados con `CombatesParaGanar`, que vale dos.
-- `public Jugador GetGanador()`. Errores explícitos en el cuerpo: `InvalidOperationException`. `GetGanador` devuelve el jugador que alcanzó el umbral o arroja una excepción si falta cerrar la ronda.
-- `public Jugador GetQuienEligeProximo()`. Errores explícitos en el cuerpo: `InvalidOperationException`. `GetQuienEligeProximo` alterna mano y rival según la paridad de los combates guardados. `GetCombates` devuelve una copia del historial.
-- `public Combate[] GetCombates()` `GetQuienEligeProximo` alterna mano y rival según la paridad de los combates guardados. `GetCombates` devuelve una copia del historial.
+- `public Ronda(Jugador mano, Jugador rival)` — Registra quién abre como mano y crea un historial vacío. Lanza `ArgumentNullException` si falta un jugador y `ArgumentException` si ambos son la misma instancia.
+- `public void AgregarCombate(Combate combate)` — Incorpora el combate al historial. Lanza `ArgumentNullException` si es nulo e `InvalidOperationException` si la ronda ya está definida o el historial llegó a tres. El llamador debe entregar un combate resuelto para que se pueda calcular el marcador.
+- `public bool EstaDefinida()` — Devuelve si alguno de los jugadores ganó al menos dos combates. Propaga `InvalidOperationException` si el historial contiene un combate sin resolver.
+- `public Jugador GetGanador()` — Devuelve al jugador que alcanzó dos victorias. Lanza `InvalidOperationException` si todavía falta definir la ronda o algún combate agregado sigue sin resolver.
+- `public Jugador GetQuienEligeProximo()` — Devuelve mano con un número par de combates y rival con uno impar. Lanza `InvalidOperationException` si la ronda ya se definió o el marcador no se puede calcular.
+- `public Combate[] GetCombates()` — Devuelve una copia superficial del historial en orden de incorporación.
 
 ### [src/subir-personajes/Program.cs](../src/subir-personajes/Program.cs)
 
@@ -322,78 +359,81 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 **`internal static class ConsolaAlta`**
 
-- `internal static async Task<int> Ejecutar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida)`. Errores explícitos en el cuerpo: `EndOfStreamException`. `Ejecutar` pregunta si se desea otra alta y vuelve al principio solo si se confirma. Trata fin de entrada, errores de red, cancelación y JSON inválido. `EsSi` acepta `sí` o `si` sin distinguir mayúsculas.
-- `private static bool EsSi(string respuesta)` `Ejecutar` pregunta si se desea otra alta y vuelve al principio solo si se confirma. Trata fin de entrada, errores de red, cancelación y JSON inválido. `EsSi` acepta `sí` o `si` sin distinguir mayúsculas.
+- `internal static async Task<int> Ejecutar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida)` — Lee y valida los campos del personaje, envía el alta autenticada y confirma únicamente una respuesta `201` con ID positivo. Devuelve 0 al cerrar tras una carga confirmada y 1 ante rechazo, ID inválido, entrada incompleta o fallo de comunicación o deserialización.
+- `private static bool EsSi(string respuesta)` — Devuelve si `respuesta` equivale a `sí` o `si`, sin distinguir mayúsculas.
 
 **`private sealed record AltaConfirmada(int IdPersonaje)`**
 
+## Pruebas automatizadas
+
+Los casos se agrupan por archivo. Las verificaciones de ejecución están en [Plan de pruebas](plan-de-pruebas.md).
 
 ### [test/proyecto-integrador-final-tests/ApiHttpTests.cs](../test/proyecto-integrador-final-tests/ApiHttpTests.cs)
 
 **`public class ApiHttpTests`**
 
-- `public async Task PresentacionDePartidaDesconocidaDevuelveErrorDelProtocolo()` `PresentacionDePartidaDesconocidaDevuelveErrorDelProtocolo` consulta un UUID inexistente y comprueba estado, código e ID de seguimiento.
-- `public async Task IncorporacionReservaLaPlazaYPermiteRenovarLaMismaSesion()` `IncorporacionReservaLaPlazaYPermiteRenovarLaMismaSesion` compara la incorporación original, su repetición y la colisión con otro UUID.
-- `public async Task AltaExigeCredencialAdministrativaYValidaAtributos()` `AltaExigeCredencialAdministrativaYValidaAtributos` contrasta alta sin credencial, alta inválida y alta válida con ID.
-- `public async Task CombateMantieneLasEleccionesPrivadasYConfirmaUnaSolaVez()` `CombateMantieneLasEleccionesPrivadasYConfirmaUnaSolaVez` envía elecciones concurrentes, consulta el recibo propio y ajeno y luego verifica cuándo aparece el combate completo.
-- `public async Task ReinicioRecuperaSolicitudYRecibosYExigeSesionesNuevas()` `ReinicioRecuperaSolicitudYRecibosYExigeSesionesNuevas` vuelve a abrir la misma base después de cerrar el host y comprueba que los datos persisten mientras las sesiones se pierden.
-- `public async Task UnaEleccionConFalloDeEscrituraNoDejaCambiosParciales()` `UnaEleccionConFalloDeEscrituraNoDejaCambiosParciales` induce un fallo de almacenamiento, comprueba que no haya recibo ni avance y vuelve a enviar.
-- `public async Task PresenciaRenuevaElPlazoSinCambiarLaRevision()` `PresenciaRenuevaElPlazoSinCambiarLaRevision` controla el reloj para observar vigencia y revisión por separado.
-- `public async Task ReemplazarCredencialRevocaAccesoYCancelarConservaLaPlaza()` `ReemplazarCredencialRevocaAccesoYCancelarConservaLaPlaza` rota la credencial, vuelve a incorporar y consulta el estado cancelado.
-- `public async Task PartidaTerminaConQuinceRondasGanadasYSinRepartirOtra()` `PartidaTerminaConQuinceRondasGanadasYSinRepartirOtra` recorre los turnos por HTTP hasta el marcador final. `AltaRechazaPuntajesRepresentadosComoTexto` manda tipos JSON incorrectos y comprueba el error.
-- `public async Task AltaRechazaPuntajesRepresentadosComoTexto()` `PartidaTerminaConQuinceRondasGanadasYSinRepartirOtra` recorre los turnos por HTTP hasta el marcador final. `AltaRechazaPuntajesRepresentadosComoTexto` manda tipos JSON incorrectos y comprueba el error.
-- `private static async Task Error(HttpResponseMessage respuesta, HttpStatusCode estado, string codigo)` `Error` comprueba cuerpo y estado HTTP. `GetUtcNow` devuelve el reloj controlado y `Avanzar` le suma segundos. `DatosEleccion` arma el cuerpo a partir de revisión y solicitud. `Incorporar` prepara un cliente autorizado y `Vista` lee su presentación.
-- `private static object DatosEleccion(JsonElement vista, string? atributo)` `Error` comprueba cuerpo y estado HTTP. `GetUtcNow` devuelve el reloj controlado y `Avanzar` le suma segundos. `DatosEleccion` arma el cuerpo a partir de revisión y solicitud. `Incorporar` prepara un cliente autorizado y `Vista` lee su presentación.
-- `private static async Task<HttpClient> Incorporar(string url, Guid partida, string credencial, string nombre)` `Error` comprueba cuerpo y estado HTTP. `GetUtcNow` devuelve el reloj controlado y `Avanzar` le suma segundos. `DatosEleccion` arma el cuerpo a partir de revisión y solicitud. `Incorporar` prepara un cliente autorizado y `Vista` lee su presentación.
-- `private static async Task<JsonElement> Vista(HttpClient cliente)` `Error` comprueba cuerpo y estado HTTP. `GetUtcNow` devuelve el reloj controlado y `Avanzar` le suma segundos. `DatosEleccion` arma el cuerpo a partir de revisión y solicitud. `Incorporar` prepara un cliente autorizado y `Vista` lee su presentación.
+- `public async Task PresentacionDePartidaDesconocidaDevuelveErrorDelProtocolo()` — Consulta un UUID inexistente y comprueba estado, código e ID de seguimiento.
+- `public async Task IncorporacionReservaLaPlazaYPermiteRenovarLaMismaSesion()` — Compara la incorporación original, su repetición y la colisión con otro UUID.
+- `public async Task AltaExigeCredencialAdministrativaYValidaAtributos()` — Contrasta alta sin credencial, alta inválida y alta válida con ID.
+- `public async Task CombateMantieneLasEleccionesPrivadasYConfirmaUnaSolaVez()` — Envía elecciones concurrentes, consulta el recibo propio y ajeno y luego verifica cuándo aparece el combate completo.
+- `public async Task ReinicioRecuperaSolicitudYRecibosYExigeSesionesNuevas()` — Vuelve a abrir la misma base después de cerrar el host y comprueba que los datos persisten mientras las sesiones se pierden.
+- `public async Task UnaEleccionConFalloDeEscrituraNoDejaCambiosParciales()` — Induce un fallo de almacenamiento, comprueba que no haya recibo ni avance y vuelve a enviar.
+- `public async Task PresenciaRenuevaElPlazoSinCambiarLaRevision()` — Controla el reloj para observar vigencia y revisión por separado.
+- `public async Task ReemplazarCredencialRevocaAccesoYCancelarConservaLaPlaza()` — Rota la credencial, vuelve a incorporar y consulta el estado cancelado.
+- `public async Task PartidaTerminaConQuinceRondasGanadasYSinRepartirOtra()` — Completa la partida por HTTP y verifica la fase y el marcador finales.
+- `public async Task AltaRechazaPuntajesRepresentadosComoTexto()` — Envía puntajes como cadenas JSON y verifica el rechazo.
+- `private static async Task Error(HttpResponseMessage respuesta, HttpStatusCode estado, string codigo)` — Comprueba el estado HTTP, el código de error y el identificador de seguimiento.
+- `private static object DatosEleccion(JsonElement vista, string? atributo)` — Construye el cuerpo de una elección desde la solicitud, revisión y opciones de la vista.
+- `private static async Task<HttpClient> Incorporar(string url, Guid partida, string credencial, string nombre)` — Abre una sesión y devuelve un cliente HTTP configurado con su credencial e identificador.
+- `private static async Task<JsonElement> Vista(HttpClient cliente)` — Solicita la presentación y devuelve el JSON tras comprobar el estado de respuesta.
 
 **`private sealed class RelojPruebas`**
 
-- `public override DateTimeOffset GetUtcNow()` `Error` comprueba cuerpo y estado HTTP. `GetUtcNow` devuelve el reloj controlado y `Avanzar` le suma segundos. `DatosEleccion` arma el cuerpo a partir de revisión y solicitud. `Incorporar` prepara un cliente autorizado y `Vista` lee su presentación.
-- `internal void Avanzar(int segundos)` `Error` comprueba cuerpo y estado HTTP. `GetUtcNow` devuelve el reloj controlado y `Avanzar` le suma segundos. `DatosEleccion` arma el cuerpo a partir de revisión y solicitud. `Incorporar` prepara un cliente autorizado y `Vista` lee su presentación.
+- `public override DateTimeOffset GetUtcNow()` — Devuelve el instante controlado por la prueba.
+- `internal void Avanzar(int segundos)` — Suma los segundos indicados al reloj de prueba.
 
 ### [test/proyecto-integrador-final-tests/CartasDePrueba.cs](../test/proyecto-integrador-final-tests/CartasDePrueba.cs)
 
 **`internal static class CartasDePrueba`**
 
-- `internal static Personaje Crear(int fuerza = 650)` `Crear` fabrica un personaje válido con fuerza configurable y ajusta otro puntaje para conservar el total.
+- `internal static Personaje Crear(int fuerza = 650)` — Fabrica un personaje válido con fuerza configurable y ajusta otro puntaje para conservar el total.
 
 ### [test/proyecto-integrador-final-tests/ClienteConsolaContratoTests.cs](../test/proyecto-integrador-final-tests/ClienteConsolaContratoTests.cs)
 
 **`public sealed class ClienteConsolaContratoTests`**
 
-- `public async Task Demo_MuestraElFocoLosCombatesYLaVictoriaEnQuince()` `Demo_MuestraElFocoLosCombatesYLaVictoriaEnQuince` verifica que el ejecutable emita pantallas y marcadores en orden.
-- `public async Task Demo_EntradaRedirigidaPermiteMoverElFocoYConfirmarLaCarta()` `Demo_EntradaRedirigidaPermiteMoverElFocoYConfirmarLaCarta` cambia el foco con texto y observa qué se confirmó.
-- `public async Task Demo_SuspensionConservaElMarcadorConfirmadoYPermiteSalir()` `Demo_SuspensionConservaElMarcadorConfirmadoYPermiteSalir` arranca en modo pausa y comprueba que el marcador no cambie.
-- `public async Task Demo_DistingueAbandonoCancelacionYSalidaLocal()` `Demo_DistingueAbandonoCancelacionYSalidaLocal` ejecuta los tres modos y compara sus mensajes.
-- `public async Task Demo_FinDeEntradaTerminaLaSolicitudSinConfirmarUnaJugada()` `Demo_FinDeEntradaTerminaLaSolicitudSinConfirmarUnaJugada` cierra la entrada y busca el cierre local.
-- `private static void EnOrden(string salida, params string[] fragmentos)` `EnOrden` busca fragmentos sucesivos desde la última coincidencia. `EjecutarDemo` lanza la DLL con entrada y salida redirigidas, escribe el guion de teclas y devuelve el texto del proceso.
-- `private static async Task<string> EjecutarDemo(string? modo, string entrada)` `EnOrden` busca fragmentos sucesivos desde la última coincidencia. `EjecutarDemo` lanza la DLL con entrada y salida redirigidas, escribe el guion de teclas y devuelve el texto del proceso.
+- `public async Task Demo_MuestraElFocoLosCombatesYLaVictoriaEnQuince()` — Verifica que el ejecutable emita pantallas y marcadores en orden.
+- `public async Task Demo_EntradaRedirigidaPermiteMoverElFocoYConfirmarLaCarta()` — Cambia el foco con texto y observa qué se confirmó.
+- `public async Task Demo_SuspensionConservaElMarcadorConfirmadoYPermiteSalir()` — Arranca en modo pausa y comprueba que el marcador no cambie.
+- `public async Task Demo_DistingueAbandonoCancelacionYSalidaLocal()` — Ejecuta los tres modos y compara sus mensajes.
+- `public async Task Demo_FinDeEntradaTerminaLaSolicitudSinConfirmarUnaJugada()` — Cierra la entrada y busca el cierre local.
+- `private static void EnOrden(string salida, params string[] fragmentos)` — Verifica que cada fragmento aparezca en la salida después del anterior.
+- `private static async Task<string> EjecutarDemo(string? modo, string entrada)` — Ejecuta la DLL con el modo indicado y entrada redirigida. Devuelve la salida capturada.
 
 ### [test/proyecto-integrador-final-tests/CombateTests.cs](../test/proyecto-integrador-final-tests/CombateTests.cs)
 
 **`public class CombateTests`**
 
-- `public void ValidaParticipantesYDevuelveUnaCopiaEnOrden()` `ValidaParticipantesYDevuelveUnaCopiaEnOrden` prueba constructores inválidos y modifica un arreglo devuelto para comprobar que los participantes se conservan.
-- `public void RechazaConsultasPrematurasYAtributosInvalidosORepetidos()` `RechazaConsultasPrematurasYAtributosInvalidosORepetidos` consulta antes de elegir y comprueba las excepciones y la inmutabilidad de la primera elección.
-- `public void RechazaCartasInvalidasSinRetirarlasYRegistraUnaPorJugador()` `RechazaCartasInvalidasSinRetirarlasYRegistraUnaPorJugador` mezcla cartas ajenas, jugadores inválidos y elecciones repetidas. Comprueba qué cartas se retiraron y cuáles quedan.
-- `public void FaltaCompletarElCombateConUnaSolaCartaAunqueYaSeEligioElAtributo(bool juegaElector)` `FaltaCompletarElCombateConUnaSolaCartaAunqueYaSeEligioElAtributo` alterna el participante que entrega la única carta y exige que resolver falle.
-- `public void ResuelveSegunElAtributoElegidoYDaElEmpateAlRival(int fuerzaElector, int fuerzaRival, bool ganaElector)` `ResuelveSegunElAtributoElegidoYDaElEmpateAlRival` parametriza mayor, menor e igualdad y compara la instancia ganadora.
+- `public void ValidaParticipantesYDevuelveUnaCopiaEnOrden()` — Prueba constructores inválidos y modifica un arreglo devuelto para comprobar que los participantes se conservan.
+- `public void RechazaConsultasPrematurasYAtributosInvalidosORepetidos()` — Consulta antes de elegir y comprueba las excepciones y la inmutabilidad de la primera elección.
+- `public void RechazaCartasInvalidasSinRetirarlasYRegistraUnaPorJugador()` — Mezcla cartas ajenas, jugadores inválidos y elecciones repetidas. Comprueba qué cartas se retiraron y cuáles quedan.
+- `public void FaltaCompletarElCombateConUnaSolaCartaAunqueYaSeEligioElAtributo(bool juegaElector)` — Alterna el participante que entrega la única carta y exige que resolver falle.
+- `public void ResuelveSegunElAtributoElegidoYDaElEmpateAlRival(int fuerzaElector, int fuerzaRival, bool ganaElector)` — Parametriza mayor, menor e igualdad y compara la instancia ganadora.
 
 ### [test/proyecto-integrador-final-tests/ConsolaAltaTests.cs](../test/proyecto-integrador-final-tests/ConsolaAltaTests.cs)
 
 **`public class ConsolaAltaTests`**
 
-- `public async Task CargaDosPersonajesManualmenteYConfirmaSusIds()` `CargaDosPersonajesManualmenteYConfirmaSusIds` alimenta dos formularios por texto, envía las dos altas a un servidor local con SQLite en memoria y comprueba los IDs impresos.
-- `public async Task UnAltaRechazadaNoSeAnunciaComoConfirmada()` `UnAltaRechazadaNoSeAnunciaComoConfirmada` provoca una respuesta no autorizada y comprueba el mensaje y código de salida.
+- `public async Task CargaDosPersonajesManualmenteYConfirmaSusIds()` — Alimenta dos formularios por texto, envía las dos altas a un servidor local con SQLite en memoria y comprueba los IDs impresos.
+- `public async Task UnAltaRechazadaNoSeAnunciaComoConfirmada()` — Provoca una respuesta no autorizada y comprueba el mensaje y código de salida.
 
 ### [test/proyecto-integrador-final-tests/ConsolaServidorTests.cs](../test/proyecto-integrador-final-tests/ConsolaServidorTests.cs)
 
 **`public sealed class ConsolaServidorTests`**
 
-- `public void Ayuda_ExplicaArgumentosYComoEmpezar()`
-- `public void ComandoInvalido_MuestraComoCorregirlo(string comando, string mensaje)`
-- `private static string Ejecutar(string comandos)`
+- `public void Ayuda_ExplicaArgumentosYComoEmpezar()` — Verifica que la ayuda inicial y la solicitada describan los comandos, sus parámetros y las precondiciones de inicio.
+- `public void ComandoInvalido_MuestraComoCorregirlo(string comando, string mensaje)` — Ejecuta `comando` y verifica que la salida posterior a la ayuda contenga `mensaje`.
+- `private static string Ejecutar(string comandos)` — Ejecuta los comandos en un repositorio SQLite en memoria y devuelve la salida de la consola.
 
 ### [test/proyecto-integrador-final-tests/ContratoFactAttribute.cs](../test/proyecto-integrador-final-tests/ContratoFactAttribute.cs)
 
@@ -405,102 +445,100 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 **`public class InterfazConsolaTests`**
 
-- `private static CartaVisible Carta(int id, string nombre)` `Carta` crea una vista de carta para alimentar la interfaz.
-- `public void PedirCarta_ReintentaEntradasInvalidasYConservaLaMano()` `PedirCarta_ReintentaEntradasInvalidasYConservaLaMano` alimenta líneas inválidas y válidas y comprueba la selección sin mutar la mano.
-- `public void ManoVacia_SePuedeMostrarPeroNoSolicitar()` `ManoVacia_SePuedeMostrarPeroNoSolicitar` comprueba el mensaje de mano vacía y la excepción de selección.
-- `public void PedirAtributo_OfreceLosSeisAtributos(int pasos, string esperado)` `PedirAtributo_OfreceLosSeisAtributos` parametriza el número de desplazamientos. `PedirAtributo_RespetaLasOpcionesDeLaSolicitud` aporta una lista restringida y verifica la selección.
-- `public void PedirAtributo_RespetaLasOpcionesDeLaSolicitud()` `PedirAtributo_OfreceLosSeisAtributos` parametriza el número de desplazamientos. `PedirAtributo_RespetaLasOpcionesDeLaSolicitud` aporta una lista restringida y verifica la selección.
-- `public void FinDeEntrada_TerminaLaSolicitud()` `FinDeEntrada_TerminaLaSolicitud` provoca fin de lectura y espera la excepción de entrada.
-- `public void MostrarMano_AdaptaLasFichasAlAncho(int ancho, bool enParalelo)` `MostrarMano_AdaptaLasFichasAlAncho` y `MostrarCombate_PresentaElResultadoConfirmado` usan anchos determinados y verifican las fichas y el contenido del resultado. `PresentaMarcadorEstadosYCierresConLosNombresRecibidos` comprueba los nombres y mensajes en la salida capturada.
-- `public void MostrarCombate_PresentaElResultadoConfirmado(int ancho)` `MostrarMano_AdaptaLasFichasAlAncho` y `MostrarCombate_PresentaElResultadoConfirmado` usan anchos determinados y verifican las fichas y el contenido del resultado. `PresentaMarcadorEstadosYCierresConLosNombresRecibidos` comprueba los nombres y mensajes en la salida capturada.
-- `public void PresentaMarcadorEstadosYCierresConLosNombresRecibidos()` `MostrarMano_AdaptaLasFichasAlAncho` y `MostrarCombate_PresentaElResultadoConfirmado` usan anchos determinados y verifican las fichas y el contenido del resultado. `PresentaMarcadorEstadosYCierresConLosNombresRecibidos` comprueba los nombres y mensajes en la salida capturada.
+- `private static CartaVisible Carta(int id, string nombre)` — Crea una vista de carta para alimentar la interfaz.
+- `public void PedirCarta_ReintentaEntradasInvalidasYConservaLaMano()` — Alimenta líneas inválidas y válidas y comprueba la selección sin mutar la mano.
+- `public void ManoVacia_SePuedeMostrarPeroNoSolicitar()` — Comprueba el mensaje de mano vacía y la excepción de selección.
+- `public void PedirAtributo_OfreceLosSeisAtributos(int pasos, string esperado)` — Desplaza el foco la cantidad indicada y comprueba el atributo seleccionado.
+- `public void PedirAtributo_RespetaLasOpcionesDeLaSolicitud()` — Comprueba que la selección use las opciones restringidas de la solicitud.
+- `public void FinDeEntrada_TerminaLaSolicitud()` — Provoca fin de lectura y espera la excepción de entrada.
+- `public void MostrarMano_AdaptaLasFichasAlAncho(int ancho, bool enParalelo)` — Comprueba si las fichas se disponen en paralelo para el ancho dado.
+- `public void MostrarCombate_PresentaElResultadoConfirmado(int ancho)` — Verifica cartas, puntajes y ganador en la salida para el ancho dado.
+- `public void PresentaMarcadorEstadosYCierresConLosNombresRecibidos()` — Comprueba los nombres y mensajes en marcador, estados y pantallas de cierre.
 
 ### [test/proyecto-integrador-final-tests/JugadorTests.cs](../test/proyecto-integrador-final-tests/JugadorTests.cs)
 
 **`public class JugadorTests`**
 
-- `public void IniciaConNombreManoVaciaYSinVictorias()` `IniciaConNombreManoVaciaYSinVictorias` inspecciona los campos observables del jugador recién construido.
-- `public void AcumulaCartasQuitaUnaYEntregaElResto()` `AcumulaCartasQuitaUnaYEntregaElResto` combina varias recepciones, prueba la copia defensiva, retira una carta y comprueba el vaciado y el marcador.
+- `public void IniciaConNombreManoVaciaYSinVictorias()` — Inspecciona los campos observables del jugador recién construido.
+- `public void AcumulaCartasQuitaUnaYEntregaElResto()` — Combina varias recepciones, prueba la copia defensiva, retira una carta y comprueba el vaciado y el marcador.
 
 ### [test/proyecto-integrador-final-tests/MazoTests.cs](../test/proyecto-integrador-final-tests/MazoTests.cs)
 
 **`public class MazoTests`**
 
-- `public void CopiaLaColeccionReparteEnOrdenYDevuelveAlFinal()` `CopiaLaColeccionReparteEnOrdenYDevuelveAlFinal` modifica la lista original, reparte por tramos y verifica orden y devolución.
-- `public void MezclarConservaTodasLasCartas(int cantidad)` `MezclarConservaTodasLasCartas` mezcla mazos de distintos tamaños y verifica que cada carta permanezca sin imponer un orden aleatorio concreto.
+- `public void CopiaLaColeccionReparteEnOrdenYDevuelveAlFinal()` — Modifica la lista original, reparte por tramos y verifica orden y devolución.
+- `public void MezclarConservaTodasLasCartas(int cantidad)` — Mezcla mazos de distintos tamaños y verifica que cada carta permanezca sin imponer un orden aleatorio concreto.
 
 ### [test/proyecto-integrador-final-tests/PantallasConsolaTests.cs](../test/proyecto-integrador-final-tests/PantallasConsolaTests.cs)
 
 **`public class PantallasConsolaTests`**
 
-- `public void PreparacionEsperaInicialEInicioDeRonda_TienenSusPaneles()` `PreparacionEsperaInicialEInicioDeRonda_TienenSusPaneles` llama a tres pantallas y busca información específica de cada una.
-- `public void Apertura_UsaMesaConFichasEncabezadoYPie(int ancho, bool paralelas)` `Apertura_UsaMesaConFichasEncabezadoYPie` ejecuta la apertura a diferentes anchos.
-- `public void EsperaYRespuesta_MuestranManoPropiaSinPedirAtributo()` `EsperaYRespuesta_MuestranManoPropiaSinPedirAtributo` usa la misma mesa para revisar espera y respuesta.
-- `public void EnvioSuspensionYCierre_DistinguenLosEstadosConfirmados()` `EnvioSuspensionYCierre_DistinguenLosEstadosConfirmados` comprueba los mensajes de envío, suspensión e interrupción.
-- `public void ResultadoYRondas_UsanDueloVictoriaYPlanilla()` `ResultadoYRondas_UsanDueloVictoriaYPlanilla` comprueba los paneles y textos del combate, ronda y partida.
+- `public void PreparacionEsperaInicialEInicioDeRonda_TienenSusPaneles()` — Llama a tres pantallas y busca información específica de cada una.
+- `public void Apertura_UsaMesaConFichasEncabezadoYPie(int ancho, bool paralelas)` — Ejecuta la apertura a diferentes anchos.
+- `public void EsperaYRespuesta_MuestranManoPropiaSinPedirAtributo()` — Usa la misma mesa para revisar espera y respuesta.
+- `public void EnvioSuspensionYCierre_DistinguenLosEstadosConfirmados()` — Comprueba los mensajes de envío, suspensión e interrupción.
+- `public void ResultadoYRondas_UsanDueloVictoriaYPlanilla()` — Comprueba los paneles y textos del combate, ronda y partida.
 
 ### [test/proyecto-integrador-final-tests/PartidaTests.cs](../test/proyecto-integrador-final-tests/PartidaTests.cs)
 
 **`public class PartidaTests`**
 
-- `public void RechazaUnMazoInsuficienteAntesDeRepartir(int cantidad)` `RechazaUnMazoInsuficienteAntesDeRepartir` llama a `Jugar` con tamaños menores a seis, espera la excepción de inicio y comprueba que el mazo y las manos conservan su estado.
+- `public void RechazaUnMazoInsuficienteAntesDeRepartir(int cantidad)` — Llama a `Jugar` con tamaños menores a seis, espera la excepción de inicio y comprueba que el mazo y las manos conservan su estado.
 
 ### [test/proyecto-integrador-final-tests/PersonajeTests.cs](../test/proyecto-integrador-final-tests/PersonajeTests.cs)
 
 **`public class PersonajeTests`**
 
-- `public void ConservaNombreAsciiYLosSeisAtributos()` `ConservaNombreAsciiYLosSeisAtributos` construye un personaje y compara cada getter con su entrada.
-- `public void AceptaUmbralesInclusivosYAsciiVacio()` `AceptaUmbralesInclusivosYAsciiVacio` usa valores límite y una cadena de dibujo vacía.
-- `public void RechazaAtributosQueIncumplenUnaRegla(int fuerza, int velocidad, int resistencia, int inteligencia)` `RechazaAtributosQueIncumplenUnaRegla` inyecta varios conjuntos con `InlineData` y espera una excepción de validación.
-- `public void RechazaNombreSinTexto(string? nombre)` `RechazaNombreSinTexto` parametriza nombres nulos o en blanco. `RechazaAsciiNulo` prueba por separado el dibujo nulo.
-- `public void RechazaAsciiNulo()` `RechazaNombreSinTexto` parametriza nombres nulos o en blanco. `RechazaAsciiNulo` prueba por separado el dibujo nulo.
+- `public void ConservaNombreAsciiYLosSeisAtributos()` — Construye un personaje y compara cada getter con su entrada.
+- `public void AceptaUmbralesInclusivosYAsciiVacio()` — Usa valores límite y una cadena de dibujo vacía.
+- `public void RechazaAtributosQueIncumplenUnaRegla(int fuerza, int velocidad, int resistencia, int inteligencia)` — Inyecta varios conjuntos con `InlineData` y espera una excepción de validación.
+- `public void RechazaNombreSinTexto(string? nombre)` — Verifica que el constructor lance `ArgumentException` para nombres nulos o en blanco.
+- `public void RechazaAsciiNulo()` — Verifica que el constructor rechace el ASCII nulo.
 
 ### [test/proyecto-integrador-final-tests/RondaTests.cs](../test/proyecto-integrador-final-tests/RondaTests.cs)
 
 **`public class RondaTests`**
 
-- `public void EmpiezaSinCombatesYEligeElJugadorMano()` `EmpiezaSinCombatesYEligeElJugadorMano` confirma el estado inicial y la excepción al consultar ganador.
-- `public void DosVictoriasSeguidasCierranLaRonda(bool ganaMano)` `DosVictoriasSeguidasCierranLaRonda` parametriza al vencedor y prueba cierre temprano.
-- `public void ElTercerCombateDefineLaRondaCuandoVanUnoAUno(bool ganaMano)` `ElTercerCombateDefineLaRondaCuandoVanUnoAUno` genera un empate parcial y completa el tercer combate con cada posible ganador.
-- `private static Combate ResolverCombate(Jugador elector, Jugador oponente, Jugador ganador)` `ResolverCombate` prepara cartas y atributo para producir el ganador que necesita el escenario, luego devuelve el combate ya resuelto.
+- `public void EmpiezaSinCombatesYEligeElJugadorMano()` — Confirma el estado inicial y la excepción al consultar ganador.
+- `public void DosVictoriasSeguidasCierranLaRonda(bool ganaMano)` — Parametriza al vencedor y prueba cierre temprano.
+- `public void ElTercerCombateDefineLaRondaCuandoVanUnoAUno(bool ganaMano)` — Genera un empate parcial y completa el tercer combate con cada posible ganador.
+- `private static Combate ResolverCombate(Jugador elector, Jugador oponente, Jugador ganador)` — Prepara cartas y atributo para producir el ganador que necesita el escenario, luego devuelve el combate ya resuelto.
 
 ### [test/proyecto-integrador-final-tests/ServidorContratoTests.cs](../test/proyecto-integrador-final-tests/ServidorContratoTests.cs)
 
 **`public sealed class ServidorContratoTests`**
 
-- `public async Task Incorporacion_ValidaCredencialYSesionYNoCambiaRevisionConPresencia()` `Incorporacion_ValidaCredencialYSesionYNoCambiaRevisionConPresencia` compara incorporación, renovación y estados de error vía HTTP.
-- `public async Task Elecciones_ProtegenManosYDevuelvenElMismoReciboAlReintentar()` `Elecciones_ProtegenManosYDevuelvenElMismoReciboAlReintentar` toma una vista por plaza y repite la elección para comprobar privacidad y el recibo original.
-- `public async Task EleccionesConcurrentes_ConsumenUnaSolaSolicitud()` `EleccionesConcurrentes_ConsumenUnaSolaSolicitud` dispara dos operaciones sobre la misma solicitud y verifica que avance una vez.
-- `public async Task SesionAusente_PausaYRecuperaLaMismaSolicitudSinCambiarRevision()` `SesionAusente_PausaYRecuperaLaMismaSolicitudSinCambiarRevision` cierra una sesión y luego la reincorpora para observar la misma solicitud.
-- `public async Task Partida_AlternaElElectorEnEmpatesYFinalizaAlLlegarAQuinceRondas()` `Partida_AlternaElElectorEnEmpatesYFinalizaAlLlegarAQuinceRondas` conduce los turnos hasta el marcador final y compara la alternancia y los empates.
-- `public async Task Reinicio_InvalidaSesionesYConservaEstadoYReciboConfirmados()` `Reinicio_InvalidaSesionesYConservaEstadoYReciboConfirmados` reinicia el proceso sobre el archivo SQLite anterior y verifica estado y autenticación.
-- `public async Task Abandono_RepetirloConservaMarcadorYRevisionFinal()` `Abandono_RepetirloConservaMarcadorYRevisionFinal` envía dos veces el abandono y compara ambas presentaciones finales.
-- `private static int Revision(JsonElement vista)` `Revision` y `Mano` extraen datos de una vista JSON. `Elegir` construye una elección desde las opciones visibles. `Leer` verifica estado y deserializa. `Error` comprueba los campos de un error.
-- `private static int[] Mano(JsonElement vista)` `Revision` y `Mano` extraen datos de una vista JSON. `Elegir` construye una elección desde las opciones visibles. `Leer` verifica estado y deserializa. `Error` comprueba los campos de un error.
-- `private static Eleccion Elegir(JsonElement vista)` `Revision` y `Mano` extraen datos de una vista JSON. `Elegir` construye una elección desde las opciones visibles. `Leer` verifica estado y deserializa. `Error` comprueba los campos de un error.
-- `private static async Task<JsonElement> Leer(HttpResponseMessage respuesta, HttpStatusCode esperado)` `Revision` y `Mano` extraen datos de una vista JSON. `Elegir` construye una elección desde las opciones visibles. `Leer` verifica estado y deserializa. `Error` comprueba los campos de un error.
-- `private static async Task Error(HttpResponseMessage respuesta, HttpStatusCode estado, string codigo)` `Revision` y `Mano` extraen datos de una vista JSON. `Elegir` construye una elección desde las opciones visibles. `Leer` verifica estado y deserializa. `Error` comprueba los campos de un error.
+- `public async Task Incorporacion_ValidaCredencialYSesionYNoCambiaRevisionConPresencia()` — Compara incorporación, renovación y estados de error vía HTTP.
+- `public async Task Elecciones_ProtegenManosYDevuelvenElMismoReciboAlReintentar()` — Toma una vista por plaza y repite la elección para comprobar privacidad y el recibo original.
+- `public async Task EleccionesConcurrentes_ConsumenUnaSolaSolicitud()` — Dispara dos operaciones sobre la misma solicitud y verifica que avance una vez.
+- `public async Task SesionAusente_PausaYRecuperaLaMismaSolicitudSinCambiarRevision()` — Cierra una sesión y luego la reincorpora para observar la misma solicitud.
+- `public async Task Partida_AlternaElElectorEnEmpatesYFinalizaAlLlegarAQuinceRondas()` — Conduce los turnos hasta el marcador final y compara la alternancia y los empates.
+- `public async Task Reinicio_InvalidaSesionesYConservaEstadoYReciboConfirmados()` — Reinicia el proceso sobre el archivo SQLite anterior y verifica estado y autenticación.
+- `public async Task Abandono_RepetirloConservaMarcadorYRevisionFinal()` — Envía dos veces el abandono y compara ambas presentaciones finales.
+- `private static int Revision(JsonElement vista)` — Extrae la revisión de la presentación JSON.
+- `private static int[] Mano(JsonElement vista)` — Devuelve los IDs de los personajes visibles en la mano.
+- `private static Eleccion Elegir(JsonElement vista)` — Construye una elección desde la revisión y las opciones de la solicitud visible.
+- `private static async Task<JsonElement> Leer(HttpResponseMessage respuesta, HttpStatusCode esperado)` — Verifica el estado esperado y devuelve el cuerpo JSON.
+- `private static async Task Error(HttpResponseMessage respuesta, HttpStatusCode estado, string codigo)` — Verifica el estado y el código de error de la respuesta.
 
 **`private sealed record Eleccion(Guid idOperacion, Guid idSolicitud, int revisionEsperada, int idPersonaje, string? atributo)`**
 
-
 **`private sealed record Jugador(string Rol, string Credencial, Guid Sesion)`**
-
 
 **`private sealed class Servidor`**
 
-- `public Servidor()` Los records privados `Eleccion` y `Jugador` conservan los parámetros que usa el banco de prueba HTTP. El constructor de `Servidor` configura la instancia de prueba. `Lanzar` inicia el proceso con su base aislada. `Reiniciar` detiene y vuelve a levantar el proceso sobre la misma base. `Crear` envía la orden de operador y lee partida y credenciales. `Iniciar` envía la orden de comenzar.
-- `private Process Lanzar()` Los records privados `Eleccion` y `Jugador` conservan los parámetros que usa el banco de prueba HTTP. El constructor de `Servidor` configura la instancia de prueba. `Lanzar` inicia el proceso con su base aislada. `Reiniciar` detiene y vuelve a levantar el proceso sobre la misma base. `Crear` envía la orden de operador y lee partida y credenciales. `Iniciar` envía la orden de comenzar.
-- `public async Task Reiniciar()` Los records privados `Eleccion` y `Jugador` conservan los parámetros que usa el banco de prueba HTTP. El constructor de `Servidor` configura la instancia de prueba. `Lanzar` inicia el proceso con su base aislada. `Reiniciar` detiene y vuelve a levantar el proceso sobre la misma base. `Crear` envía la orden de operador y lee partida y credenciales. `Iniciar` envía la orden de comenzar.
-- `public async Task Crear()` Los records privados `Eleccion` y `Jugador` conservan los parámetros que usa el banco de prueba HTTP. El constructor de `Servidor` configura la instancia de prueba. `Lanzar` inicia el proceso con su base aislada. `Reiniciar` detiene y vuelve a levantar el proceso sobre la misma base. `Crear` envía la orden de operador y lee partida y credenciales. `Iniciar` envía la orden de comenzar.
-- `public async Task Iniciar()` Los records privados `Eleccion` y `Jugador` conservan los parámetros que usa el banco de prueba HTTP. El constructor de `Servidor` configura la instancia de prueba. `Lanzar` inicia el proceso con su base aislada. `Reiniciar` detiene y vuelve a levantar el proceso sobre la misma base. `Crear` envía la orden de operador y lee partida y credenciales. `Iniciar` envía la orden de comenzar.
-- `public async Task Renovar(Jugador jugador)` `Renovar`, `CerrarSesion` e `Incorporar` controlan presencia mediante HTTP o consola del operador. `EsperarVista` repite la consulta hasta cumplir una condición. `Vista` obtiene JSON, `Post` envía una elección y `Enviar` prepara cabeceras y cuerpo.
-- `public Task CerrarSesion(Jugador jugador)` `Renovar`, `CerrarSesion` e `Incorporar` controlan presencia mediante HTTP o consola del operador. `EsperarVista` repite la consulta hasta cumplir una condición. `Vista` obtiene JSON, `Post` envía una elección y `Enviar` prepara cabeceras y cuerpo.
-- `public async Task<JsonElement> EsperarVista(Jugador jugador, Func<JsonElement, bool> coincide)` `Renovar`, `CerrarSesion` e `Incorporar` controlan presencia mediante HTTP o consola del operador. `EsperarVista` repite la consulta hasta cumplir una condición. `Vista` obtiene JSON, `Post` envía una elección y `Enviar` prepara cabeceras y cuerpo.
-- `public async Task Incorporar(Jugador jugador, string nombre)` `Renovar`, `CerrarSesion` e `Incorporar` controlan presencia mediante HTTP o consola del operador. `EsperarVista` repite la consulta hasta cumplir una condición. `Vista` obtiene JSON, `Post` envía una elección y `Enviar` prepara cabeceras y cuerpo.
-- `public async Task<JsonElement> Vista(Jugador jugador)` `Renovar`, `CerrarSesion` e `Incorporar` controlan presencia mediante HTTP o consola del operador. `EsperarVista` repite la consulta hasta cumplir una condición. `Vista` obtiene JSON, `Post` envía una elección y `Enviar` prepara cabeceras y cuerpo.
-- `public Task<HttpResponseMessage> Post(Jugador jugador, Eleccion eleccion)` `Renovar`, `CerrarSesion` e `Incorporar` controlan presencia mediante HTTP o consola del operador. `EsperarVista` repite la consulta hasta cumplir una condición. `Vista` obtiene JSON, `Post` envía una elección y `Enviar` prepara cabeceras y cuerpo.
-- `public async Task<HttpResponseMessage> Enviar(HttpMethod metodo, string ruta, Jugador jugador, object? cuerpo = null)` `Renovar`, `CerrarSesion` e `Incorporar` controlan presencia mediante HTTP o consola del operador. `EsperarVista` repite la consulta hasta cumplir una condición. `Vista` obtiene JSON, `Post` envía una elección y `Enviar` prepara cabeceras y cuerpo.
-- `private async Task<string> LeerDato(string prefijo)`. Errores explícitos en el cuerpo: `InvalidOperationException`. `LeerDato` busca la línea cuyo prefijo espera al leer la consola. `Detener` finaliza el proceso y `DisposeAsync` libera el cliente y elimina el directorio temporal.
-- `public async ValueTask DisposeAsync()` `LeerDato` busca la línea cuyo prefijo espera al leer la consola. `Detener` finaliza el proceso y `DisposeAsync` libera el cliente y elimina el directorio temporal.
-- `private async Task Detener()` `LeerDato` busca la línea cuyo prefijo espera al leer la consola. `Detener` finaliza el proceso y `DisposeAsync` libera el cliente y elimina el directorio temporal.
+- `public Servidor()` — Prepara el proceso de servidor para usar una base SQLite aislada.
+- `private Process Lanzar()` — Arranca el proceso de servidor con la configuración y base de la prueba.
+- `public async Task Reiniciar()` — Detiene y vuelve a lanzar el servidor sobre la misma base.
+- `public async Task Crear()` — Envía la orden de crear y lee el UUID y las credenciales de la partida.
+- `public async Task Iniciar()` — Envía al operador la orden de iniciar la partida creada.
+- `public async Task Renovar(Jugador jugador)` — Renueva la presencia por HTTP para el jugador indicado.
+- `public Task CerrarSesion(Jugador jugador)` — Envía a la consola del servidor la orden de cerrar la sesión de la plaza.
+- `public async Task<JsonElement> EsperarVista(Jugador jugador, Func<JsonElement, bool> coincide)` — Consulta la presentación hasta obtener una respuesta que cumpla `coincide`.
+- `public async Task Incorporar(Jugador jugador, string nombre)` — Incorpora la plaza por HTTP con el nombre y el UUID de sesión del jugador.
+- `public async Task<JsonElement> Vista(Jugador jugador)` — Consulta la presentación autenticada y devuelve su JSON.
+- `public Task<HttpResponseMessage> Post(Jugador jugador, Eleccion eleccion)` — Envía la elección autenticada y devuelve la respuesta HTTP.
+- `public async Task<HttpResponseMessage> Enviar(HttpMethod metodo, string ruta, Jugador jugador, object? cuerpo = null)` — Envía una solicitud con las cabeceras de la plaza y el cuerpo opcional.
+- `private async Task<string> LeerDato(string prefijo)` — Lee la salida hasta encontrar el prefijo indicado. Lanza `InvalidOperationException` si se cierra el flujo antes de encontrarlo.
+- `public async ValueTask DisposeAsync()` — Detiene el proceso, libera el cliente HTTP y elimina el directorio temporal.
+- `private async Task Detener()` — Finaliza el proceso de servidor de la prueba y espera su salida.
