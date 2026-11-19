@@ -1,6 +1,6 @@
 # Plan de trabajo — Juego Guerra
 
-Plan basado en la [consigna](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Consigna). El usuario confirmó la entrega de TI. Las casillas registran los entregables de diseño y el estado del trabajo de Taller.
+Plan basado en la [consigna](wiki/Consigna.md). El usuario confirmó la entrega de TI. Las casillas registran los entregables de diseño y el estado del trabajo de Taller.
 
 | Actividades de TI | Estado |
 |---|---|
@@ -27,43 +27,43 @@ Valores en orden: Fuerza, Velocidad, Resistencia, Inteligencia, Energía y Habil
 
 ### Actividad 2 — Relevamiento de requerimientos
 
-- [x] Documentar participantes, reglas de combate, ronda y partida en [Reglas del juego](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Reglas-del-juego).
+- [x] Documentar participantes, reglas de combate, ronda y partida en [Reglas del juego](wiki/Reglas-del-juego.md).
 - [x] Definir catálogo, mazo, reparto, duplicados y mínimo de cartas.
 - [x] Especificar datos de ejecución, validaciones, errores y condiciones técnicas.
 - [x] Preparar el texto para que el usuario lo copie al documento de entrega.
 
 ### Actividad 3 — Modelo de clases
 
-- [x] Definir responsabilidades, encapsulamiento, dependencias y relaciones del dominio en [Arquitectura](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura) y el [diagrama UML incluido en los descargables](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Home).
+- [x] Definir responsabilidades, encapsulamiento, dependencias y relaciones del dominio en [Arquitectura](wiki/Arquitectura.md) y el [diagrama UML incluido en los descargables](wiki/README.md).
 - [x] Modelar la carga del catálogo, la coordinación de la partida y la presentación de consola.
 
 La integración HTTP se documenta en la actividad 6.
 
 ### Actividad 4 — Especificación de métodos
 
-- [x] Especificar las firmas, precondiciones, efectos, retornos, validaciones y errores de cada operación en [Arquitectura](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura#especificación-de-clases-y-métodos--actividad-4).
+- [x] Especificar las firmas, precondiciones, efectos, retornos, validaciones y errores de cada operación en [Arquitectura](wiki/Arquitectura.md#especificación-de-clases-y-métodos--actividad-4).
 
 Para este proyecto se acordó documentar cada método por escrito, sin diagramas Nassi–Schneiderman.
 
 ### Actividad 5 — Datos y validación de personajes
 
-- [x] Definir los [datos de los personajes](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura#datos-y-validación-de-personajes--actividad-5) y sus validaciones.
+- [x] Definir los [datos de los personajes](wiki/Arquitectura.md#datos-y-validación-de-personajes--actividad-5) y sus validaciones.
 - [x] Incorporar ID, descripción y ASCII al catálogo y a los contratos de Personaje.
 
-La decisión vigente es cargar los personajes manualmente mediante `subir-personajes`. Esta decisión sustituye la lectura de archivos de personajes prevista en la consigna original. El catálogo conserva el arte ASCII y la descripción. El juego prescinde de ambos durante la partida. La decisión se registra en [Interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz#arte-y-descripción-de-personajes).
+La decisión vigente es cargar los personajes manualmente mediante `subir-personajes`. Esta decisión sustituye la lectura de archivos de personajes prevista en la consigna original. El catálogo conserva el arte ASCII y la descripción. El juego prescinde de ambos durante la partida.
 
 ### Actividad 6 — Comunicación HTTP en red local
 
-**Diseño entregado en TI.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
+**Diseño entregado en TI.** El 17 de noviembre de 2026 el usuario informó que se aprobó HTTP para la entrega en lugar del archivo compartido indicado en la consigna original. Se adopta el diseño de [API REST](wiki/Protocolo-de-partida.md), con dos clientes de consola y un servidor que aplica las reglas y conserva los datos.
 
-- [x] Documentar tecnologías, despliegue, sesiones y reincorporación en el [protocolo](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida).
+- [x] Documentar tecnologías, despliegue, sesiones y reincorporación en el [protocolo](wiki/Protocolo-de-partida.md).
 - [x] Especificar rutas, DTO, errores, estados, presencia, pausa y abandono.
 - [x] Diseñar el control de revisión de estado, la idempotencia y la persistencia transaccional.
 - [x] Documentar el modelo de integración y vincular los casos de prueba HTTP.
 
 ### Actividad 7 — Casos de prueba
 
-- [x] Documentar condiciones iniciales, datos, acción y resultados esperados de caja negra y blanca en el [plan de pruebas](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Plan-de-pruebas).
+- [x] Documentar condiciones iniciales, datos, acción y resultados esperados de caja negra y blanca en el [plan de pruebas](wiki/Plan-de-pruebas.md).
 - [x] Cubrir personajes, formato del catálogo, mazo, reglas de combate y finalización.
 - [x] Cubrir indisponibilidad, turno incorrecto, pausa, recuperación y concurrencia según el contrato HTTP de la actividad 6.
 
@@ -83,18 +83,18 @@ TI ya fue entregado. Para completar Taller, primero hay que cerrar las decisione
 
 ### Etapa 2 — Carga manual de personajes
 
-- [x] Definir el [contrato de alta individual](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida#alta-individual-de-personajes).
+- [x] Definir el [contrato de alta individual](wiki/Protocolo-de-partida.md#alta-individual-de-personajes).
 - [x] Pedir los datos en `subir-personajes`, enviarlos por HTTP y permitir otra alta tras confirmar el ID.
 - [x] Verificar dos altas consecutivas y el rechazo con una credencial incorrecta.
 
 
 ### Etapa 3 — Jugador e interacción de consola
 
-El [diseño de la interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz) registra las pantallas, los controles implementados en el cliente y las decisiones pendientes del flujo cliente.
+El [diseño de la interfaz](wiki/Diseno-de-interfaz.md) registra las pantallas, los controles implementados en el cliente y las decisiones pendientes del flujo cliente.
 
 - [x] Crear Jugador con nombre, mano de personajes y marcador de rondas ganadas.
 - [x] Implementar recepción, consulta, retiro y entrega de personajes sin exponer la colección interna.
-- [x] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Diseno-de-interfaz), con renderizado mediante Spectre.Console.
+- [x] Implementar la composición y los menús propios de InterfazConsola según el [diseño de la interfaz](wiki/Diseno-de-interfaz.md), con renderizado mediante Spectre.Console.
 - [x] Validar la carta elegida contra las opciones de mano recibidas y el atributo contra las opciones de la solicitud.
 - [x] Presentar mano, marcador, esperas, resultados y errores según los contratos de TI.
 - [ ] Definir cómo descartar las entradas sobrantes entre solicitudes y cómo tratar una elección en curso cuando cambia la solicitud.
@@ -135,7 +135,7 @@ El [diseño de la interfaz](https://github.com/51215927-spec/proyecto-integrador
 
 #### Cliente REST
 
-El cliente de consola dispone de una demostración local. Para jugar una partida real falta aplicar el [protocolo de partida](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Protocolo-de-partida).
+El cliente de consola dispone de una demostración local. Para jugar una partida real falta aplicar el [protocolo de partida](wiki/Protocolo-de-partida.md).
 
 - [ ] Leer la URL del servidor desde la configuración local y permitir la incorporación con el ID de partida, la credencial de plaza y el nombre del jugador. Mostrar el rol asignado y esperar el inicio del operador.
 - [ ] Mantener la sesión activa y consultar la presentación según los intervalos del protocolo, incluso mientras el jugador elige o la partida está pausada.
@@ -154,7 +154,7 @@ El cliente de consola dispone de una demostración local. Para jugar una partida
 - [ ] Preparar ambos equipos con la misma versión del proyecto y .NET 8. Arrancar el servidor, registrar su IPv4 y puerto TCP 5000, y comprobar el acceso desde el segundo equipo.
 - [ ] Cargar al menos seis personajes válidos de los alumnos, crear la partida desde la consola del servidor e incorporar a J1 y J2 desde equipos distintos con sus credenciales.
 - [ ] Jugar hasta las 15 rondas ganadas. Comprobar el reparto de tres cartas por jugador, las manos privadas, la secuencia de los combates, la alternancia y la coincidencia del marcador y del resultado final en ambas consolas.
-- [ ] Ejecutar los escenarios de red y consistencia HTTP aplicables del [plan de pruebas](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Plan-de-pruebas#red-local-y-consistencia-http), incluidos pérdida de respuesta, desconexión, recuperación, reinicio del servidor y abandono. Ejecutar los casos con fallos inducidos en un entorno de pruebas.
+- [ ] Ejecutar los escenarios de red y consistencia HTTP aplicables del [plan de pruebas](wiki/Plan-de-pruebas.md#red-local-y-consistencia-http), incluidos pérdida de respuesta, desconexión, recuperación, reinicio del servidor y abandono. Ejecutar los casos con fallos inducidos en un entorno de pruebas.
 - [ ] Registrar la versión, los equipos, la IP y el puerto del servidor, el resultado observado por caso y la evidencia. Resolver los fallos y repetir los casos afectados.
 
 #### Entrega de Taller
@@ -164,7 +164,7 @@ El cliente de consola dispone de una demostración local. Para jugar una partida
 - [ ] Repetir `dotnet build proyecto-integrador-final.sln` y `dotnet test proyecto-integrador-final.sln` con las pruebas de contrato habilitadas después de integrar el cliente REST.
 - [ ] Actualizar la guía de instalación y uso con los pasos verificados para iniciar el servidor, cargar el catálogo, crear la partida y conectar ambos clientes.
 - [x] Registrar la entrega de TI confirmada por el usuario.
-- [ ] Verificar los entregables de Taller, la disponibilidad del código integrado en `src/`, las pruebas en `test/` y la documentación en la [wiki](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Home).
+- [ ] Verificar los entregables de Taller, la disponibilidad del código integrado en `src/`, las pruebas en `test/` y la documentación en la [wiki](wiki/README.md).
 - [ ] Preparar la defensa de Taller con las decisiones de diseño, las estrategias de personajes, las clases y métodos de cada integrante y la evidencia de la partida en red.
 
 Los Analistas coordinan los entregables y comunican los cambios a Taller. El flujo de GitHub está en la [guía de colaboración](../CONTRIBUTING.md).
