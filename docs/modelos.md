@@ -65,7 +65,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 **`internal static class Program`**
 
-- `private static int Main(string[] args)` `Main` crea la aplicación con `ServidorHttp.Crear`, obtiene el repositorio del contenedor de dependencias, inicia el servidor, arranca la consola del operador en otra tarea y espera el apagado.
+- `private static int Main(string[] args)`. Selecciona el flujo de demostración según `args`. Devuelve 0 tras mostrar preparación, ayuda o una demostración. Devuelve 2 para argumentos desconocidos y 1 ante un error de E/S de la consola. El fin de entrada cierra la demostración con código 0.
 
 ### [src/cliente/VistasConsola.cs](../src/cliente/VistasConsola.cs)
 
@@ -318,7 +318,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 **`internal static class Program`**
 
-- `private static async Task<int> Main(string[] args)` `Main` crea la aplicación con `ServidorHttp.Crear`, obtiene el repositorio del contenedor de dependencias, inicia el servidor, arranca la consola del operador en otra tarea y espera el apagado.
+- `private static async Task<int> Main(string[] args)`. Valida la URL HTTP o HTTPS recibida en `args` y usa `http://localhost:5000` por defecto. Lee la credencial de catálogo y ejecuta `ConsolaAlta.Ejecutar` con la entrada y salida del proceso. Devuelve 1 si la configuración es inválida o falta la credencial. En otro caso devuelve el código de salida de la carga.
 
 **`internal static class ConsolaAlta`**
 

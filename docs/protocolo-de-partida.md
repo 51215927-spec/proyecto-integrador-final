@@ -116,16 +116,11 @@ El error incluye `codigo`, `mensaje` e `idSeguimiento`; sus campos excluyen elec
 
 ## Persistencia, concurrencia y catálogo
 
-| Tabla | Identidad, relaciones e información persistida |
-|---|---|
-| PersonajeCatalogo | ID entero, datos completos, seis puntajes y estado activo |
-| Partida | UUID, fase, revisión, ronda/combate actuales, motivo de fin y ganador |
-| Participante | Clave partida y plaza, hash de credencial, nombre y marcador de rondas |
-| PersonajePartida | Clave partida e ID de personaje, copia inmutable de los datos y estado de ubicación (mazo, mano J1/J2 o jugada), con orden de mazo |
-| Ronda | Clave partida y número, mano inicial, victorias por jugador y ganador |
-| Combate | Clave partida, ronda y número, elector, cartas, atributo, puntajes y ganador |
-| Solicitud | UUID, partida, participante, combate, tipo y estado vigente o consumida |
-| Operacion | Clave partida, participante e ID de operación, datos normalizados de la elección y recibo |
+Para una elección nueva, el servidor autentica la plaza y verifica la sesión vigente. Luego comprueba presencia, revisión, solicitud y opciones, en ese orden. Si acepta la elección, incrementa la revisión y persiste el recibo junto con la transición. El `POST` responde `201` con la ubicación del recibo.
+
+Para un reenvío, el servidor busca primero el `idOperacion` dentro de la partida y la plaza autenticada. Si el cuerpo coincide con la elección guardada tras normalizar el atributo, responde `200` con el recibo original, aunque hayan cambiado la revisión o el turno. Si alguno de los datos difiere, responde `409 operacionIncompatible`. La consulta `GET /elecciones/{idOperacion}` requiere sesión vigente y devuelve `404` si no existe un recibo para esa plaza.
+
+[Esquema y persistencia de la elección](bases-de-datos.md#solicitudes-y-operaciones)
 
 ### Alta individual de personajes
 
