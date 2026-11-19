@@ -23,6 +23,7 @@ La solución incluye el dominio del juego, el servidor REST y una interfaz de co
 - [Diseño de interfaz](docs/diseno-de-interfaz.md).
 - [Estructura del repositorio](docs/estructura-del-repositorio.md).
 - [Instalación y uso](docs/instalacion-y-uso.md).
+- [Plan de continuidad](docs/plan.md).
 - [Colaboración con Git y GitHub](CONTRIBUTING.md).
 
 ## Autores
