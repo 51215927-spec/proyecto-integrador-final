@@ -6,7 +6,7 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 ## Estado actual
 
-El alcance es **TI (análisis y diseño)**. Las actividades 1 a 5 están cerradas y las actividades 6 y 7 contienen el diseño REST y los casos de prueba. Consultá el [plan](https://github.com/51215927-spec/proyecto-integrador-final/blob/main/docs/plan.md) para ver los avances de implementación y los pendientes.
+La etapa de **TI (análisis y diseño)** ya fue entregada, con el diseño REST y los casos de prueba documentados. Consultá el [plan](docs/plan.md) para ver los avances de implementación y los pendientes.
 
 La solución incluye el dominio del juego, el servidor REST y una interfaz de consola con demostración local. La conexión del cliente a una partida y la validación entre dos computadoras siguen pendientes. La [guía del servidor](docs/wiki/Protocolo-de-partida.md#operación-del-servidor) describe el inicio y la administración del catálogo y las partidas.
 
