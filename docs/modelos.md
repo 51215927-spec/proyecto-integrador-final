@@ -2,14 +2,6 @@
 
 Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valores por defecto y el retorno. Los constructores se identifican por el nombre del tipo y devuelven la instancia creada. La visibilidad efectiva queda limitada por la del tipo contenedor.
 
-## Comportamiento por componente
-
-- [Dominio](historico/wiki/Codigo-del-dominio.md)
-- [Servidor HTTP](historico/wiki/Codigo-del-servidor.md)
-- [Cliente](historico/wiki/Codigo-del-cliente.md)
-- [Carga](historico/wiki/Codigo-de-carga.md)
-- [Pruebas](historico/wiki/Codigo-de-las-pruebas.md)
-
 ## Firmas declaradas
 
 ### [src/cliente/DemostracionConsola.cs](../src/cliente/DemostracionConsola.cs)

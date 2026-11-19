@@ -65,7 +65,7 @@ Respetar la siguiente organización:
 
 - `src/`: código fuente de la aplicación.
 - `test/`: proyectos y código de pruebas automatizadas.
-- `docs/`: wiki y documentación histórica.
+- `docs/`: documentación del proyecto y diagramas.
 - `specs/`: especificaciones, diseño y tareas por funcionalidad.
 - [Documentación del proyecto](README.md#documentación): documentación técnica y académica.
 

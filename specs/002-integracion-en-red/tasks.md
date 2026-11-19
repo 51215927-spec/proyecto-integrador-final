@@ -5,4 +5,4 @@
 - [ ] T3. Ejecutar los casos de fallo y registrar evidencia (CA2).
 - [ ] T4. Repetir compilación y pruebas de contrato, actualizar instalación con pasos verificados y preparar los entregables de Taller (CA1–CA2).
 
-Evidencia en dos equipos pendiente. [Seguimiento anterior](../../docs/historico/plan.md#etapa-7--integración)
+Evidencia en dos equipos pendiente.

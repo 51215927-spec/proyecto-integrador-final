@@ -6,4 +6,4 @@
 - [ ] T4. Gestionar reincorporación y motivos de cierre (CA4).
 - [ ] T5. Verificar los flujos del cliente con pruebas automatizadas (CA1–CA4).
 
-Evidencia de estos criterios pendiente. [Seguimiento anterior](../../docs/historico/plan.md#cliente-rest)
+Evidencia de estos criterios pendiente.
