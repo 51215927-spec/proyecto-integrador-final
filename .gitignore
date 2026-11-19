@@ -6,3 +6,7 @@ guerra.db
 guerra.db-shm
 guerra.db-wal
 guerra.db-journal
+
+# Archivos de trabajo locales
+/AGENTS.md
+/specs/

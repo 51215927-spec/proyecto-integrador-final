@@ -37,13 +37,13 @@ Usá una descripción en minúsculas y sin tildes. Separá las palabras de la ra
 
 ### Preparar y compartir cambios
 
-Comprobá el diff, ejecutá las verificaciones pertinentes y agregá únicamente los archivos de la tarea. Por ejemplo, para un cambio en el índice SDD:
+Comprobá el diff, ejecutá las verificaciones pertinentes y agregá únicamente los archivos de la tarea. Por ejemplo, para un cambio en la guía de instalación:
 
 ```bash
 git diff
-git add specs/README.md
+git add docs/instalacion-y-uso.md
 git diff --cached
-git commit -m "docs: actualizar indice de especificaciones"
+git commit -m "docs: actualizar guia de instalacion"
 git push -u origin HEAD
 ```
 
@@ -53,9 +53,9 @@ En GitHub, abrí **Pull requests → New pull request**. Seleccioná `main` como
 
 ### Sincronizar después de integrar
 
-Actualizá `main` con `git fetch origin` y `git merge --ff-only origin/main` desde esa rama. Incorporá el nuevo `main` mediante merge en las ramas vigentes y actualizá las que ya estén publicadas. Si aparecen conflictos, revisá ambos cambios y coordiná la resolución con el compañero. Aplicá el [procedimiento de worktrees](AGENTS.md#trabajo-en-paralelo-con-worktrees) para conservar el trabajo y limpiar las ramas de tareas cerradas.
+Actualizá `main` con `git fetch origin` y `git merge --ff-only origin/main` desde esa rama. Incorporá el nuevo `main` mediante merge en las ramas vigentes y actualizá las que ya estén publicadas. Si aparecen conflictos, revisá ambos cambios y coordiná la resolución con el compañero. Retirá los worktrees limpios de tareas cerradas tras verificar que los cambios estén integrados y publicados.
 
 ## Desarrollo y estructura
 
-- [Desarrollo con TDD](AGENTS.md#7-metodología-de-desarrollo-tdd).
+- Para los cambios de comportamiento, escribí primero las pruebas con xUnit y seguí el ciclo RED–GREEN–REFACTOR.
 - [Estructura del repositorio](docs/estructura-del-repositorio.md).

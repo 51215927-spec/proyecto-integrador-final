@@ -1,5 +1,9 @@
 # Instalación y uso
 
+## Entrada de datos en ejecución
+
+El servidor, el cliente y la herramienta de carga deberán iniciarse sin argumentos de aplicación. Cada programa pedirá en consola los datos que necesite, como la dirección de conexión, las credenciales, las opciones del juego o los datos del personaje. La consola del servidor pedirá los identificadores después de que el operador elija una acción. Este requisito está pendiente de implementación. Los comandos de esta guía describen el funcionamiento disponible hoy.
+
 ## Instalación de herramientas y dependencias
 
 Esta guía prepara una computadora para compilar y ejecutar la base actual. Está orientada a Windows, el entorno previsto para jugar. Para consultar solamente la documentación no hace falta instalar estas herramientas.

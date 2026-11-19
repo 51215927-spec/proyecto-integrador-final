@@ -18,6 +18,10 @@ flowchart LR
 
 El operador crea la partida en consola. Tras incorporar a ambos participantes, el servidor copia los personajes activos del catálogo al estado de la partida. Cada elección se valida contra la sesión, la revisión y la solicitud vigente. Con ambas cartas, el servidor compara los puntajes mediante el dominio y guarda el resultado y el recibo dentro de la misma escritura. La presentación devuelve la mano propia y los combates resueltos.
 
+## Entrada interactiva prevista
+
+Los tres ejecutables pedirán los datos de operación en consola. El cliente ofrecerá la demostración y solicitará los datos de conexión cuando se implemente el juego en red. El servidor pedirá la configuración de inicio y los datos de cada acción administrativa. La herramienta de carga pedirá la URL, la credencial y los datos del personaje. El cambio está pendiente y conserva el contrato HTTP.
+
 ## Estados de la partida
 
 ```mermaid

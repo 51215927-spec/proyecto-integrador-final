@@ -6,7 +6,7 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 ## Estado actual
 
-La etapa de **TI (análisis y diseño)** ya fue entregada, con el diseño REST y los casos de prueba documentados. Consultá las [especificaciones](specs/README.md) para ver el seguimiento por funcionalidad.
+La etapa de **TI (análisis y diseño)** ya fue entregada, con el diseño REST y los casos de prueba documentados.
 
 La solución incluye el dominio del juego, el servidor REST y una interfaz de consola con demostración local. La conexión del cliente a una partida y la validación entre dos computadoras siguen pendientes. La [guía del servidor](docs/protocolo-de-partida.md#operación-del-servidor) describe el inicio y la administración del catálogo y las partidas.
 
@@ -23,7 +23,6 @@ La solución incluye el dominio del juego, el servidor REST y una interfaz de co
 - [Diseño de interfaz](docs/diseno-de-interfaz.md).
 - [Estructura del repositorio](docs/estructura-del-repositorio.md).
 - [Instalación y uso](docs/instalacion-y-uso.md).
-- [Especificaciones SDD](specs/README.md).
 - [Colaboración con Git y GitHub](CONTRIBUTING.md).
 
 ## Autores
