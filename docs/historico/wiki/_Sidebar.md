@@ -14,4 +14,5 @@
 - [Estructura del repositorio](../../estructura-del-repositorio.md)
 - [Plan histórico](../plan.md)
 - [Colaboración con Git y GitHub](../../../CONTRIBUTING.md)
-- [Descargar diagramas y maquetas (ZIP)](../../diagramas-y-maquetas.zip)
+- [UML editable](../../diagramas/uml.uxf)
+- [Maquetas de interfaz](../../diagramas/juego-guerra-propuestas.html)

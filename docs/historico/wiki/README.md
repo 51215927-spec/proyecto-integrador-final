@@ -14,6 +14,5 @@
 - [Estructura del repositorio](../../estructura-del-repositorio.md)
 - [Plan histórico](../plan.md)
 - [Colaboración con Git y GitHub](../../../CONTRIBUTING.md)
-- [Descargar diagramas y maquetas (ZIP)](../../diagramas-y-maquetas.zip)
-
-El ZIP incluye el UML editable (`uml.uxf`) y las maquetas (`juego-guerra-propuestas.html`). Extraé los archivos y abrí las maquetas en el navegador.
+- [UML editable](../../diagramas/uml.uxf)
+- [Maquetas de interfaz](../../diagramas/juego-guerra-propuestas.html)

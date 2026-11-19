@@ -2,7 +2,7 @@
 
 Trabajo de análisis y diseño para TI. La base es el cliente de consola previsto en la [consigna](consigna.md), las [reglas](reglas-del-juego.md) y la [arquitectura](arquitectura.md#proyectos).
 
-[El comparador de propuestas](juego-guerra-propuestas.html), reúne cuatro maquetas estáticas para cada uno de los doce estados del cliente que se detallan abajo.
+[El comparador de propuestas](diagramas/juego-guerra-propuestas.html) reúne cuatro maquetas estáticas para cada uno de los doce estados del cliente que se detallan abajo.
 
 ## Estados del cliente
 
