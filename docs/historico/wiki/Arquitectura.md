@@ -1,6 +1,6 @@
 # Arquitectura
 
-Diseño de TI basado en las [reglas del juego](../../wiki/Reglas-del-juego.md) y el [diagrama UML](README.md). El [plan](../plan.md) reúne los entregables y pendientes.
+Diseño de TI basado en las [reglas del juego](../../reglas-del-juego.md) y el [diagrama UML](README.md). El [plan](../plan.md) reúne los entregables y pendientes.
 
 - [Componentes HTTP](#comunicación-http--actividad-6)
 - [Responsabilidades del dominio](#distribución-y-responsabilidades)
@@ -389,7 +389,7 @@ Es privado y devuelve al jugador que llegó a 15 rondas ganadas. Jugar lo llama 
 
 ### InterfazConsola
 
-La [interfaz de consola](../../wiki/Diseno-de-interfaz.md) compone las pantallas con datos que recibe del flujo cliente. Los métodos son de instancia. Las firmas de implementación en `src/cliente` adaptan las del UML a vistas de presentación locales. `CartaVisible` lleva el identificador, el nombre y los atributos de una carta propia. `JugadorVisible` contiene el nombre y las rondas ganadas. `CombateVisible` contiene las dos jugadas reveladas, el atributo comparado, el ganador confirmado, el marcador de combates y el próximo elector si corresponde. `MesaVisible` aporta la identidad local, la ronda, el combate y los marcadores de ambos jugadores. El flujo cliente prepara estas vistas a partir de los datos del protocolo. Puede identificar la plaza ganadora de un combate mediante `GanaJ1` cuando dos jugadores comparten nombre.
+La [interfaz de consola](../../diseno-de-interfaz.md) compone las pantallas con datos que recibe del flujo cliente. Los métodos son de instancia. Las firmas de implementación en `src/cliente` adaptan las del UML a vistas de presentación locales. `CartaVisible` lleva el identificador, el nombre y los atributos de una carta propia. `JugadorVisible` contiene el nombre y las rondas ganadas. `CombateVisible` contiene las dos jugadas reveladas, el atributo comparado, el ganador confirmado, el marcador de combates y el próximo elector si corresponde. `MesaVisible` aporta la identidad local, la ronda, el combate y los marcadores de ambos jugadores. El flujo cliente prepara estas vistas a partir de los datos del protocolo. Puede identificar la plaza ganadora de un combate mediante `GanaJ1` cuando dos jugadores comparten nombre.
 
 #### `MostrarMano(mano: IReadOnlyList<CartaVisible>): void`
 
@@ -459,4 +459,4 @@ El servidor asigna un ID positivo y estable. El nombre debe tener contenido y la
 
 ## Presentación de consola
 
-La [especificación de interfaz](../../wiki/Diseno-de-interfaz.md) describe las pantallas, sus maquetas y su composición con Spectre.Console. La validación de opciones de entrada pertenece al cliente. Las consultas, esperas y reintentos siguen el [protocolo HTTP](Protocolo-de-partida.md#estados-presencia-y-recuperación).
+La [especificación de interfaz](../../diseno-de-interfaz.md) describe las pantallas, sus maquetas y su composición con Spectre.Console. La validación de opciones de entrada pertenece al cliente. Las consultas, esperas y reintentos siguen el [protocolo HTTP](Protocolo-de-partida.md#estados-presencia-y-recuperación).

@@ -4,7 +4,7 @@
 
 ### Preparar la copia
 
-Seguí la [instalación](docs/wiki/Instalacion-y-uso.md#instalación-de-herramientas-y-dependencias) para obtener el repositorio y sus bibliotecas. Configurá tu nombre y correo si todavía no están definidos en Git.
+Seguí la [instalación](docs/instalacion-y-uso.md#instalación-de-herramientas-y-dependencias) para obtener el repositorio y sus bibliotecas. Configurá tu nombre y correo si todavía no están definidos en Git.
 
 ```bash
 git config user.name "Tu nombre"
@@ -57,5 +57,5 @@ Actualizá `main` con `git fetch origin` y `git merge --ff-only origin/main` des
 
 ## Desarrollo y estructura
 
-- [Desarrollo con TDD](docs/wiki/Desarrollo-con-TDD.md).
-- [Estructura del repositorio](docs/wiki/Estructura-del-repositorio.md).
+- [Desarrollo con TDD](AGENTS.md#7-metodología-de-desarrollo-tdd).
+- [Estructura del repositorio](docs/estructura-del-repositorio.md).

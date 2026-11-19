@@ -7,4 +7,4 @@ Estado: borrador.
 - R3. Enviar elecciones según la solicitud en curso. CA3. La entrada inválida se puede corregir, una solicitud desactualizada actualiza la vista y un reintento compatible recupera el mismo recibo.
 - R4. Recuperar la sesión tras una interrupción. CA4. Se puede volver a la vista vigente y distinguir salida local, abandono, cancelación y victoria.
 
-[Contrato REST](../../docs/wiki/Protocolo-de-partida.md)
+[Contrato REST](../../docs/protocolo-de-partida.md)

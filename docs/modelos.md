@@ -4,15 +4,15 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 ## Comportamiento por componente
 
-- [Dominio](../historico/wiki/Codigo-del-dominio.md)
-- [Servidor HTTP](../historico/wiki/Codigo-del-servidor.md)
-- [Cliente](../historico/wiki/Codigo-del-cliente.md)
-- [Carga](../historico/wiki/Codigo-de-carga.md)
-- [Pruebas](../historico/wiki/Codigo-de-las-pruebas.md)
+- [Dominio](historico/wiki/Codigo-del-dominio.md)
+- [Servidor HTTP](historico/wiki/Codigo-del-servidor.md)
+- [Cliente](historico/wiki/Codigo-del-cliente.md)
+- [Carga](historico/wiki/Codigo-de-carga.md)
+- [Pruebas](historico/wiki/Codigo-de-las-pruebas.md)
 
 ## Firmas declaradas
 
-### [src/cliente/DemostracionConsola.cs](../../src/cliente/DemostracionConsola.cs)
+### [src/cliente/DemostracionConsola.cs](../src/cliente/DemostracionConsola.cs)
 
 **`internal sealed class DemostracionConsola(InterfazConsola interfaz, TextReader entrada, TextWriter salida, bool interactiva)`**
 
@@ -21,7 +21,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `private void Continuar()`. Errores explícitos en el cuerpo: `EndOfStreamException`. `MostrarCierreSimulado` presenta la pausa o simula abandono, cancelación o salida local. `Continuar` espera Enter en modo interactivo y señala el fin de entrada si falta una línea. `Carta` construye un record de presentación a partir de los seis valores.
 - `private static CartaVisible Carta(int id, string nombre, int fuerza, int velocidad, int resistencia, int inteligencia, int energia, int habilidad)` `MostrarCierreSimulado` presenta la pausa o simula abandono, cancelación o salida local. `Continuar` espera Enter en modo interactivo y señala el fin de entrada si falta una línea. `Carta` construye un record de presentación a partir de los seis valores.
 
-### [src/cliente/InterfazConsola.cs](../../src/cliente/InterfazConsola.cs)
+### [src/cliente/InterfazConsola.cs](../src/cliente/InterfazConsola.cs)
 
 **`internal sealed class InterfazConsola`**
 
@@ -69,13 +69,13 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `private void Escribir(string texto, Style? estilo = null)` `TextoVisible` cambia caracteres de control y formato por espacios. `Escribir` divide el mensaje en líneas y construye filas de texto. `Renderizar` escribe los componentes en Spectre.Console e invalida el recuerdo del último mensaje de espera.
 - `private void Renderizar(IRenderable contenido)` `TextoVisible` cambia caracteres de control y formato por espacios. `Escribir` divide el mensaje en líneas y construye filas de texto. `Renderizar` escribe los componentes en Spectre.Console e invalida el recuerdo del último mensaje de espera.
 
-### [src/cliente/Program.cs](../../src/cliente/Program.cs)
+### [src/cliente/Program.cs](../src/cliente/Program.cs)
 
 **`internal static class Program`**
 
 - `private static int Main(string[] args)` `Main` crea la aplicación con `ServidorHttp.Crear`, obtiene el repositorio del contenedor de dependencias, inicia el servidor, arranca la consola del operador en otra tarea y espera el apagado.
 
-### [src/cliente/VistasConsola.cs](../../src/cliente/VistasConsola.cs)
+### [src/cliente/VistasConsola.cs](../src/cliente/VistasConsola.cs)
 
 **`internal sealed record CartaVisible( int IdPersonaje, string Nombre, IReadOnlyDictionary<string, int> Atributos)`**
 
@@ -94,7 +94,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 **`internal enum EstadoEnvio`**
 
-### [src/servidor/Api/BaseJuego.cs](../../src/servidor/Api/BaseJuego.cs)
+### [src/servidor/Api/BaseJuego.cs](../src/servidor/Api/BaseJuego.cs)
 
 **`internal sealed class BaseJuego(DbContextOptions<BaseJuego> opciones)`**
 
@@ -106,7 +106,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 **`internal sealed class ParticipanteGuardado`**
 
 
-### [src/servidor/Api/ConsolaServidor.cs](../../src/servidor/Api/ConsolaServidor.cs)
+### [src/servidor/Api/ConsolaServidor.cs](../src/servidor/Api/ConsolaServidor.cs)
 
 **`internal static class ConsolaServidor`**
 
@@ -114,7 +114,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `private static void Comando(RepositorioJuego juego, string linea, TextWriter salida)` `Comando` separa el verbo de sus argumentos, interpreta UUID, plaza o ID entero y llama a la operación correspondiente. `crear` imprime UUID y credenciales. `iniciar`, `cancelar`, `cerrar-sesion`, `reemplazar-credencial` y `desactivar` operan sobre la partida, sesión o catálogo.
 - `private static void Ayuda(TextWriter salida)` `Ayuda` escribe la lista de órdenes y su sintaxis.
 
-### [src/servidor/Api/EstadoPartida.cs](../../src/servidor/Api/EstadoPartida.cs)
+### [src/servidor/Api/EstadoPartida.cs](../src/servidor/Api/EstadoPartida.cs)
 
 **`internal sealed class PersonajePartida`**
 
@@ -148,7 +148,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `internal Eleccion Datos()`
 - `internal Recibo Recibo()` `OperacionGuardada.Datos` reconstruye la elección normalizada para compararla con un reintento. `Recibo` reconstruye el UUID de solicitud y operación y la revisión que se confirmó.
 
-### [src/servidor/Api/PersonajeCatalogo.cs](../../src/servidor/Api/PersonajeCatalogo.cs)
+### [src/servidor/Api/PersonajeCatalogo.cs](../src/servidor/Api/PersonajeCatalogo.cs)
 
 **`internal sealed record AltaPersonaje( string? Nombre, string? Descripcion, string? Ascii, int Fuerza, int Velocidad, int Resistencia, int Inteligencia, int Energia, int Habilidad)`**
 
@@ -157,7 +157,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 **`internal sealed class PersonajeCatalogo`**
 
 
-### [src/servidor/Api/PresentacionPartida.cs](../../src/servidor/Api/PresentacionPartida.cs)
+### [src/servidor/Api/PresentacionPartida.cs](../src/servidor/Api/PresentacionPartida.cs)
 
 **`internal sealed record SolicitudVisible(Guid IdSolicitud, string Tipo, int[] IdsPersonajePermitidos, string[] AtributosPermitidos)`**
 
@@ -172,7 +172,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 - `internal PresentacionVisible Presentacion(Guid id, string? credencial, Guid idSesion)` `Presentacion` abre una lectura autenticada, consulta participantes y cartas y filtra la mano por plaza. Incluye la solicitud solo para su titular cuando hay presencia. Construye el historial a partir de combates con ganador, agrega el ganador de ronda al último combate correspondiente y devuelve los datos de fase y marcador sin revelar manos rivales.
 
-### [src/servidor/Api/RepositorioJuego.cs](../../src/servidor/Api/RepositorioJuego.cs)
+### [src/servidor/Api/RepositorioJuego.cs](../src/servidor/Api/RepositorioJuego.cs)
 
 **`internal sealed record PartidaCreada(Guid Id, string CredencialJ1, string CredencialJ2)`**
 
@@ -205,7 +205,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `private static string NuevaCredencial()` `Autenticar` calcula el hash de la credencial entregada y lo compara con los de la partida. `Hash` convierte a UTF-8 y aplica SHA-256. `NuevaCredencial` genera 32 bytes aleatorios y los representa en hexadecimal. `Dispose` libera la conexión en memoria si existe.
 - `public void Dispose()` `Autenticar` calcula el hash de la credencial entregada y lo compara con los de la partida. `Hash` convierte a UTF-8 y aplica SHA-256. `NuevaCredencial` genera 32 bytes aleatorios y los representa en hexadecimal. `Dispose` libera la conexión en memoria si existe.
 
-### [src/servidor/Api/ServidorHttp.cs](../../src/servidor/Api/ServidorHttp.cs)
+### [src/servidor/Api/ServidorHttp.cs](../src/servidor/Api/ServidorHttp.cs)
 
 **`internal sealed class ErrorApi(int estado, string codigo, string mensaje)`**
 
@@ -220,7 +220,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `private static string? Credencial(HttpContext contexto)` `Credencial` lee la cabecera de autorización como esquema Bearer. `IdSesion` interpreta `X-Sesion` como UUID o devuelve `Guid.Empty`.
 - `private static Guid IdSesion(HttpContext contexto)` `Credencial` lee la cabecera de autorización como esquema Bearer. `IdSesion` interpreta `X-Sesion` como UUID o devuelve `Guid.Empty`.
 
-### [src/servidor/Api/TransicionesPartida.cs](../../src/servidor/Api/TransicionesPartida.cs)
+### [src/servidor/Api/TransicionesPartida.cs](../src/servidor/Api/TransicionesPartida.cs)
 
 **`internal sealed partial class RepositorioJuego`**
 
@@ -239,7 +239,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `private static void Resolver(BaseJuego db, PartidaGuardada partida, CombateGuardado guardado, PersonajePartida cartaRival)` `Resolver` materializa ambos personajes, arma un `Combate` de dominio, compara y traslada resultado, puntajes y ubicación a las filas. Si la ronda sigue, alterna elector y abre otro combate. Si se cierra, suma la ronda y alterna la mano o finaliza al llegar a 15.
 - `private static void Finalizar(BaseJuego db, PartidaGuardada partida, string motivo, string? ganador = null)` `Finalizar` consume la solicitud activa, limpia su referencia y conserva fase final, motivo y ganador cuando corresponde.
 
-### [src/servidor/Combate.cs](../../src/servidor/Combate.cs)
+### [src/servidor/Combate.cs](../src/servidor/Combate.cs)
 
 **`internal class Combate`**
 
@@ -256,7 +256,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `private void ValidarCartaDisponible(Jugador jugador, Personaje personaje)`. Errores explícitos en el cuerpo: `InvalidOperationException`, `ArgumentException`. `ValidarParticipante` compara identidad de objeto con ambas plazas. `ValidarCartaDisponible` comprueba que el jugador no haya registrado otra carta y que la elegida esté en su mano. `RegistrarCarta` guarda en el campo del elector o del rival.
 - `private void RegistrarCarta(Jugador jugador, Personaje personaje)` `ValidarParticipante` compara identidad de objeto con ambas plazas. `ValidarCartaDisponible` comprueba que el jugador no haya registrado otra carta y que la elegida esté en su mano. `RegistrarCarta` guarda en el campo del elector o del rival.
 
-### [src/servidor/Jugador.cs](../../src/servidor/Jugador.cs)
+### [src/servidor/Jugador.cs](../src/servidor/Jugador.cs)
 
 **`internal class Jugador`**
 
@@ -270,7 +270,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public string GetNombre()` `SumarRondaGanada` incrementa el contador. `GetRondasGanadas` y `GetNombre` leen esos campos.
 - `public bool TieneCarta(Personaje personaje)` `TieneCarta` consulta si la mano contiene la instancia de `Personaje`.
 
-### [src/servidor/Mazo.cs](../../src/servidor/Mazo.cs)
+### [src/servidor/Mazo.cs](../src/servidor/Mazo.cs)
 
 **`internal class Mazo`**
 
@@ -280,7 +280,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public void Devolver(Personaje[] personajes)` `Devolver` agrega las cartas al final de la lista. `GetCantidad` devuelve su tamaño.
 - `public int GetCantidad()` `Devolver` agrega las cartas al final de la lista. `GetCantidad` devuelve su tamaño.
 
-### [src/servidor/Partida.cs](../../src/servidor/Partida.cs)
+### [src/servidor/Partida.cs](../src/servidor/Partida.cs)
 
 **`internal class Partida`**
 
@@ -293,7 +293,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `private bool EstaTerminada()` `EstaTerminada` compara ambos marcadores con 15. `DeterminarGanadorPartida` devuelve el jugador que alcanzó el umbral.
 - `private Jugador DeterminarGanadorPartida()` `EstaTerminada` compara ambos marcadores con 15. `DeterminarGanadorPartida` devuelve el jugador que alcanzó el umbral.
 
-### [src/servidor/Personaje.cs](../../src/servidor/Personaje.cs)
+### [src/servidor/Personaje.cs](../src/servidor/Personaje.cs)
 
 **`internal enum TipoAtributo`**
 
@@ -305,13 +305,13 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public string GetAscii()` `GetNombre` y `GetAscii` devuelven los campos respectivos. El dibujo puede ser una cadena vacía.
 - `public int GetAtributo(TipoAtributo tipo)`. Errores explícitos en el cuerpo: `ArgumentOutOfRangeException`. `GetAtributo` traduce el valor de la enumeración al campo correspondiente mediante un `switch` y rechaza un valor fuera de la enumeración.
 
-### [src/servidor/Program.cs](../../src/servidor/Program.cs)
+### [src/servidor/Program.cs](../src/servidor/Program.cs)
 
 **`internal static class Program`**
 
 - `private static async Task Main(string[] args)` `Main` crea la aplicación con `ServidorHttp.Crear`, obtiene el repositorio del contenedor de dependencias, inicia el servidor, arranca la consola del operador en otra tarea y espera el apagado.
 
-### [src/servidor/Ronda.cs](../../src/servidor/Ronda.cs)
+### [src/servidor/Ronda.cs](../src/servidor/Ronda.cs)
 
 **`internal class Ronda`**
 
@@ -322,7 +322,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public Jugador GetQuienEligeProximo()`. Errores explícitos en el cuerpo: `InvalidOperationException`. `GetQuienEligeProximo` alterna mano y rival según la paridad de los combates guardados. `GetCombates` devuelve una copia del historial.
 - `public Combate[] GetCombates()` `GetQuienEligeProximo` alterna mano y rival según la paridad de los combates guardados. `GetCombates` devuelve una copia del historial.
 
-### [src/subir-personajes/Program.cs](../../src/subir-personajes/Program.cs)
+### [src/subir-personajes/Program.cs](../src/subir-personajes/Program.cs)
 
 **`internal static class Program`**
 
@@ -336,7 +336,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 **`private sealed record AltaConfirmada(int IdPersonaje)`**
 
 
-### [test/proyecto-integrador-final-tests/ApiHttpTests.cs](../../test/proyecto-integrador-final-tests/ApiHttpTests.cs)
+### [test/proyecto-integrador-final-tests/ApiHttpTests.cs](../test/proyecto-integrador-final-tests/ApiHttpTests.cs)
 
 **`public class ApiHttpTests`**
 
@@ -360,13 +360,13 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public override DateTimeOffset GetUtcNow()` `Error` comprueba cuerpo y estado HTTP. `GetUtcNow` devuelve el reloj controlado y `Avanzar` le suma segundos. `DatosEleccion` arma el cuerpo a partir de revisión y solicitud. `Incorporar` prepara un cliente autorizado y `Vista` lee su presentación.
 - `internal void Avanzar(int segundos)` `Error` comprueba cuerpo y estado HTTP. `GetUtcNow` devuelve el reloj controlado y `Avanzar` le suma segundos. `DatosEleccion` arma el cuerpo a partir de revisión y solicitud. `Incorporar` prepara un cliente autorizado y `Vista` lee su presentación.
 
-### [test/proyecto-integrador-final-tests/CartasDePrueba.cs](../../test/proyecto-integrador-final-tests/CartasDePrueba.cs)
+### [test/proyecto-integrador-final-tests/CartasDePrueba.cs](../test/proyecto-integrador-final-tests/CartasDePrueba.cs)
 
 **`internal static class CartasDePrueba`**
 
 - `internal static Personaje Crear(int fuerza = 650)` `Crear` fabrica un personaje válido con fuerza configurable y ajusta otro puntaje para conservar el total.
 
-### [test/proyecto-integrador-final-tests/ClienteConsolaContratoTests.cs](../../test/proyecto-integrador-final-tests/ClienteConsolaContratoTests.cs)
+### [test/proyecto-integrador-final-tests/ClienteConsolaContratoTests.cs](../test/proyecto-integrador-final-tests/ClienteConsolaContratoTests.cs)
 
 **`public sealed class ClienteConsolaContratoTests`**
 
@@ -378,7 +378,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `private static void EnOrden(string salida, params string[] fragmentos)` `EnOrden` busca fragmentos sucesivos desde la última coincidencia. `EjecutarDemo` lanza la DLL con entrada y salida redirigidas, escribe el guion de teclas y devuelve el texto del proceso.
 - `private static async Task<string> EjecutarDemo(string? modo, string entrada)` `EnOrden` busca fragmentos sucesivos desde la última coincidencia. `EjecutarDemo` lanza la DLL con entrada y salida redirigidas, escribe el guion de teclas y devuelve el texto del proceso.
 
-### [test/proyecto-integrador-final-tests/CombateTests.cs](../../test/proyecto-integrador-final-tests/CombateTests.cs)
+### [test/proyecto-integrador-final-tests/CombateTests.cs](../test/proyecto-integrador-final-tests/CombateTests.cs)
 
 **`public class CombateTests`**
 
@@ -388,14 +388,14 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public void FaltaCompletarElCombateConUnaSolaCartaAunqueYaSeEligioElAtributo(bool juegaElector)` `FaltaCompletarElCombateConUnaSolaCartaAunqueYaSeEligioElAtributo` alterna el participante que entrega la única carta y exige que resolver falle.
 - `public void ResuelveSegunElAtributoElegidoYDaElEmpateAlRival(int fuerzaElector, int fuerzaRival, bool ganaElector)` `ResuelveSegunElAtributoElegidoYDaElEmpateAlRival` parametriza mayor, menor e igualdad y compara la instancia ganadora.
 
-### [test/proyecto-integrador-final-tests/ConsolaAltaTests.cs](../../test/proyecto-integrador-final-tests/ConsolaAltaTests.cs)
+### [test/proyecto-integrador-final-tests/ConsolaAltaTests.cs](../test/proyecto-integrador-final-tests/ConsolaAltaTests.cs)
 
 **`public class ConsolaAltaTests`**
 
 - `public async Task CargaDosPersonajesManualmenteYConfirmaSusIds()` `CargaDosPersonajesManualmenteYConfirmaSusIds` alimenta dos formularios por texto, envía las dos altas a un servidor local con SQLite en memoria y comprueba los IDs impresos.
 - `public async Task UnAltaRechazadaNoSeAnunciaComoConfirmada()` `UnAltaRechazadaNoSeAnunciaComoConfirmada` provoca una respuesta no autorizada y comprueba el mensaje y código de salida.
 
-### [test/proyecto-integrador-final-tests/ConsolaServidorTests.cs](../../test/proyecto-integrador-final-tests/ConsolaServidorTests.cs)
+### [test/proyecto-integrador-final-tests/ConsolaServidorTests.cs](../test/proyecto-integrador-final-tests/ConsolaServidorTests.cs)
 
 **`public sealed class ConsolaServidorTests`**
 
@@ -403,13 +403,13 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public void ComandoInvalido_MuestraComoCorregirlo(string comando, string mensaje)`
 - `private static string Ejecutar(string comandos)`
 
-### [test/proyecto-integrador-final-tests/ContratoFactAttribute.cs](../../test/proyecto-integrador-final-tests/ContratoFactAttribute.cs)
+### [test/proyecto-integrador-final-tests/ContratoFactAttribute.cs](../test/proyecto-integrador-final-tests/ContratoFactAttribute.cs)
 
 **`public sealed class ContratoFactAttribute`**
 
 - `public ContratoFactAttribute(string variableDll)` El constructor de `ContratoFactAttribute` lee la variable de ruta de DLL y establece `Skip` si falta. Así los casos por proceso se descubren aunque sus binarios no estén configurados.
 
-### [test/proyecto-integrador-final-tests/InterfazConsolaTests.cs](../../test/proyecto-integrador-final-tests/InterfazConsolaTests.cs)
+### [test/proyecto-integrador-final-tests/InterfazConsolaTests.cs](../test/proyecto-integrador-final-tests/InterfazConsolaTests.cs)
 
 **`public class InterfazConsolaTests`**
 
@@ -423,21 +423,21 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public void MostrarCombate_PresentaElResultadoConfirmado(int ancho)` `MostrarMano_AdaptaLasFichasAlAncho` y `MostrarCombate_PresentaElResultadoConfirmado` usan anchos determinados y verifican las fichas y el contenido del resultado. `PresentaMarcadorEstadosYCierresConLosNombresRecibidos` comprueba los nombres y mensajes en la salida capturada.
 - `public void PresentaMarcadorEstadosYCierresConLosNombresRecibidos()` `MostrarMano_AdaptaLasFichasAlAncho` y `MostrarCombate_PresentaElResultadoConfirmado` usan anchos determinados y verifican las fichas y el contenido del resultado. `PresentaMarcadorEstadosYCierresConLosNombresRecibidos` comprueba los nombres y mensajes en la salida capturada.
 
-### [test/proyecto-integrador-final-tests/JugadorTests.cs](../../test/proyecto-integrador-final-tests/JugadorTests.cs)
+### [test/proyecto-integrador-final-tests/JugadorTests.cs](../test/proyecto-integrador-final-tests/JugadorTests.cs)
 
 **`public class JugadorTests`**
 
 - `public void IniciaConNombreManoVaciaYSinVictorias()` `IniciaConNombreManoVaciaYSinVictorias` inspecciona los campos observables del jugador recién construido.
 - `public void AcumulaCartasQuitaUnaYEntregaElResto()` `AcumulaCartasQuitaUnaYEntregaElResto` combina varias recepciones, prueba la copia defensiva, retira una carta y comprueba el vaciado y el marcador.
 
-### [test/proyecto-integrador-final-tests/MazoTests.cs](../../test/proyecto-integrador-final-tests/MazoTests.cs)
+### [test/proyecto-integrador-final-tests/MazoTests.cs](../test/proyecto-integrador-final-tests/MazoTests.cs)
 
 **`public class MazoTests`**
 
 - `public void CopiaLaColeccionReparteEnOrdenYDevuelveAlFinal()` `CopiaLaColeccionReparteEnOrdenYDevuelveAlFinal` modifica la lista original, reparte por tramos y verifica orden y devolución.
 - `public void MezclarConservaTodasLasCartas(int cantidad)` `MezclarConservaTodasLasCartas` mezcla mazos de distintos tamaños y verifica que cada carta permanezca sin imponer un orden aleatorio concreto.
 
-### [test/proyecto-integrador-final-tests/PantallasConsolaTests.cs](../../test/proyecto-integrador-final-tests/PantallasConsolaTests.cs)
+### [test/proyecto-integrador-final-tests/PantallasConsolaTests.cs](../test/proyecto-integrador-final-tests/PantallasConsolaTests.cs)
 
 **`public class PantallasConsolaTests`**
 
@@ -447,13 +447,13 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public void EnvioSuspensionYCierre_DistinguenLosEstadosConfirmados()` `EnvioSuspensionYCierre_DistinguenLosEstadosConfirmados` comprueba los mensajes de envío, suspensión e interrupción.
 - `public void ResultadoYRondas_UsanDueloVictoriaYPlanilla()` `ResultadoYRondas_UsanDueloVictoriaYPlanilla` comprueba los paneles y textos del combate, ronda y partida.
 
-### [test/proyecto-integrador-final-tests/PartidaTests.cs](../../test/proyecto-integrador-final-tests/PartidaTests.cs)
+### [test/proyecto-integrador-final-tests/PartidaTests.cs](../test/proyecto-integrador-final-tests/PartidaTests.cs)
 
 **`public class PartidaTests`**
 
 - `public void RechazaUnMazoInsuficienteAntesDeRepartir(int cantidad)` `RechazaUnMazoInsuficienteAntesDeRepartir` llama a `Jugar` con tamaños menores a seis, espera la excepción de inicio y comprueba que el mazo y las manos conservan su estado.
 
-### [test/proyecto-integrador-final-tests/PersonajeTests.cs](../../test/proyecto-integrador-final-tests/PersonajeTests.cs)
+### [test/proyecto-integrador-final-tests/PersonajeTests.cs](../test/proyecto-integrador-final-tests/PersonajeTests.cs)
 
 **`public class PersonajeTests`**
 
@@ -463,7 +463,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public void RechazaNombreSinTexto(string? nombre)` `RechazaNombreSinTexto` parametriza nombres nulos o en blanco. `RechazaAsciiNulo` prueba por separado el dibujo nulo.
 - `public void RechazaAsciiNulo()` `RechazaNombreSinTexto` parametriza nombres nulos o en blanco. `RechazaAsciiNulo` prueba por separado el dibujo nulo.
 
-### [test/proyecto-integrador-final-tests/RondaTests.cs](../../test/proyecto-integrador-final-tests/RondaTests.cs)
+### [test/proyecto-integrador-final-tests/RondaTests.cs](../test/proyecto-integrador-final-tests/RondaTests.cs)
 
 **`public class RondaTests`**
 
@@ -472,7 +472,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 - `public void ElTercerCombateDefineLaRondaCuandoVanUnoAUno(bool ganaMano)` `ElTercerCombateDefineLaRondaCuandoVanUnoAUno` genera un empate parcial y completa el tercer combate con cada posible ganador.
 - `private static Combate ResolverCombate(Jugador elector, Jugador oponente, Jugador ganador)` `ResolverCombate` prepara cartas y atributo para producir el ganador que necesita el escenario, luego devuelve el combate ya resuelto.
 
-### [test/proyecto-integrador-final-tests/ServidorContratoTests.cs](../../test/proyecto-integrador-final-tests/ServidorContratoTests.cs)
+### [test/proyecto-integrador-final-tests/ServidorContratoTests.cs](../test/proyecto-integrador-final-tests/ServidorContratoTests.cs)
 
 **`public sealed class ServidorContratoTests`**
 

@@ -65,9 +65,9 @@ dotnet test proyecto-integrador-final.sln
 dotnet run --project src/cliente
 ```
 
-El programa muestra el panel de preparación de Juego Guerra. Usá `dotnet run --project src/cliente -- --demo` para recorrer las pantallas con una [partida simulada](Diseno-de-interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
+El programa muestra el panel de preparación de Juego Guerra. Usá `dotnet run --project src/cliente -- --demo` para recorrer las pantallas con una [partida simulada](diseno-de-interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
 
-Las dependencias y los comandos del servidor están en [API y operación del servidor](Protocolo-de-partida.md#operación-del-servidor).
+Las dependencias y los comandos del servidor están en [API y operación del servidor](protocolo-de-partida.md#operación-del-servidor).
 
 ## Autores
 
@@ -95,16 +95,16 @@ dotnet run --project src/servidor/servidor.csproj
 
 - Con el servidor en ejecución, usá otra terminal para [cargar personajes](#cargar-personajes-manualmente) hasta tener al menos seis activos en el catálogo.
 - Escribí `crear` y pulsá Enter en la consola del servidor. Copiá el UUID que aparece junto a `Partida` y entregale a cada jugador la credencial de su plaza (`J1` o `J2`).
-- Incorporá a ambos jugadores mediante `PUT /api/v1/partidas/{id}/participantes/me/sesion`, con la credencial de su plaza y un UUID de sesión distinto para cada jugador. Mantené vigentes las dos sesiones con la solicitud de presencia. [Contrato HTTP de la partida](Protocolo-de-partida.md#contrato-http)
+- Incorporá a ambos jugadores mediante `PUT /api/v1/partidas/{id}/participantes/me/sesion`, con la credencial de su plaza y un UUID de sesión distinto para cada jugador. Mantené vigentes las dos sesiones con la solicitud de presencia. [Contrato HTTP de la partida](protocolo-de-partida.md#contrato-http)
 - En la consola del servidor, escribí `iniciar <idPartida>` sustituyendo `<idPartida>` por el UUID que mostró `crear`. Si aparece «Partida iniciada.», el servidor repartió tres cartas a cada jugador y J1 puede elegir la primera carta y el atributo.
 
-La conexión del cliente de consola al servidor sigue pendiente. Podés verificar el inicio mediante la API en una computadora o recorrer las pantallas con la demostración local. [Prueba del servidor en una sola computadora](Protocolo-de-partida.md#prueba-del-servidor-en-una-sola-computadora) · [Demostración local](Diseno-de-interfaz.md#demostración-local)
+La conexión del cliente de consola al servidor sigue pendiente. Podés verificar el inicio mediante la API en una computadora o recorrer las pantallas con la demostración local. [Prueba del servidor en una sola computadora](protocolo-de-partida.md#prueba-del-servidor-en-una-sola-computadora) · [Demostración local](diseno-de-interfaz.md#demostración-local)
 
 ## Recorrer una partida
 
 Para conocer las pantallas, ejecutá la demostración local y elegí una carta y un atributo cuando se te pida. Seguí las pantallas de espera, resultado y marcador hasta el cierre de la demostración. La consola usa datos simulados en este modo.
 
-Para verificar el flujo real del servidor, cargá seis personajes, creá una partida e incorporá ambas plazas como se indica arriba. En la API, consultá `presentacion` con la sesión de J1, tomá la solicitud y enviá una carta y un atributo permitidos. Consultá la vista de J2 y respondé con una carta de su propia solicitud. Volvé a consultar ambas vistas para comprobar el resultado y el marcador. Seguí las solicitudes hasta cerrar la ronda. [Contrato HTTP](Protocolo-de-partida.md#contrato-http)
+Para verificar el flujo real del servidor, cargá seis personajes, creá una partida e incorporá ambas plazas como se indica arriba. En la API, consultá `presentacion` con la sesión de J1, tomá la solicitud y enviá una carta y un atributo permitidos. Consultá la vista de J2 y respondé con una carta de su propia solicitud. Volvé a consultar ambas vistas para comprobar el resultado y el marcador. Seguí las solicitudes hasta cerrar la ronda. [Contrato HTTP](protocolo-de-partida.md#contrato-http)
 
 ## Problemas frecuentes
 

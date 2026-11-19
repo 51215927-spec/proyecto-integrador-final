@@ -2,10 +2,10 @@
 
 ## Proyectos
 
-- [Servidor](../../src/servidor/README.md) aloja la API, aplica reglas y es dueño de SQLite.
-- [Cliente](../../src/cliente/README.md) presenta la interfaz de los jugadores y tiene una demostración local.
-- [Carga](../../src/subir-personajes/README.md) registra personajes por HTTP.
-- [Pruebas](../../test/proyecto-integrador-final-tests/README.md) verifican el dominio, el servidor y la consola.
+- [Servidor](../src/servidor/README.md) aloja la API, aplica reglas y es dueño de SQLite.
+- [Cliente](../src/cliente/README.md) presenta la interfaz de los jugadores y tiene una demostración local.
+- [Carga](../src/subir-personajes/README.md) registra personajes por HTTP.
+- [Pruebas](../test/proyecto-integrador-final-tests/README.md) verifican el dominio, el servidor y la consola.
 
 ```mermaid
 flowchart LR
@@ -34,4 +34,4 @@ stateDiagram-v2
 
 Cuando falta presencia durante una elección, el servidor informa la pausa sin cambiar la fase. Al recuperar la presencia se puede continuar desde la solicitud vigente.
 
-[Modelos](Modelos.md) · [API y operación](Protocolo-de-partida.md) · [Bases de datos](Bases-de-datos.md) · [Tecnologías](Tecnologias.md) · [Instalación](Instalacion-y-uso.md) · [UML académico](diagramas/uml.uxf)
+[Modelos](modelos.md) · [API y operación](protocolo-de-partida.md) · [Bases de datos](bases-de-datos.md) · [Tecnologías](tecnologias.md) · [Instalación](instalacion-y-uso.md) · [UML académico](uml.uxf)

@@ -13,17 +13,17 @@
 Antes de modificar el alcance, la arquitectura o la estructura del proyecto, leer:
 
 - `README.md`
-- [Consigna](docs/wiki/Consigna.md)
+- [Consigna](docs/consigna.md)
 - `specs/README.md`
-- [Arquitectura](docs/wiki/Arquitectura.md)
+- [Arquitectura](docs/arquitectura.md)
 - `CONTRIBUTING.md`
 
-La fuente principal de requisitos es la [consigna](docs/wiki/Consigna.md). En caso de contradicción, no asumir qué interpretación es correcta: identificar el conflicto y solicitar una definición cuando sea necesario.
+La fuente principal de requisitos es la [consigna](docs/consigna.md). En caso de contradicción, no asumir qué interpretación es correcta: identificar el conflicto y solicitar una definición cuando sea necesario.
 
 Aplicar el skill `sdd` durante el trabajo en este proyecto:
 
 - Consultar el contexto y el estado real del repositorio antes de planificar.
-- Mantener las especificaciones por funcionalidad en `specs/` y la página [Arquitectura](docs/wiki/Arquitectura.md) actualizados según las decisiones vigentes, exclusivamente mediante tareas documentales en ramas `docs/`.
+- Mantener las especificaciones por funcionalidad en `specs/` y la página [Arquitectura](docs/arquitectura.md) actualizados según las decisiones vigentes, exclusivamente mediante tareas documentales en ramas `docs/`.
 - Realizar cambios acotados, coherentes y revisables.
 - Verificar los aspectos afectados por cada modificación.
 - Registrar decisiones y resultados relevantes cuando aporten trazabilidad.
@@ -67,9 +67,9 @@ Respetar la siguiente organización:
 - `test/`: proyectos y código de pruebas automatizadas.
 - `docs/`: wiki y documentación histórica.
 - `specs/`: especificaciones, diseño y tareas por funcionalidad.
-- [Documentación del proyecto](docs/wiki/README.md): documentación técnica y académica.
+- [Documentación del proyecto](README.md#documentación): documentación técnica y académica.
 
-Al agregar documentación a `docs/wiki/`, enlazarla desde su índice y desde `README.md` cuando corresponda.
+Al agregar documentación a `docs/`, enlazarla desde su índice y desde `README.md` cuando corresponda.
 
 Mantener la documentación y el código coherentes. Una modificación arquitectónica relevante debe reflejarse en la documentación correspondiente.
 

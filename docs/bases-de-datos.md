@@ -15,4 +15,4 @@ El servidor crea el esquema con `EnsureCreated` al abrir el repositorio. La conf
 
 Las claves de la partida, solicitudes y operaciones son UUID. Los números de ronda, combate, personaje, orden, atributos y revisiones son enteros. Los resultados y elecciones pendientes admiten valores nulos según la etapa del juego. Las reglas de atributos se validan en el dominio. Las sesiones y sus vencimientos viven en memoria.
 
-[Configuración de entidades](../../src/servidor/Api/BaseJuego.cs) · [Entidades de partida](../../src/servidor/Api/EstadoPartida.cs) · [Entidad del catálogo](../../src/servidor/Api/PersonajeCatalogo.cs)
+[Configuración de entidades](../src/servidor/Api/BaseJuego.cs) · [Entidades de partida](../src/servidor/Api/EstadoPartida.cs) · [Entidad del catálogo](../src/servidor/Api/PersonajeCatalogo.cs)

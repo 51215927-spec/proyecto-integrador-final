@@ -4,7 +4,7 @@ Este plan de TI especifica resultados esperados. La ejecución y el registro de 
 
 **Caja negra** comprueba resultados observables por consola, API o contrato público del dominio. **Caja blanca** inspecciona el estado persistido o controla un punto de fallo para comprobar efectos que la respuesta por sí sola no demuestra.
 
-Los resultados esperados se basan en la [consigna](Consigna.md), las [reglas](Reglas-del-juego.md), la [validación de personajes](Reglas-del-juego.md#personajes-y-preparación) y el [contrato HTTP](Protocolo-de-partida.md).
+Los resultados esperados se basan en la [consigna](consigna.md), las [reglas](reglas-del-juego.md), la [validación de personajes](reglas-del-juego.md#personajes-y-preparación) y el [contrato HTTP](protocolo-de-partida.md).
 
 ## Personajes y catálogo
 
@@ -61,4 +61,4 @@ Para la ejecución registrar el ID del caso, versión probada, entorno, resultad
 
 ## Ejecución y evidencia
 
-Desde la carpeta que contiene la solución ejecutá `dotnet test proyecto-integrador-final.sln`. El reporte indica cuáles casos se ejecutaron. Para la comprobación manual en red local, registrá los equipos, condiciones iniciales, solicitud enviada, resultado esperado y observado. [Proyecto de pruebas](../../test/proyecto-integrador-final-tests/README.md) · [Verificación en dos equipos](Protocolo-de-partida.md#verificación-en-dos-equipos)
+Desde la carpeta que contiene la solución ejecutá `dotnet test proyecto-integrador-final.sln`. El reporte indica cuáles casos se ejecutaron. Para la comprobación manual en red local, registrá los equipos, condiciones iniciales, solicitud enviada, resultado esperado y observado. [Proyecto de pruebas](../test/proyecto-integrador-final-tests/README.md) · [Verificación en dos equipos](protocolo-de-partida.md#verificación-en-dos-equipos)

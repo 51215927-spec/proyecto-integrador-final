@@ -6,7 +6,7 @@ Creá una carpeta numerada por cambio, por ejemplo `NNN-nombre-funcionalidad`.
 - `plan.md` describe el diseño, las interfaces y la validación.
 - `tasks.md` registra tareas con casillas y evidencia por criterio.
 
-El [plan histórico](../docs/historico/plan.md) conserva el seguimiento previo. La [wiki](../docs/wiki/README.md) describe el sistema y la [consigna](../docs/wiki/Consigna.md) reúne los requisitos académicos.
+El [plan histórico](../docs/historico/plan.md) conserva el seguimiento previo. La [wiki](../README.md#documentación) describe el sistema y la [consigna](../docs/consigna.md) reúne los requisitos académicos.
 
 | Funcionalidad | Diseño | Seguimiento |
 |---|---|---|

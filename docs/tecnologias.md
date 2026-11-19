@@ -8,4 +8,4 @@
 | HttpClient | Envía el alta de personajes al servidor desde la herramienta de carga. |
 | Spectre.Console | Dibuja cartas, mesas, menús y marcadores en el cliente de consola. |
 
-Las dependencias y versiones se declaran en los archivos `.csproj`. [Proyectos de la solución](Arquitectura.md#proyectos) · [Esquema SQLite](Bases-de-datos.md)
+Las dependencias y versiones se declaran en los archivos `.csproj`. [Proyectos de la solución](arquitectura.md#proyectos) · [Esquema SQLite](bases-de-datos.md)

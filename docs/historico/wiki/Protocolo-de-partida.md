@@ -1,6 +1,6 @@
 # Protocolo de partida web — API REST
 
-HTTP en red local está aprobado para la entrega de la [actividad 6](../../wiki/Consigna.md). Este documento describe el contrato REST y la operación del servidor de la solución. Los clientes de consola y la comprobación en dos computadoras siguen pendientes.
+HTTP en red local está aprobado para la entrega de la [actividad 6](../../consigna.md). Este documento describe el contrato REST y la operación del servidor de la solución. Los clientes de consola y la comprobación en dos computadoras siguen pendientes.
 
 - [Despliegue y conexión](#organización-propuesta)
 - [Operación del servidor](#operación-del-servidor)
@@ -62,7 +62,7 @@ dotnet run --project src/servidor/servidor.csproj -- --urls http://127.0.0.1:500
 ```
 
 - Esperá el mensaje de escucha en `http://127.0.0.1:5000`. En esa misma terminal, escribí `crear`. La consola imprime el UUID de la partida y una credencial para cada plaza.
-- Mantené abierta esa terminal mientras probás la API desde otra. Para iniciar el juego, cargá primero al menos seis personajes activos con [subir-personajes](../../wiki/Instalacion-y-uso.md#cargar-personajes-manualmente).
+- Mantené abierta esa terminal mientras probás la API desde otra. Para iniciar el juego, cargá primero al menos seis personajes activos con [subir-personajes](../../instalacion-y-uso.md#cargar-personajes-manualmente).
 - Incorporá ambos participantes mediante `PUT /participantes/me/sesion` según el contrato de abajo. Usá un UUID de sesión diferente por jugador y renová la presencia con `PUT /participantes/me/presencia` mientras realizás la prueba. Después, escribí `iniciar <idPartida>` en la consola del servidor. El resultado esperado es `Partida iniciada.`.
 - Consultá `GET /presentacion` con la credencial y sesión de cada plaza. Al inicio, ambas vistas muestran tres cartas propias. La vista de J1 incluye una solicitud `cartaYAtributo` y la de J2 tiene `solicitud: null` hasta que J1 juegue.
 
