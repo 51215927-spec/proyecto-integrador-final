@@ -73,12 +73,6 @@ El programa muestra el panel de preparación de Juego Guerra. Usá `dotnet run -
 
 Las dependencias y los comandos del servidor están en [API y operación del servidor](protocolo-de-partida.md#operación-del-servidor).
 
-## Autores
-
-- [51215927-spec](https://github.com/51215927-spec)
-- [50509098-JC](https://github.com/50509098-JC)
-- [Chino18cm](https://github.com/Chino18cm)
-
 ## Cargar personajes manualmente
 
 Configurá `Catalogo__Credencial` con la misma credencial de catálogo en el entorno del servidor y en la terminal de carga. Con el servidor en ejecución, iniciá la consola desde la raíz del repositorio.
