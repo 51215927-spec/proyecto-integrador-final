@@ -1,0 +1,416 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<diagram program="umletino" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>60</y>
+      <w>320</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>Partida
+--
+- numeroRonda: int
+_- RONDAS_PARA_GANAR: int = 15 {readOnly}_
+--
++ Partida(j1: Jugador, j2: Jugador, mazo: Mazo)
++ Jugar(): Jugador
+- Iniciar(): void
+- RepartirCartas(): void
+- JugarRonda(): void
+- RecogerCartas(): void
+- EstaTerminada(): bool
+- DeterminarGanadorPartida(): Jugador</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>600</x>
+      <y>60</y>
+      <w>310</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>Jugador
+--
+- nombre: string
+- rondasGanadas: int
+--
++ Jugador(nombre: string)
++ RecibirCartas(personajes: Personaje[]): void
++ QuitarCarta(personaje: Personaje): void
++ EntregarCartas(): Personaje[]
++ GetCartas(): Personaje[]
++ SumarRondaGanada(): void
++ GetRondasGanadas(): int
++ GetNombre(): string</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1130</x>
+      <y>60</y>
+      <w>280</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>Mazo
+--
+--
++ Mazo(personajes: List&lt;Personaje&gt;)
++ Mezclar(): void
++ Repartir(cantidad: int): Personaje[]
++ Devolver(personajes: Personaje[]): void
++ GetCantidad(): int</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>420</y>
+      <w>300</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>Ronda
+--
+--
++ Ronda(mano: Jugador, rival: Jugador)
++ AgregarCombate(combate: Combate): void
++ EstaDefinida(): bool
++ GetGanador(): Jugador
++ GetQuienEligeProximo(): Jugador
++ GetCombates(): Combate[]</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>600</x>
+      <y>420</y>
+      <w>380</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>Combate
+--
+- atributo: TipoAtributo [0..1]
+--
++ Combate(quienElige: Jugador, rival: Jugador)
++ SetAtributo(tipo: TipoAtributo): void
++ SetCarta(jugador: Jugador, personaje: Personaje): void
++ EstaCompleto(): bool
++ Resolver(): Jugador
++ GetGanador(): Jugador
++ GetAtributo(): TipoAtributo
++ GetCarta(jugador: Jugador): Personaje
++ GetParticipantes(): Jugador[]</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1130</x>
+      <y>420</y>
+      <w>430</w>
+      <h>330</h>
+    </coordinates>
+    <panel_attributes>Personaje
+--
+- id: int {readOnly}
+- nombre: string
+- descripcion: string {sin limite; ausente = ""}
+- ascii: string
+- fuerza: int
+- velocidad: int
+- resistencia: int
+- inteligencia: int
+- energia: int
+- habilidad: int
+--
++ Personaje(id: int, nombre: string, descripcion: string,
+    ascii: string, fuerza: int, velocidad: int,
+    resistencia: int, inteligencia: int, energia: int,
+    habilidad: int)
++ GetId(): int
++ GetNombre(): string
++ GetDescripcion(): string
++ GetAscii(): string
++ GetAtributo(tipo: TipoAtributo): int
+- Validar(): void</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>820</y>
+      <w>390</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>InterfazConsola
+--
+--
++ MostrarMano(jugador: Jugador): void
++ PedirCarta(jugador: Jugador): Personaje
++ PedirAtributo(): TipoAtributo
++ MostrarMarcador(j1: Jugador, j2: Jugador, ronda: int): void
++ MostrarEsperando(mensaje: string): void
++ MostrarCombate(combate: Combate): void
++ MostrarGanadorRonda(ganador: Jugador): void
++ MostrarGanadorPartida(ganador: Jugador): void
++ MostrarError(mensaje: string): void</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1130</x>
+      <y>780</y>
+      <w>110</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+TipoAtributo
+--
++ Fuerza
++ Velocidad
++ Resistencia
++ Inteligencia
++ Energia
++ Habilidad</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>760</x>
+      <y>1330</y>
+      <w>430</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>Distribucion por procesos:
+Servidor: dominio y CoordinadorServidor.
+Clientes: CoordinadorCliente e InterfazConsola.
+Catalogo: alta manual mediante la API.
+Comunicacion HTTP: ver Arquitectura.
+Ampliacion propuesta: Comunicacion.uxf y Protocolo-partida.md.
+Sin implementacion; red Windows pendiente de verificar.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>40</x>
+      <y>1330</y>
+      <w>610</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Reglas y contratos:
+J1 es mano inicial; alternancia de mano por ronda y de atributo por combate.
+Empate: gana quien no eligio. Ronda: 2 combates ganados; partida: 15 rondas.
+Al terminar la ronda vuelven todos los personajes, incluidos los no jugados.
+Personaje: suma 3000; valores 250..750; alguno &gt;=650 y alguno &lt;=350.
+No mostrar elecciones rivales hasta completar ambas. Recuperacion mientras sobreviva algun proceso.
+Diseno de TI, sin implementacion. Contratos detallados: Arquitectura.md y actividad 4.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>350</x>
+      <y>90</y>
+      <w>260</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=1
+r2=- jugador1</panel_attributes>
+    <additional_attributes>10.0;10.0;250.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>350</x>
+      <y>140</y>
+      <w>260</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=1
+r2=- jugador2</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;10.0;50.0;20.0;250.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>240</x>
+      <y>10</y>
+      <w>900</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=1
+r2=- mazo</panel_attributes>
+    <additional_attributes>10.0;50.0;10.0;10.0;850.0;10.0;850.0;80.0;890.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>130</x>
+      <y>260</y>
+      <w>20</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=0..1
+r2=- rondaActual</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;160.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>330</x>
+      <y>480</y>
+      <w>280</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=0..3
+r2=- combates</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;10.0;50.0;30.0;270.0;30.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>330</x>
+      <y>250</y>
+      <w>310</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=1
+r2=- jugadorMano</panel_attributes>
+    <additional_attributes>10.0;200.0;240.0;200.0;240.0;50.0;300.0;50.0;300.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>330</x>
+      <y>170</y>
+      <w>630</w>
+      <h>380</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=1
+r2=- jugadorRival</panel_attributes>
+    <additional_attributes>10.0;370.0;40.0;370.0;40.0;140.0;620.0;140.0;620.0;10.0;580.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>640</x>
+      <y>250</y>
+      <w>130</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=1
+r2=- jugadorQueElige</panel_attributes>
+    <additional_attributes>10.0;170.0;10.0;110.0;120.0;110.0;120.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>770</x>
+      <y>230</y>
+      <w>200</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=1
+r2=- jugadorRival</panel_attributes>
+    <additional_attributes>10.0;190.0;10.0;150.0;190.0;150.0;190.0;10.0;140.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>850</x>
+      <y>0</y>
+      <w>180</w>
+      <h>430</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=0..1
+r2=- ganador</panel_attributes>
+    <additional_attributes>50.0;420.0;170.0;420.0;170.0;10.0;10.0;10.0;10.0;60.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>970</x>
+      <y>460</y>
+      <w>170</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=0..1
+r2=- cartaQueElige</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;10.0;50.0;40.0;160.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>970</x>
+      <y>560</y>
+      <w>170</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=0..1
+r2=- cartaRival</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;10.0;50.0;80.0;160.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1260</x>
+      <y>170</y>
+      <w>40</w>
+      <h>260</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=0..*
+r2=- personajes</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;210.0;30.0;210.0;30.0;250.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>900</x>
+      <y>110</y>
+      <w>240</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=0..3
+r2=- cartas</panel_attributes>
+    <additional_attributes>10.0;10.0;190.0;10.0;190.0;330.0;230.0;330.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1010</x>
+      <y>1150</y>
+      <w>110</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+TipoProceso
+--
++ Servidor
++ ClienteJ1
++ ClienteJ2</panel_attributes>
+    <additional_attributes />
+  </element>
+</diagram>

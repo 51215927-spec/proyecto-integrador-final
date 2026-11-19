@@ -13,17 +13,17 @@
 Antes de modificar el alcance, la arquitectura o la estructura del proyecto, leer:
 
 - `README.md`
-- [Consigna](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Consigna)
+- [Consigna](docs/wiki/Consigna.md)
 - `docs/plan.md`
-- [Arquitectura](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura)
+- [Arquitectura](docs/wiki/Arquitectura.md)
 - `CONTRIBUTING.md`
 
-La fuente principal de requisitos es la [consigna](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Consigna). En caso de contradicción, no asumir qué interpretación es correcta: identificar el conflicto y solicitar una definición cuando sea necesario.
+La fuente principal de requisitos es la [consigna](docs/wiki/Consigna.md). En caso de contradicción, no asumir qué interpretación es correcta: identificar el conflicto y solicitar una definición cuando sea necesario.
 
 Aplicar el skill `desarrollo-documentado` durante el trabajo en este proyecto:
 
 - Consultar el contexto y el estado real del repositorio antes de planificar.
-- Mantener `docs/plan.md` y la página [Arquitectura](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Arquitectura) actualizados según las decisiones vigentes, exclusivamente mediante tareas documentales en ramas `docs/`.
+- Mantener `docs/plan.md` y la página [Arquitectura](docs/wiki/Arquitectura.md) actualizados según las decisiones vigentes, exclusivamente mediante tareas documentales en ramas `docs/`.
 - Realizar cambios acotados, coherentes y revisables.
 - Verificar los aspectos afectados por cada modificación.
 - Registrar decisiones y resultados relevantes cuando aporten trazabilidad.
@@ -66,9 +66,9 @@ Respetar la siguiente organización:
 - `src/`: código fuente de la aplicación.
 - `test/`: proyectos y código de pruebas automatizadas.
 - `docs/`: plan de trabajo.
-- [Wiki del proyecto](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Home): documentación técnica y académica.
+- [Documentación del proyecto](docs/wiki/README.md): documentación técnica y académica.
 
-Al agregar documentación a la wiki, enlazarla desde su índice y desde `README.md` cuando corresponda.
+Al agregar documentación a `docs/wiki/`, enlazarla desde su índice y desde `README.md` cuando corresponda.
 
 Mantener la documentación y el código coherentes. Una modificación arquitectónica relevante debe reflejarse en la documentación correspondiente.
 

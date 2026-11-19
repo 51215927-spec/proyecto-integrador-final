@@ -4,7 +4,7 @@
 
 ### Preparar la copia
 
-Seguí la [instalación](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Instalacion-y-uso#instalación-de-herramientas-y-dependencias) para obtener el repositorio y sus bibliotecas. Configurá tu nombre y correo si todavía no están definidos en Git.
+Seguí la [instalación](docs/wiki/Instalacion-y-uso.md#instalación-de-herramientas-y-dependencias) para obtener el repositorio y sus bibliotecas. Configurá tu nombre y correo si todavía no están definidos en Git.
 
 ```bash
 git config user.name "Tu nombre"
@@ -57,5 +57,5 @@ Actualizá `main` con `git fetch origin` y `git merge --ff-only origin/main` des
 
 ## Desarrollo y estructura
 
-- [Desarrollo con TDD](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Desarrollo-con-TDD).
-- [Estructura del repositorio](https://github.com/51215927-spec/proyecto-integrador-final/wiki/Estructura-del-repositorio).
+- [Desarrollo con TDD](docs/wiki/Desarrollo-con-TDD.md).
+- [Estructura del repositorio](docs/wiki/Estructura-del-repositorio.md).
