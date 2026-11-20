@@ -30,9 +30,22 @@ internal sealed class ErrorApi(int estado, string codigo, string mensaje) : Exce
 
 internal static class ServidorHttp
 {
-    internal static WebApplication Crear(string[] args, TimeProvider? reloj = null)
+    internal static WebApplication Crear(string[] args, TimeProvider? reloj = null, ConfiguracionServidor? inicio = null)
     {
         var builder = WebApplication.CreateBuilder(args);
+        if (inicio is not null)
+        {
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["urls"] = inicio.Direccion,
+                ["ConnectionStrings:Juego"] = new SqliteConnectionStringBuilder
+                {
+                    DataSource = inicio.Archivo, DefaultTimeout = 1
+                }.ToString(),
+                ["Catalogo:Credencial"] = inicio.Credencial
+            });
+            builder.WebHost.UseUrls(inicio.Direccion);
+        }
         if (builder.Configuration["urls"] is null)
             builder.WebHost.UseUrls("http://0.0.0.0:5000");
         builder.Services.AddSingleton(sp => new RepositorioJuego(

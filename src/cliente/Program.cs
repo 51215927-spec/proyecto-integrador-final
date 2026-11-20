@@ -1,30 +1,22 @@
+using Proyecto_Integrador_Final.Consola;
 using Proyecto_Integrador_Final.Cliente;
 
 internal static class Program
 {
-    private static int Main(string[] args)
+    private static int Main()
     {
         var interfaz = new InterfazConsola();
         try
         {
-            switch (args)
-            {
-                case []:
-                    interfaz.MostrarPreparacion(null, "Conexión pendiente. Usá --demo para probar las pantallas localmente.");
-                    return 0;
-                case ["--demo"]:
-                case ["--demo", "pausa" or "abandono" or "cancelacion" or "salida"]:
-                    var demo = new DemostracionConsola(interfaz, Console.In, Console.Out,
-                        !Console.IsInputRedirected && !Console.IsOutputRedirected);
-                    demo.Recorrer(args.Length == 2 ? args[1] : null);
-                    return 0;
-                case ["--help"] or ["-h"]:
-                    Console.WriteLine("dotnet run --project src/cliente -- --demo [pausa|abandono|cancelacion|salida]");
-                    return 0;
-                default:
-                    interfaz.MostrarError("Opción desconocida. Usá --help para ver los argumentos.");
-                    return 2;
-            }
+            var lector = new EntradaConsola(Console.In, Console.Out);
+            string modo = lector.Validar(
+                "Demostración local: victoria, pausa, abandono, cancelacion o salida",
+                valor => valor.ToLowerInvariant() is "victoria" or "pausa" or "abandono" or "cancelacion" or "salida",
+                "Elegí victoria, pausa, abandono, cancelacion o salida.").ToLowerInvariant();
+            var demo = new DemostracionConsola(interfaz, Console.In, Console.Out,
+                !Console.IsInputRedirected && !Console.IsOutputRedirected);
+            demo.Recorrer(modo == "victoria" ? null : modo);
+            return 0;
         }
         catch (EndOfStreamException)
         {

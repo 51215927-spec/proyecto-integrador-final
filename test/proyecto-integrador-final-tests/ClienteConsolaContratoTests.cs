@@ -64,6 +64,13 @@ public sealed class ClienteConsolaContratoTests
         Assert.DoesNotContain("Recepción confirmada", salida);
     }
 
+    [ContratoFact(Dll)]
+    public async Task Menu_ReintentaUnaOpcionInvalidaYPermiteElegirSalida()
+    {
+        var salida = await EjecutarDemo("incorrecta\nsalida", "");
+        EnOrden(salida, "Demostración", "Elegí", "Salida local");
+    }
+
     private static void EnOrden(string salida, params string[] fragmentos)
     {
         var inicio = 0;
@@ -85,9 +92,7 @@ public sealed class ClienteConsolaContratoTests
             RedirectStandardOutput = true, RedirectStandardError = true
         };
         inicio.ArgumentList.Add(ruta);
-        inicio.ArgumentList.Add("--demo");
-        if (modo is not null)
-            inicio.ArgumentList.Add(modo);
+        entrada = (modo ?? "victoria") + "\n" + entrada;
         using var proceso = Process.Start(inicio)!;
         using var plazo = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         try

@@ -11,4 +11,8 @@
     <InternalsVisibleTo Include="Proyecto-Integrador-Final.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="../comun/EntradaConsola.cs" Link="EntradaConsola.cs" />
+  </ItemGroup>
+
 </Project>

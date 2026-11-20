@@ -1,13 +1,43 @@
 using Proyecto_Integrador_Final.Api;
+using Microsoft.Data.Sqlite;
 
 internal static class Program
 {
-    private static async Task Main(string[] args)
+    private static async Task<int> Main()
     {
-        await using var app = ServidorHttp.Crear(args);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
-        await app.StartAsync();
-        _ = Task.Run(() => ConsolaServidor.Ejecutar(juego, Console.In, Console.Out, app.Lifetime.ApplicationStopping));
-        await app.WaitForShutdownAsync();
+        while (true)
+        {
+            ConfiguracionServidor inicio;
+            try
+            {
+                inicio = ConfiguracionServidor.Leer(Console.In, Console.Out);
+            }
+            catch (EndOfStreamException)
+            {
+                Console.WriteLine("Fin de la entrada. Inicio cancelado.");
+                return 0;
+            }
+            catch (IOException)
+            {
+                return 1;
+            }
+
+            try
+            {
+                await using var app = ServidorHttp.Crear([], inicio: inicio);
+                var juego = app.Services.GetRequiredService<RepositorioJuego>();
+                await app.StartAsync();
+                var consola = Task.Run(() => ConsolaServidor.Ejecutar(juego, Console.In, Console.Out,
+                    app.Lifetime.ApplicationStopping));
+                var terminada = await Task.WhenAny(consola, app.WaitForShutdownAsync());
+                await terminada;
+                await app.StopAsync();
+                return 0;
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException or SqliteException or InvalidOperationException)
+            {
+                Console.WriteLine("No se pudo iniciar el servidor. Revisá la dirección y el archivo SQLite. Volvé a ingresar la configuración.");
+            }
+        }
     }
 }

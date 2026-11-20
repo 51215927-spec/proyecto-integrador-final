@@ -5,34 +5,50 @@ namespace Proyecto_Integrador_Final.Tests;
 public sealed class ConsolaServidorTests
 {
     [Fact]
-    public void Ayuda_ExplicaArgumentosYComoEmpezar()
+    public void Ayuda_ExplicaLasAccionesYLosDatosQueSePiden()
     {
-        string inicio = Ejecutar("");
-        string salida = Ejecutar("ayuda");
-
-        Assert.Equal(inicio + inicio, salida);
+        string salida = Ejecutar("ayuda\n");
         Assert.Contains("Consola del servidor de Guerra", salida);
-        Assert.Contains("Partidas", salida);
-        Assert.Contains("Jugadores", salida);
-        Assert.Contains("Catálogo", salida);
-        Assert.Contains("iniciar <idPartida>", salida);
         Assert.Contains("los dos jugadores", salida);
         Assert.Contains("seis personajes activos", salida);
-        Assert.Contains("J1 o J2", salida);
-        Assert.Contains("ID numérico", salida);
-        Assert.Contains("desactivar 12", salida);
+        Assert.DoesNotContain("<idPartida>", salida);
+    }
+
+    [Fact]
+    public void Cancelar_PideUuidYReintentaSinPerderLaAccion()
+    {
+        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        var partida = juego.CrearPartida();
+        using var entrada = new StringReader($"cancelar\nincorrecto\n{partida.Id}\n");
+        using var salida = new StringWriter();
+        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        Assert.Contains("UUID", salida.ToString());
+        Assert.Contains("válido", salida.ToString());
+        Assert.Contains("Partida cancelada.", salida.ToString());
     }
 
     [Theory]
-    [InlineData("iniciar abc", "Uso: iniciar <idPartida>")]
-    [InlineData("cerrar-sesion 12345678-1234-4234-8234-123456789abc J3", "Uso: cerrar-sesion <idPartida> <J1|J2>")]
-    [InlineData("crear extra", "Uso: crear")]
-    [InlineData("desactivar abc", "Uso: desactivar <idPersonaje>")]
-    [InlineData("listar", "Comando desconocido: listar. Escribí ayuda")]
-    public void ComandoInvalido_MuestraComoCorregirlo(string comando, string mensaje)
+    [InlineData("cancelar\n")]
+    [InlineData("cerrar-sesion\n12345678-1234-4234-8234-123456789abc\n")]
+    [InlineData("desactivar\nno\n")]
+    public void FinDeEntrada_NoConfirmaAccionIncompleta(string comandos)
     {
-        string salida = Ejecutar(comando);
-        Assert.Contains(mensaje, salida[Ejecutar("").Length..]);
+        string salida = Ejecutar(comandos);
+        Assert.DoesNotContain("Partida cancelada.", salida);
+        Assert.DoesNotContain("Sesión cerrada.", salida);
+        Assert.DoesNotContain("Personaje desactivado.", salida);
+    }
+
+    [Fact]
+    public void CerrarSesion_PidePlazaYPermiteCorregirla()
+    {
+        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        var partida = juego.CrearPartida();
+        using var entrada = new StringReader($"cerrar-sesion\n{partida.Id}\nJ3\nj2\n");
+        using var salida = new StringWriter();
+        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        Assert.Contains("J1 o J2", salida.ToString());
+        Assert.Contains("Sesión cerrada.", salida.ToString());
     }
 
     private static string Ejecutar(string comandos)

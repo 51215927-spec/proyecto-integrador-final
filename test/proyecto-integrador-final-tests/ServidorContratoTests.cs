@@ -306,12 +306,13 @@ public sealed class ServidorContratoTests
                 RedirectStandardInput = true, RedirectStandardOutput = true
             };
             inicio.ArgumentList.Add(dll);
-            inicio.ArgumentList.Add("--urls");
-            inicio.ArgumentList.Add("http://127.0.0.1:0");
-            inicio.Environment["ConnectionStrings__Juego"] = "Data Source=guerra.db;Default Timeout=1";
-            inicio.Environment["Catalogo__Credencial"] = CredencialCatalogo;
             inicio.Environment["Logging__LogLevel__Microsoft.AspNetCore"] = "Warning";
-            return Process.Start(inicio)!;
+            var lanzado = Process.Start(inicio)!;
+            lanzado.StandardInput.WriteLine("http://127.0.0.1:0");
+            lanzado.StandardInput.WriteLine("guerra.db");
+            lanzado.StandardInput.WriteLine(CredencialCatalogo);
+            lanzado.StandardInput.Flush();
+            return lanzado;
         }
 
         public async Task Reiniciar()
@@ -351,7 +352,7 @@ public sealed class ServidorContratoTests
             }
             await Incorporar(J1, "Lucía");
             await Incorporar(J2, "Mateo");
-            await proceso.StandardInput.WriteLineAsync($"iniciar {partida}");
+            await proceso.StandardInput.WriteLineAsync($"iniciar\n{partida}");
             await EsperarVista(J1, vista => vista.GetProperty("fase").GetString() == "esperandoElector");
         }
 
@@ -362,7 +363,7 @@ public sealed class ServidorContratoTests
         }
 
         public Task CerrarSesion(Jugador jugador) =>
-            proceso.StandardInput.WriteLineAsync($"cerrar-sesion {partida} {jugador.Rol}");
+            proceso.StandardInput.WriteLineAsync($"cerrar-sesion\n{partida}\n{jugador.Rol}");
 
         public async Task<JsonElement> EsperarVista(Jugador jugador, Func<JsonElement, bool> coincide)
         {
