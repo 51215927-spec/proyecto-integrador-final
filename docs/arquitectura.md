@@ -18,9 +18,11 @@ flowchart LR
 
 El operador crea la partida en consola. Tras incorporar a ambos participantes, el servidor copia los personajes activos del catálogo al estado de la partida. Cada elección se valida contra la sesión, la revisión y la solicitud vigente. Con ambas cartas, el servidor compara los puntajes mediante el dominio y guarda el resultado y el recibo dentro de la misma escritura. La presentación devuelve la mano propia y los combates resueltos.
 
-## Entrada interactiva prevista
+## Entrada interactiva
 
-Los tres ejecutables pedirán los datos de operación en consola. El cliente ofrecerá la demostración y solicitará los datos de conexión cuando se implemente el juego en red. El servidor pedirá la configuración de inicio y los datos de cada acción administrativa. La herramienta de carga pedirá la URL, la credencial y los datos del personaje. El cambio está pendiente y conserva el contrato HTTP.
+Los tres ejecutables solicitan sus datos por consola. El cliente ofrece la demostración y sus cinco variantes de cierre; los datos de conexión a una partida corresponden al cliente REST pendiente. El servidor pide dirección, archivo SQLite y credencial antes de construir el host, y solicita los identificadores después de elegir cada acción administrativa. La carga pide URL y credencial antes del personaje. Los valores inválidos pueden corregirse y el fin de entrada cancela la acción incompleta.
+
+`src/comun/EntradaConsola.cs` se compila en los tres proyectos mediante un enlace de código fuente. Centraliza las preguntas, la validación de URL y la lectura oculta de credenciales en terminal interactiva. La entrada redirigida conserva el procesamiento por líneas para las pruebas. `ConfiguracionServidor` entrega los valores al host mediante la interfaz interna de `ServidorHttp.Crear`; las pruebas HTTP conservan su configuración aislada. El contrato HTTP no cambia. [Evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003)
 
 ## Estados de la partida
 

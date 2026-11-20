@@ -2,7 +2,7 @@
 
 ## Entrada de datos en ejecución
 
-El servidor, el cliente y la herramienta de carga deberán iniciarse sin argumentos de aplicación. Cada programa pedirá en consola los datos que necesite, como la dirección de conexión, las credenciales, las opciones del juego o los datos del personaje. La consola del servidor pedirá los identificadores después de que el operador elija una acción. Este requisito está pendiente de implementación. Los comandos de esta guía describen el funcionamiento disponible hoy.
+El servidor, el cliente y la herramienta de carga se inician sin argumentos de aplicación ni variables de entorno de usuario. Cada uno solicita sus datos por consola. Una entrada inválida vuelve a pedir el campo; el fin de entrada cierra el programa sin aplicar una acción incompleta. Las credenciales ingresadas no se muestran en una terminal interactiva ni en los diagnósticos. Con entrada redirigida se leen por líneas.
 
 ## Instalación de herramientas y dependencias
 
@@ -69,32 +69,33 @@ dotnet test proyecto-integrador-final.sln
 dotnet run --project src/cliente
 ```
 
-El programa muestra el panel de preparación de Juego Guerra. Usá `dotnet run --project src/cliente -- --demo` para recorrer las pantallas con una [partida simulada](diseno-de-interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
+El programa ofrece `victoria`, `pausa`, `abandono`, `cancelacion` y `salida`. Escribí una opción para recorrer las pantallas con una [partida simulada](diseno-de-interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
 
 Las dependencias y los comandos del servidor están en [API y operación del servidor](protocolo-de-partida.md#operación-del-servidor).
 
 ## Cargar personajes manualmente
 
-Configurá `Catalogo__Credencial` con la misma credencial de catálogo en el entorno del servidor y en la terminal de carga. Con el servidor en ejecución, iniciá la consola desde la raíz del repositorio.
+Con el servidor en ejecución y el alta habilitada mediante una credencial no vacía, iniciá la carga desde otra terminal, en la raíz del repositorio.
 
 ```sh
 dotnet run --project src/subir-personajes
 ```
 
-La consola usa `http://localhost:5000` por defecto. Si el servidor está en otra computadora, pasá su URL después de `--`. Indicá cuántas líneas de arte ASCII vas a ingresar. Tras validar y guardar el personaje, el servidor devuelve su ID. Cargá al menos seis personajes activos antes de iniciar una partida.
+La consola pide primero la URL: Enter usa `http://localhost:5000`; para otro equipo ingresá su dirección de red. Después pide la misma credencial de catálogo que ingresaste en el servidor. Completá nombre, descripción opcional y cantidad de líneas de arte ASCII (0 a 25, hasta 120 caracteres por línea y sin tabulaciones). Luego ingresá los seis atributos. Si la distribución no suma 3000 o no cumple los umbrales de 650 y 350, se piden nuevamente los seis valores antes de enviar el alta. Tras validar y guardar el personaje, el servidor devuelve su ID. Cargá al menos seis personajes activos antes de iniciar una partida.
 
 ## Cómo iniciar una partida
 
-Desde la raíz del repositorio, abrí PowerShell y ejecutá el servidor. Si vas a cargar personajes, configurá primero `Catalogo__Credencial` en esa terminal.
+Desde la raíz del repositorio, abrí PowerShell y ejecutá el servidor.
 
 ```powershell
 dotnet run --project src/servidor/servidor.csproj
 ```
 
+- Respondé las preguntas de inicio: dirección de escucha (Enter: `http://0.0.0.0:5000`), archivo SQLite (Enter: `guerra.db`) y credencial de catálogo. Una credencial vacía deshabilita las altas y se informa en pantalla. La ruta relativa de la base se interpreta desde el directorio de ejecución; su directorio debe existir y permitir escritura.
 - Con el servidor en ejecución, usá otra terminal para [cargar personajes](#cargar-personajes-manualmente) hasta tener al menos seis activos en el catálogo.
 - Escribí `crear` y pulsá Enter en la consola del servidor. Copiá el UUID que aparece junto a `Partida` y entregale a cada jugador la credencial de su plaza (`J1` o `J2`).
 - Incorporá a ambos jugadores mediante `PUT /api/v1/partidas/{id}/participantes/me/sesion`, con la credencial de su plaza y un UUID de sesión distinto para cada jugador. Mantené vigentes las dos sesiones con la solicitud de presencia. [Contrato HTTP de la partida](protocolo-de-partida.md#contrato-http)
-- En la consola del servidor, escribí `iniciar <idPartida>` sustituyendo `<idPartida>` por el UUID que mostró `crear`. Si aparece «Partida iniciada.», el servidor repartió tres cartas a cada jugador y J1 puede elegir la primera carta y el atributo.
+- En la consola del servidor, escribí `iniciar`, pulsá Enter y respondé con el UUID que mostró `crear`. Si aparece «Partida iniciada.», el servidor repartió tres cartas a cada jugador y J1 puede elegir la primera carta y el atributo.
 
 La conexión del cliente de consola al servidor sigue pendiente. Podés verificar el inicio mediante la API en una computadora o recorrer las pantallas con la demostración local. [Prueba del servidor en una sola computadora](protocolo-de-partida.md#prueba-del-servidor-en-una-sola-computadora) · [Demostración local](diseno-de-interfaz.md#demostración-local)
 
@@ -108,5 +109,5 @@ Para verificar el flujo real del servidor, cargá seis personajes, creá una par
 
 - Si falla la restauración, comprobá el SDK con `dotnet --list-sdks` y la conexión a los orígenes NuGet.
 - Si falla la conexión, verificá que el servidor informe la escucha y que coincidan la IP y el puerto. En red local, comprobá que ambos equipos estén en la misma red y que el puerto configurado permita conexiones entrantes.
-- Si el alta devuelve 401, comprobá que la credencial de catálogo coincida en ambas terminales.
+- Si el alta devuelve 401, comprobá que la credencial de catálogo coincida con la ingresada al iniciar el servidor.
 - Si la sesión vence, repetí la incorporación y mantené activa la presencia antes de iniciar o elegir.

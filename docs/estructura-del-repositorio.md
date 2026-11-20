@@ -4,7 +4,7 @@
 
 | Ubicación | Contenido |
 |---|---|
-| [`src/`](../src) | Proyectos `cliente`, `servidor` y `subir-personajes`. |
+| [`src/`](../src) | Proyectos `cliente`, `servidor` y `subir-personajes`, y código de consola compartido en `comun`. |
 | [`test/`](../test) | Proyecto de pruebas automatizadas. |
 | [`docs/`](.) | Documentación y diagramas. |
 

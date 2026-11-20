@@ -4,7 +4,7 @@ La etapa de análisis y diseño (TI) ya fue entregada. La solución cuenta con e
 
 ## Entrada interactiva
 
-El servidor, el cliente y la herramienta de carga deberán pedir sus datos por consola durante la ejecución. El servidor solicitará la dirección de escucha, el archivo de base de datos y la credencial de catálogo. Cuando el operador elija una acción, la consola pedirá los identificadores que esa acción requiera. El cliente permitirá elegir la demostración y la herramienta de carga solicitará la URL, la credencial y los datos del personaje. Las entradas inválidas podrán corregirse antes de continuar. [Instalación y uso](instalacion-y-uso.md#entrada-de-datos-en-ejecución)
+El servidor, el cliente y la herramienta de carga ya piden sus datos por consola durante la ejecución. El servidor solicita la configuración antes del host y cada identificador al elegir una acción. El cliente permite seleccionar la demostración y sus cierres. La carga solicita URL, credencial y personaje, con corrección de datos inválidos. La evidencia y el estado de revisión están en [la evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003). [Instalación y uso](instalacion-y-uso.md#entrada-de-datos-en-ejecución)
 
 ## Cliente conectado al servidor
 

@@ -24,7 +24,7 @@ La API y el dominio tienen responsabilidades distintas: la API identifica al jug
 
 El diseño prevé conexiones HTTP en la red local por el puerto TCP 5000. Cada cliente de juego deberá leer la dirección base del servidor de su configuración local al iniciar. Una URL de ejemplo es `http://192.168.1.20:5000`. En la instalación se usa la IP asignada al equipo servidor.
 
-Localhost identifica la computadora del propio proceso: sirve para probar clientes y servidor en el mismo equipo. El cliente de otra computadora debe usar la dirección de red del servidor. Este debe aceptar conexiones en una interfaz accesible desde esa red, no limitarse a localhost; El servidor escucha por defecto en `0.0.0.0:5000`. La opción `--urls` permite elegir otra dirección de escucha.
+Localhost identifica la computadora del propio proceso: sirve para probar clientes y servidor en el mismo equipo. El cliente de otra computadora debe usar la dirección de red del servidor. Este debe aceptar conexiones en una interfaz accesible desde esa red, no limitarse a localhost; El servidor escucha por defecto en `0.0.0.0:5000`. La pregunta inicial permite elegir otra dirección de escucha.
 
 Si el servidor no está disponible, el cliente informa y ofrece reintentar o salir. Conserva una elección pendiente y no la transforma en una operación nueva al reintentar. La confirmación de una elección cuya respuesta se perdió se resolverá mediante los contratos de operaciones e idempotencia de este documento; no se asume que falló por un error de conexión.
 
@@ -38,17 +38,19 @@ El siguiente comando inicia el servidor desde la raíz del repositorio.
 dotnet run --project src/servidor/servidor.csproj
 ```
 
-Por defecto el servidor crea `guerra.db` en el directorio de ejecución. Se puede cambiar con `ConnectionStrings__Juego`, por ejemplo `Data Source=C:/datos/guerra.db;Default Timeout=1`. Si se elige otro directorio, debe existir y permitir escritura al proceso.
+Antes de iniciar el host, la consola pide dirección de escucha (Enter: `http://0.0.0.0:5000`), archivo SQLite (Enter: `guerra.db`) y credencial de catálogo. Una ruta relativa se interpreta desde el directorio de ejecución. El directorio debe existir y permitir escritura. Una credencial vacía deja el alta deshabilitada. Las credenciales se ocultan al ingresarlas en terminal interactiva. Si falla el inicio por la dirección o el almacenamiento, el operador puede volver a ingresar la configuración.
 
 | Comando en la consola del servidor | Efecto |
 |---|---|
 | `crear` | Crea una partida y muestra su UUID y las dos credenciales. Entregar cada credencial solo al jugador de su plaza. |
-| `iniciar <idPartida>` | Inicia cuando ambas sesiones están presentes y hay al menos seis personajes activos. |
-| `cancelar <idPartida>` | Finaliza una partida pendiente o activa con motivo `cancelacion`. |
-| `cerrar-sesion <idPartida> <J1|J2>` | Libera la plaza para otra sesión y conserva su estado de juego. |
-| `reemplazar-credencial <idPartida> <J1|J2>` | Revoca el acceso anterior y muestra una credencial nueva para la misma plaza. |
-| `desactivar <idPersonaje>` | Excluye el personaje de futuros repartos de partidas nuevas. |
+| `iniciar` | Inicia cuando ambas sesiones están presentes y hay al menos seis personajes activos. |
+| `cancelar` | Finaliza una partida pendiente o activa con motivo `cancelacion`. |
+| `cerrar-sesion` | Libera la plaza para otra sesión y conserva su estado de juego. |
+| `reemplazar-credencial` | Revoca el acceso anterior y muestra una credencial nueva para la misma plaza. |
+| `desactivar` | Excluye el personaje de futuros repartos de partidas nuevas. |
 | `ayuda` | Muestra los comandos disponibles. |
+
+Cada acción solicita por separado el UUID, la plaza (`J1` o `J2`) o el ID numérico positivo del personaje que corresponda. Los valores inválidos vuelven a pedirse. Fin de entrada cancela la acción incompleta y detiene el servidor.
 
 Para iniciar una partida, cargar al menos seis personajes activos con `subir-personajes`. Ejecutar `crear`, incorporar a ambos jugadores y luego ejecutar `iniciar` con el UUID. El servidor conserva los datos de juego al reiniciar. Para seguir una partida, ambos jugadores se reincorporan con sus credenciales.
 
@@ -57,13 +59,13 @@ Para iniciar una partida, cargar al menos seis personajes activos con `subir-per
 Desde la raíz del repositorio, usá una base de prueba para que el catálogo y las partidas del ensayo queden en un archivo propio. En PowerShell, ejecutá:
 
 ```powershell
-$env:ConnectionStrings__Juego = 'Data Source=guerra-prueba.db;Default Timeout=1'
-dotnet run --project src/servidor/servidor.csproj -- --urls http://127.0.0.1:5000
+dotnet run --project src/servidor/servidor.csproj
 ```
 
+- Respondé `http://127.0.0.1:5000`, `guerra-prueba.db` y una credencial de catálogo elegida para el ensayo.
 - Esperá el mensaje de escucha en `http://127.0.0.1:5000`. En esa misma terminal, escribí `crear`. La consola imprime el UUID de la partida y una credencial para cada plaza.
 - Mantené abierta esa terminal mientras probás la API desde otra. Para iniciar el juego, cargá primero al menos seis personajes activos con [subir-personajes](instalacion-y-uso.md#cargar-personajes-manualmente).
-- Incorporá ambos participantes mediante `PUT /participantes/me/sesion` según el contrato de abajo. Usá un UUID de sesión diferente por jugador y renová la presencia con `PUT /participantes/me/presencia` mientras realizás la prueba. Después, escribí `iniciar <idPartida>` en la consola del servidor. El resultado esperado es `Partida iniciada.`.
+- Incorporá ambos participantes mediante `PUT /participantes/me/sesion` según el contrato de abajo. Usá un UUID de sesión diferente por jugador y renová la presencia con `PUT /participantes/me/presencia` mientras realizás la prueba. Después, escribí `iniciar` en la consola del servidor y respondé con el UUID. El resultado esperado es `Partida iniciada.`.
 - Consultá `GET /presentacion` con la credencial y sesión de cada plaza. Al inicio, ambas vistas muestran tres cartas propias. La vista de J1 incluye una solicitud `cartaYAtributo` y la de J2 tiene `solicitud: null` hasta que J1 juegue.
 
 Si el inicio falla, verificá que el UUID corresponda a la partida creada, que ambas sesiones sigan vigentes y que el catálogo tenga suficientes personajes activos. Al terminar, detené el servidor con Ctrl+C. Si volvés a iniciarlo con el mismo archivo, conserva la partida y requiere que ambos participantes vuelvan a incorporarse.
@@ -126,7 +128,7 @@ Para un reenvío, el servidor busca primero el `idOperacion` dentro de la partid
 
 `POST /api/v1/personajes` recibe JSON UTF-8 con `nombre`, `descripcion`, `ascii`, `fuerza`, `velocidad`, `resistencia`, `inteligencia`, `energia` y `habilidad`. La descripción admite texto vacío. Los puntajes son enteros y el servidor aplica las [validaciones de Personaje](reglas-del-juego.md#personajes-y-preparación). El ASCII admite hasta 25 líneas, con un máximo de 120 caracteres por línea y sin tabulaciones.
 
-El operador configura una credencial de catálogo en el entorno del servidor mediante `Catalogo__Credencial`. El cliente la envía en `Authorization: Bearer`. El alta devuelve `401 credencialInvalida` si falta la configuración o la credencial recibida no coincide. Las credenciales de las plazas se usan para la partida. El cliente [`subir-personajes`](../src/subir-personajes/README.md) usa esta ruta.
+El operador ingresa una credencial de catálogo al iniciar el servidor y la herramienta de carga pide esa misma credencial antes de los datos del personaje. El cliente la envía en `Authorization: Bearer`. El alta devuelve `401 credencialInvalida` si falta la configuración o la credencial recibida no coincide. Las credenciales de las plazas se usan para la partida. El cliente [`subir-personajes`](../src/subir-personajes/README.md) usa esta ruta.
 
 | Respuesta | Significado |
 |---|---|

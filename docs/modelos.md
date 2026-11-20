@@ -65,7 +65,7 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 **`internal static class Program`**
 
-- `private static int Main(string[] args)`. Selecciona el flujo de demostración según `args`. Devuelve 0 tras mostrar preparación, ayuda o una demostración. Devuelve 2 para argumentos desconocidos y 1 ante un error de E/S de la consola. El fin de entrada cierra la demostración con código 0.
+- `private static int Main()`. Solicita la variante de demostración por consola, permite corregir una selección inválida y ejecuta el recorrido seleccionado. Devuelve 0 al finalizar o al terminar la entrada, y 1 ante un error de E/S.
 
 ### [src/cliente/VistasConsola.cs](../src/cliente/VistasConsola.cs)
 
@@ -114,8 +114,8 @@ Plaza persistida de la partida. Conserva nombre, hash de credencial y rondas gan
 **`internal static class ConsolaServidor`**
 
 - `internal static void Ejecutar(RepositorioJuego juego, TextReader entrada, TextWriter salida, CancellationToken detener)` — Muestra la ayuda y procesa líneas de `entrada` hasta el fin de flujo o la cancelación. Informa los errores de negocio y los fallos de SQLite o EF Core en `salida`.
-- `private static void Comando(RepositorioJuego juego, string linea, TextWriter salida)` — Interpreta la orden del operador y sus identificadores antes de invocar el repositorio. Imprime el resultado o la sintaxis esperada si la orden es inválida.
-- `private static void Ayuda(TextWriter salida)` — Escribe los comandos disponibles, agrupados por función, con su sintaxis y efecto.
+- `private static void Comando(RepositorioJuego juego, string linea, TextReader entrada, TextWriter salida)` — Interpreta la acción y solicita por separado sus identificadores. Valida UUID no vacío, plaza J1/J2 e ID positivo antes de invocar el repositorio. Fin de entrada interrumpe la acción sin aplicarla.
+- `private static void Ayuda(TextWriter salida)` — Escribe los comandos disponibles, agrupados por función, con su efecto y las indicaciones para responder las preguntas.
 
 ### [src/servidor/Api/EstadoPartida.cs](../src/servidor/Api/EstadoPartida.cs)
 
@@ -243,7 +243,7 @@ Excepción con estado HTTP, código estable y mensaje para el contrato REST.
 
 **`internal static class ServidorHttp`**
 
-- `internal static WebApplication Crear(string[] args, TimeProvider? reloj = null)` — Configura y devuelve el host con sus rutas, repositorio y reloj. Usa los argumentos para la configuración y el reloj del sistema si no se inyecta uno. El middleware traduce errores de entrada y almacenamiento al contrato HTTP.
+- `internal static WebApplication Crear(string[] args, TimeProvider? reloj = null, ConfiguracionServidor? inicio = null)` — Configura y devuelve el host con sus rutas, repositorio y reloj. Si recibe `inicio`, sus valores prevalecen en dirección, SQLite y credencial de catálogo. Conserva los argumentos internos y el reloj inyectable para pruebas aisladas. El middleware traduce errores de entrada y almacenamiento al contrato HTTP.
 - `private static string? Credencial(HttpContext contexto)` — Extrae la credencial de una cabecera `Authorization` con esquema Bearer, o devuelve `null`.
 - `private static Guid IdSesion(HttpContext contexto)` — Interpreta `X-Sesion` como UUID o devuelve `Guid.Empty`.
 
@@ -338,7 +338,7 @@ Identifica fuerza, velocidad, resistencia, inteligencia, energía y habilidad.
 
 **`internal static class Program`**
 
-- `private static async Task Main(string[] args)` `Main` crea la aplicación con `ServidorHttp.Crear`, obtiene el repositorio del contenedor de dependencias, inicia el servidor, arranca la consola del operador en otra tarea y espera el apagado.
+- `private static async Task<int> Main()` — Lee `ConfiguracionServidor` antes de construir el host, inicia servidor y consola administrativa. El fin de entrada administrativa detiene el host; Ctrl+C también permite apagarlo. Ante un fallo de inicio vuelve a pedir la configuración sin imprimir sus secretos. Devuelve 0 al cerrar normalmente y 1 si no puede leer la consola.
 
 ### [src/servidor/Ronda.cs](../src/servidor/Ronda.cs)
 
@@ -355,14 +355,33 @@ Identifica fuerza, velocidad, resistencia, inteligencia, energía y habilidad.
 
 **`internal static class Program`**
 
-- `private static async Task<int> Main(string[] args)`. Valida la URL HTTP o HTTPS recibida en `args` y usa `http://localhost:5000` por defecto. Lee la credencial de catálogo y ejecuta `ConsolaAlta.Ejecutar` con la entrada y salida del proceso. Devuelve 1 si la configuración es inválida o falta la credencial. En otro caso devuelve el código de salida de la carga.
+- `private static Task<int> Main()` — Delega en `ConsolaAlta.Iniciar` con la entrada y salida del proceso, sin argumentos de aplicación.
 
 **`internal static class ConsolaAlta`**
 
-- `internal static async Task<int> Ejecutar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida)` — Lee y valida los campos del personaje, envía el alta autenticada y confirma únicamente una respuesta `201` con ID positivo. Devuelve 0 al cerrar tras una carga confirmada y 1 ante rechazo, ID inválido, entrada incompleta o fallo de comunicación o deserialización.
+- `internal static async Task<int> Iniciar(TextReader entrada, TextWriter salida)` — Solicita URL (Enter: `http://localhost:5000`) y credencial no vacía antes del personaje. Configura el cliente HTTP sin redirecciones y delega la carga. Fin de entrada incompleta devuelve 1.
+
+- `internal static async Task<int> Ejecutar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida)` — Lee y permite corregir nombre, ASCII y atributos (rango, suma y especialización) antes de enviar el alta autenticada y confirma únicamente una respuesta `201` con ID positivo. Devuelve 0 al cerrar tras una carga confirmada y 1 ante rechazo, ID inválido, entrada incompleta o fallo de comunicación o deserialización.
 - `private static bool EsSi(string respuesta)` — Devuelve si `respuesta` equivale a `sí` o `si`, sin distinguir mayúsculas.
 
 **`private sealed record AltaConfirmada(int IdPersonaje)`**
+
+## Entrada de consola compartida
+
+### [src/comun/EntradaConsola.cs](../src/comun/EntradaConsola.cs)
+
+**`internal sealed class EntradaConsola(TextReader entrada, TextWriter salida)`**
+
+- `Texto(string pregunta)` devuelve una línea o lanza `EndOfStreamException`.
+- `Validar(string pregunta, Func<string, bool> valida, string error, string? defecto = null)` repite un campo inválido y permite un valor por defecto.
+- `Url(string defecto)` valida una URL HTTP/HTTPS de origen, sin credenciales, consulta ni fragmento.
+- `Secreto(string pregunta, bool permiteVacio)` oculta la entrada en una terminal interactiva y lee líneas si está redirigida. No imprime su contenido. Permite borrar caracteres y finalizar con Enter; Ctrl+D o Ctrl+Z interrumpen la lectura secreta.
+
+### [src/servidor/Api/ConfiguracionServidor.cs](../src/servidor/Api/ConfiguracionServidor.cs)
+
+**`internal sealed record ConfiguracionServidor(string Direccion, string Archivo, string Credencial)`**
+
+`Leer(TextReader entrada, TextWriter salida)` obtiene los tres datos antes del host. Usa `http://0.0.0.0:5000` y `guerra.db` por defecto, valida la ruta y avisa si una credencial vacía deshabilita el alta. Una configuración incompleta no construye el host.
 
 ## Pruebas automatizadas
 
@@ -431,9 +450,7 @@ Los casos se agrupan por archivo. Las verificaciones de ejecución están en [Pl
 
 **`public sealed class ConsolaServidorTests`**
 
-- `public void Ayuda_ExplicaArgumentosYComoEmpezar()` — Verifica que la ayuda inicial y la solicitada describan los comandos, sus parámetros y las precondiciones de inicio.
-- `public void ComandoInvalido_MuestraComoCorregirlo(string comando, string mensaje)` — Ejecuta `comando` y verifica que la salida posterior a la ayuda contenga `mensaje`.
-- `private static string Ejecutar(string comandos)` — Ejecuta los comandos en un repositorio SQLite en memoria y devuelve la salida de la consola.
+Las pruebas verifican ayuda sin argumentos, corrección del UUID, elección de plaza y fin de entrada durante acciones incompletas sobre un repositorio SQLite en memoria.
 
 ### [test/proyecto-integrador-final-tests/ContratoFactAttribute.cs](../test/proyecto-integrador-final-tests/ContratoFactAttribute.cs)
 
@@ -542,3 +559,7 @@ Los casos se agrupan por archivo. Las verificaciones de ejecución están en [Pl
 - `private async Task<string> LeerDato(string prefijo)` — Lee la salida hasta encontrar el prefijo indicado. Lanza `InvalidOperationException` si se cierra el flujo antes de encontrarlo.
 - `public async ValueTask DisposeAsync()` — Detiene el proceso, libera el cliente HTTP y elimina el directorio temporal.
 - `private async Task Detener()` — Finaliza el proceso de servidor de la prueba y espera su salida.
+
+### Pruebas de entrada interactiva
+
+[ConfiguracionServidorTests](../test/proyecto-integrador-final-tests/ConfiguracionServidorTests.cs) cubre valores iniciales, configuración personalizada, corrección y fin de entrada. [EntradaProcesosContratoTests](../test/proyecto-integrador-final-tests/EntradaProcesosContratoTests.cs) arranca los tres ejecutables sin argumentos de aplicación y verifica EOF, cierre del host, corrección de una base inválida y alta real por HTTP. Las ampliaciones de `ConsolaAltaTests` y `ClienteConsolaContratoTests` verifican el orden de las preguntas, las validaciones y las cinco variantes de demostración. [Evidencia por criterio](plan-de-pruebas.md#evidencia-del-spec-003)
