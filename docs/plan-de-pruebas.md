@@ -62,3 +62,25 @@ Para la ejecución registrar el ID del caso, versión probada, entorno, resultad
 ## Ejecución y evidencia
 
 Desde la carpeta que contiene la solución ejecutá `dotnet test proyecto-integrador-final.sln`. El reporte indica cuáles casos se ejecutaron. Para la comprobación manual en red local, registrá los equipos, condiciones iniciales, solicitud enviada, resultado esperado y observado. [Proyecto de pruebas](../test/proyecto-integrador-final-tests/README.md) · [Verificación en dos equipos](protocolo-de-partida.md#verificación-en-dos-equipos)
+
+## Entrada interactiva
+
+El spec 003 se verifica con casos automatizados de configuración inicial, acciones administrativas, cinco variantes de demostración, corrección de campos de personaje y fin de entrada. Los contratos arrancan los ejecutables sin argumentos y responden por stdin. Para ejecutar también esos casos, compilá y definí las tres rutas de DLL indicadas en el [proyecto de pruebas](../test/proyecto-integrador-final-tests/README.md). La lectura oculta de credenciales se verifica adicionalmente en terminal interactiva. [Evidencia por criterio](plan-de-pruebas.md#evidencia-del-spec-003)
+
+### Evidencia del spec 003
+
+Verificación del 20 de noviembre de 2026 sobre `feature/entrada-interactiva`, commit `61c062f`, con .NET SDK 8.0.133 en Linux. La documentación de uso se prepara separadamente en `docs/entrada-interactiva`. La revisión de un compañero y la integración permanecen pendientes.
+
+| Criterio | Evidencia | Resultado |
+|---|---|---|
+| CA1 | Contratos de procesos para los tres ejecutables, sin argumentos de aplicación ni variables de usuario; arranque adicional mediante `dotnet run --no-build --project src/<proyecto>`. | Aprobado. |
+| CA2 | `ConfiguracionServidorTests`, `ConsolaServidorTests` y contratos del servidor: valores iniciales, configuración personalizada, alta deshabilitada, UUID y plaza por separado, inicio y recuperación ante una base inválida. Ensayo local con Enter verificó escucha en `0.0.0.0:5000` y archivo `guerra.db`. | Aprobado. |
+| CA3 | `ClienteConsolaContratoTests` recorre victoria, pausa, abandono, cancelación y salida seleccionadas por stdin, más corrección de una opción inválida. | Aprobado. |
+| CA4 | `ConsolaAltaTests` y contrato del ejecutable: URL y credencial antes del personaje, corrección de campos y alta HTTP `201` con ID. Ensayo con URL vacía confirmó el alta contra `localhost:5000`. | Aprobado. |
+| CA5 | Pruebas de corrección y EOF durante configuración, menú, acciones y carga; no se confirma la acción incompleta. Una pseudoterminal verificó que servidor y carga no muestran la credencial ingresada. Los diagnósticos comprobados no contienen esa credencial. | Aprobado. |
+
+Se ejecutó `dotnet build proyecto-integrador-final.sln`: cero errores y cero advertencias. Después se ejecutó `dotnet test proyecto-integrador-final.sln --no-build` con `GUERRA_CLIENTE_DLL`, `GUERRA_SERVIDOR_DLL` y `GUERRA_CARGA_DLL` apuntando a las DLL del worktree: **104 aprobadas, cero fallidas y cero omitidas**.
+
+Evidencia de TDD: las nuevas pruebas fallaron primero por falta de preguntas administrativas, menú del cliente y configuración de carga; las firmas nuevas lanzaban `NotImplementedException`. Una prueba posterior reprodujo el cierre ante una base inválida antes de agregar el reintento. La suite original había aprobado sus 85 casos antes de los cambios. Tras implementar y simplificar la ayuda se obtuvo el resultado final anterior.
+
+Las pruebas de este cambio se realizaron en una computadora Linux. No acreditan ejecución en Windows, comunicación entre dos equipos ni implementación del cliente REST; esas comprobaciones siguen en el plan de continuidad. `specs/` continúa como material local excluido de Git según la convención existente; su copia de seguimiento se mantiene en el worktree documental.

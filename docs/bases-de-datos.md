@@ -1,6 +1,6 @@
 # Bases de datos
 
-El servidor crea el esquema con `EnsureCreated` al abrir el repositorio. La configuración `ConnectionStrings__Juego` permite seleccionar la cadena SQLite. Por defecto usa `Data Source=guerra.db;Default Timeout=1`. Una ruta relativa se interpreta desde el directorio de trabajo del servidor.
+El servidor crea el esquema con `EnsureCreated` al abrir el repositorio. La consola de inicio pide el archivo SQLite y usa `guerra.db` por defecto. La interfaz interna del host permite configurar la cadena SQLite para pruebas aisladas; usa un tiempo de espera de un segundo. Una ruta relativa se interpreta desde el directorio de trabajo del servidor.
 
 | Tabla | Clave primaria | Datos y relaciones |
 |---|---|---|
