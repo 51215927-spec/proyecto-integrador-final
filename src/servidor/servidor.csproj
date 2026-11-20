@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -13,6 +13,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.34" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../comun/EntradaConsola.cs" Link="EntradaConsola.cs" />
   </ItemGroup>
 
 </Project>

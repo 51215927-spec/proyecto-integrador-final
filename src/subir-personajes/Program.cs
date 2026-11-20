@@ -1,3 +1,4 @@
+using Proyecto_Integrador_Final.Consola;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -7,40 +8,39 @@ namespace Proyecto_Integrador_Final.CargaPersonajes;
 
 internal static class Program
 {
-    private static async Task<int> Main(string[] args)
-    {
-        if (args.Length > 1 ||
-            !Uri.TryCreate(args.FirstOrDefault() ?? "http://localhost:5000", UriKind.Absolute, out var servidor) ||
-            servidor.Scheme is not ("http" or "https"))
-        {
-            Console.Error.WriteLine("Uso: dotnet run --project src/subir-personajes -- [URL del servidor]");
-            return 1;
-        }
-
-        string? credencial = Environment.GetEnvironmentVariable("Catalogo__Credencial");
-        if (string.IsNullOrWhiteSpace(credencial))
-        {
-            Console.Error.WriteLine("Configurá Catalogo__Credencial con la credencial de alta del servidor.");
-            return 1;
-        }
-
-        using var cliente = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
-        {
-            BaseAddress = servidor
-        };
-        return await ConsolaAlta.Ejecutar(cliente, credencial, Console.In, Console.Out);
-    }
+    private static Task<int> Main() => ConsolaAlta.Iniciar(Console.In, Console.Out);
 }
 
 internal static class ConsolaAlta
 {
+    internal static async Task<int> Iniciar(TextReader entrada, TextWriter salida)
+    {
+        try
+        {
+            var lector = new EntradaConsola(entrada, salida);
+            var servidor = new Uri(lector.Url("http://localhost:5000"));
+            string credencial = lector.Secreto("Credencial de catálogo", permiteVacio: false);
+            using var cliente = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
+            {
+                BaseAddress = servidor
+            };
+            return await Ejecutar(cliente, credencial, entrada, salida);
+        }
+        catch (EndOfStreamException)
+        {
+            salida.WriteLine("La entrada terminó antes de completar la conexión.");
+            return 1;
+        }
+        catch (IOException)
+        {
+            return 1;
+        }
+    }
+
     internal static async Task<int> Ejecutar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida)
     {
-        string PedirTexto(string etiqueta)
-        {
-            salida.WriteLine(etiqueta);
-            return entrada.ReadLine() ?? throw new EndOfStreamException();
-        }
+        var lector = new EntradaConsola(entrada, salida);
+        string PedirTexto(string etiqueta) => lector.Texto(etiqueta);
 
         int PedirEntero(string etiqueta, int minimo, int maximo)
         {
@@ -57,23 +57,44 @@ internal static class ConsolaAlta
         {
             while (true)
             {
-                string nombre = PedirTexto("Nombre");
+                string nombre = lector.Validar("Nombre", v => !string.IsNullOrWhiteSpace(v), "El nombre no puede estar vacío.");
                 string descripcion = PedirTexto("Descripción (opcional)");
                 var lineas = new string[PedirEntero("Cantidad de líneas de arte ASCII", 0, 25)];
                 for (int i = 0; i < lineas.Length; i++)
-                    lineas[i] = PedirTexto($"Línea {i + 1} de arte ASCII");
+                {
+                    while (true)
+                    {
+                        string linea = PedirTexto($"Línea {i + 1} de arte ASCII");
+                        if (linea.Length <= 120 && !linea.Contains('\t'))
+                        {
+                            lineas[i] = linea;
+                            break;
+                        }
+                        salida.WriteLine("Usá hasta 120 caracteres sin tabulaciones.");
+                    }
+                }
+
+                string[] etiquetas = ["Fuerza", "Velocidad", "Resistencia", "Inteligencia", "Energía", "Habilidad"];
+                int[] atributos;
+                while (true)
+                {
+                    atributos = etiquetas.Select(e => PedirEntero(e, 250, 750)).ToArray();
+                    if (atributos.Sum() == 3000 && atributos.Max() >= 650 && atributos.Min() <= 350)
+                        break;
+                    salida.WriteLine("Los seis atributos deben sumar 3000, incluir uno de al menos 650 y uno de hasta 350. Volvé a ingresar los seis valores.");
+                }
 
                 var datos = new
                 {
                     nombre,
                     descripcion,
                     ascii = string.Join('\n', lineas),
-                    fuerza = PedirEntero("Fuerza", 250, 750),
-                    velocidad = PedirEntero("Velocidad", 250, 750),
-                    resistencia = PedirEntero("Resistencia", 250, 750),
-                    inteligencia = PedirEntero("Inteligencia", 250, 750),
-                    energia = PedirEntero("Energía", 250, 750),
-                    habilidad = PedirEntero("Habilidad", 250, 750)
+                    fuerza = atributos[0],
+                    velocidad = atributos[1],
+                    resistencia = atributos[2],
+                    inteligencia = atributos[3],
+                    energia = atributos[4],
+                    habilidad = atributos[5]
                 };
 
                 using var solicitud = new HttpRequestMessage(HttpMethod.Post, "/api/v1/personajes");

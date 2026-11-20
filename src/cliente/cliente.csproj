@@ -15,4 +15,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="../comun/EntradaConsola.cs" Link="EntradaConsola.cs" />
+  </ItemGroup>
+
 </Project>
