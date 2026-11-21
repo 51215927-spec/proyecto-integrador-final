@@ -1,14 +1,14 @@
 # Plan de continuidad
 
-La etapa de análisis y diseño (TI) ya fue entregada. La solución cuenta con el dominio del juego, el servidor REST con persistencia en SQLite y una demostración local del cliente. El próximo objetivo es jugar una partida desde dos computadoras en la misma red. Los cambios de código corresponden a Taller de Programación y quedan sujetos a la autorización para iniciar esa etapa. [Arquitectura actual](arquitectura.md)
+La etapa de análisis y diseño (TI) ya fue entregada. La solución cuenta con el dominio del juego, el servidor REST con persistencia en SQLite y el cliente REST de consola. El próximo objetivo es jugar una partida desde dos computadoras en la misma red. La implementación del cliente se realizó como parte de Taller de Programación. [Arquitectura actual](arquitectura.md)
 
 ## Entrada interactiva
 
-El servidor, el cliente y la herramienta de carga ya piden sus datos por consola durante la ejecución. El servidor solicita la configuración antes del host y cada identificador al elegir una acción. El cliente permite seleccionar la demostración y sus cierres. La carga solicita URL, credencial y personaje, con corrección de datos inválidos. La evidencia y el estado de revisión están en [la evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003). [Instalación y uso](instalacion-y-uso.md#entrada-de-datos-en-ejecución)
+El servidor, el cliente y la herramienta de carga ya piden sus datos por consola durante la ejecución. El servidor solicita la configuración antes del host y cada identificador al elegir una acción. El cliente solicita la conexión y la identidad de la plaza. La carga solicita URL, credencial y personaje, con corrección de datos inválidos. La evidencia y el estado de revisión están en [la evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003). [Instalación y uso](instalacion-y-uso.md#entrada-de-datos-en-ejecución)
 
 ## Cliente conectado al servidor
 
-Al elegir jugar en red, el cliente solicitará la URL del servidor, el identificador de la partida, la credencial de la plaza y el nombre del jugador. Después de incorporarse, renovará la presencia y mostrará la mano propia, el turno y el marcador según la presentación del servidor. Las elecciones se enviarán con la solicitud y la revisión vigentes. Si se pierde una respuesta, el cliente consultará el recibo de la operación antes de decidir si corresponde reenviarla. También deberá recuperar la vista tras una reconexión y mostrar el motivo de cierre de la partida. [Contrato HTTP](protocolo-de-partida.md#contrato-http)
+El cliente ofrece juego en red y solicita URL, UUID de partida, credencial y nombre. Renueva presencia, muestra la presentación del servidor, envía elecciones con operación estable y recupera recibos ante respuestas inciertas. La reconexión es automática; Esc permite salir sin abandonar o confirmar abandono. Los resultados se leen con Enter en pantallas separadas. La implementación y las comprobaciones locales se describen en [las pruebas del cliente REST](plan-de-pruebas.md#cliente-rest-spec-001). La verificación entre dos equipos permanece pendiente. [Contrato HTTP](protocolo-de-partida.md#contrato-http)
 
 ## Verificación y entrega
 

@@ -65,7 +65,17 @@ Las firmas muestran la visibilidad, los tipos y nombres de parámetros, los valo
 
 **`internal static class Program`**
 
-- `private static int Main()`. Solicita la variante de demostración por consola, permite corregir una selección inválida y ejecuta el recorrido seleccionado. Devuelve 0 al finalizar o al terminar la entrada, y 1 ante un error de E/S.
+- `private static Task<int> Main()`. Solicita la configuración del cliente REST y ejecuta el coordinador con una sesión por proceso. Permite corregir identidad o conexión tras un rechazo. Ctrl+C y EOF cierran sin abandonar. Devuelve 0 al finalizar o salir localmente y 1 ante un error de E/S.
+
+### Componentes del cliente REST
+
+- `ConfiguracionCliente`: lectura cancelable, validación por campo, credencial oculta y normalización de URL con prefijo.
+- `ContratosPartida`: mensajes JSON de sesión, presentación, solicitud, elección y recibo; no referencia entidades del servidor.
+- `ClientePartidaHttp`: métodos HTTP, cabeceras de plaza/sesión, timeout y clasificación de errores sin mostrar cuerpos ni credenciales.
+- `EstadoCliente`: valida presentaciones completas y mantiene la línea de base del historial y la cola de resultados nuevos.
+- `SesionPartidaCliente`: coordina red, entrada, operación pendiente, reincorporación, lectura de resultados y salida. Acepta un TimeProvider para verificar intervalos.
+- `EntradaCliente`: eventos de teclas o líneas, cancelación y descarte de entrada interactiva sobrante.
+- `InterfazConsola.Red`: presentación de estados remotos y menú sin lecturas bloqueantes; reconstruye los marcadores de cada resultado hasta ese combate.
 
 ### [src/cliente/VistasConsola.cs](../src/cliente/VistasConsola.cs)
 
@@ -562,4 +572,4 @@ Las pruebas verifican ayuda sin argumentos, corrección del UUID, elección de p
 
 ### Pruebas de entrada interactiva
 
-[ConfiguracionServidorTests](../test/proyecto-integrador-final-tests/ConfiguracionServidorTests.cs) cubre valores iniciales, configuración personalizada, corrección y fin de entrada. [EntradaProcesosContratoTests](../test/proyecto-integrador-final-tests/EntradaProcesosContratoTests.cs) arranca los tres ejecutables sin argumentos de aplicación y verifica EOF, cierre del host, corrección de una base inválida y alta real por HTTP. Las ampliaciones de `ConsolaAltaTests` y `ClienteConsolaContratoTests` verifican el orden de las preguntas, las validaciones y las cinco variantes de demostración. [Evidencia por criterio](plan-de-pruebas.md#evidencia-del-spec-003)
+[ConfiguracionServidorTests](../test/proyecto-integrador-final-tests/ConfiguracionServidorTests.cs) cubre valores iniciales, configuración personalizada, corrección y fin de entrada. [EntradaProcesosContratoTests](../test/proyecto-integrador-final-tests/EntradaProcesosContratoTests.cs) arranca los tres ejecutables sin argumentos de aplicación y verifica EOF, cierre del host, corrección de una base inválida y alta real por HTTP. Las ampliaciones de `ConsolaAltaTests` verifican el orden de las preguntas y las validaciones. `ClienteConsolaContratoTests` conserva las variantes de demostración mediante el auxiliar interno; el ejecutable REST se verifica con los contratos de arranque y proceso del spec 001. [Evidencia por criterio](plan-de-pruebas.md#evidencia-del-spec-003)

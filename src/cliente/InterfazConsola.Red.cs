@@ -5,12 +5,12 @@ internal sealed partial class InterfazConsola
     internal void MostrarRed(string local, PresentacionCliente? vista, bool actual, string aviso,
         ResultadoCliente? resultado, int menu, bool confirma, int foco, bool atributo, bool pendiente, bool abandono)
     {
-        // Los nombres ausentes usan el rol, sin confundir comunicación perdida con pausa confirmada.
+        // Se resuelven nombres por rol y se distingue pausa confirmada de pérdida de comunicación.
         string Nombre(string rol) => vista?.Nombres.GetValueOrDefault(rol) ?? rol;
         string estado = vista?.Fase == "finalizada" ? "Final confirmado" : !actual ? "Sin comunicación · Estado actual sin confirmar"
             : vista?.Pausada == true ? "Pausa confirmada" : "En línea";
         Encabezado(local, estado, aviso);
-        // El menú tiene prioridad visual sobre el turno y los resultados pendientes de lectura.
+        // El menú conserva el estado en el encabezado y presenta No como primera opción de abandono.
         if (menu >= 0)
         {
             Paneles(PanelInfo(confirma ? "¿Abandonar partida?" : "Menú",
@@ -21,13 +21,13 @@ internal sealed partial class InterfazConsola
         if (vista is null) { Pie("Esc: menú · Ctrl+C: salir sin abandonar"); return; }
         if (resultado is { } r)
         {
-            // El marcador histórico se calcula hasta el combate que el usuario está leyendo.
+            // El marcador histórico se corta en este combate para no mezclarlo con rondas posteriores.
             var anteriores = vista.Resultados.Where(x => x.NumeroRonda < r.NumeroRonda ||
                 x.NumeroRonda == r.NumeroRonda && x.NumeroCombate <= r.NumeroCombate).ToArray();
             int Combates(string rol) => anteriores.Count(x => x.NumeroRonda == r.NumeroRonda && x.GanadorCombate == rol);
             int Rondas(string rol) => anteriores.Count(x => x.GanadorRonda == rol);
             Escribir($"Ronda {r.NumeroRonda} · Combate {r.NumeroCombate}");
-            // Las dos cartas se muestran juntas únicamente en el resultado confirmado.
+            // Se muestran los ganadores publicados por el servidor, sin volver a comparar atributos.
             MostrarCombate(new(r.Atributo,
                 new(Nombre("J1"), r.Cartas["J1"].Nombre, r.Puntajes["J1"]),
                 new(Nombre("J2"), r.Cartas["J2"].Nombre, r.Puntajes["J2"]),
@@ -36,9 +36,10 @@ internal sealed partial class InterfazConsola
             Escribir($"Rondas · {Nombre("J1")} {Rondas("J1")} / {Nombre("J2")} {Rondas("J2")}");
             Pie("Enter para continuar · Esc: menú"); return;
         }
+        // Al agotar la lectura se muestra el estado vigente, que puede estar en una ronda posterior.
         Escribir($"{Nombre("J1")} (J1) / {Nombre("J2")} (J2) · Tu plaza: {vista.RolPropio}");
         Escribir($"Rondas · {Nombre("J1")} {vista.Marcador["J1"]} / {Nombre("J2")} {vista.Marcador["J2"]}");
-        // El motivo final distingue victoria, abandono y cancelación del operador.
+        // Abandono y cancelación tienen mensajes propios y no se presentan como victorias de juego.
         if (vista.Fase == "finalizada")
         {
             Escribir(vista.MotivoFin switch
@@ -49,7 +50,7 @@ internal sealed partial class InterfazConsola
             });
             Pie("Enter para salir"); return;
         }
-        // La espera inicial no necesita número de ronda ni de combate.
+        // La espera inicial solo indica lo conocido: el inicio depende del operador.
         if (vista.Fase == "esperandoInicio") Escribir("Esperando inicio a cargo del operador.");
         else
         {
@@ -57,7 +58,7 @@ internal sealed partial class InterfazConsola
             var combates = vista.Resultados.Where(r => r.NumeroRonda == vista.NumeroRonda).ToArray();
             Escribir($"Combates · {Nombre("J1")} {combates.Count(r => r.GanadorCombate == "J1")} / {Nombre("J2")} {combates.Count(r => r.GanadorCombate == "J2")}");
         }
-        // Solo una vista actual, sin pausa ni envío pendiente, permite elegir.
+        // Una vista anterior o una operación sin resolver nunca habilitan otra elección.
         bool habilitada = actual && !vista.Pausada && !pendiente && !abandono && vista.Solicitud is not null;
         if (habilitada && vista.Solicitud is { } s)
         {
@@ -65,13 +66,14 @@ internal sealed partial class InterfazConsola
             else
             {
                 Escribir(s.Tipo == "carta" ? "Te toca responder" : "Tu turno: carta y atributo");
+                // El foco recorre exclusivamente las cartas incluidas en las opciones remotas.
                 MostrarMano(s.IdsPersonajePermitidos.Select(id => vista.Mano.Single(c => c.IdPersonaje == id)).ToArray(), foco);
             }
             Pie(Controles + "\nEsc: menú");
         }
         else
         {
-            // Durante la espera se mantiene visible la mano, sin habilitar otra elección.
+            // Durante la espera se conserva la mano propia y se explica si falta confirmar una elección.
             MostrarMano(vista.Mano);
             if (pendiente) Escribir("Confirmación pendiente · Comprobando la elección antes de permitir otra.");
             else if (actual && !vista.Pausada && vista.Fase != "esperandoInicio") Escribir("Esperando solicitud del servidor.");
