@@ -87,13 +87,15 @@ public sealed class SesionClienteTests
     {
         await using var f = new Escenario();
         await f.Esperar(() => f.Consultas > 0);
-        f.Tecla("esc"); f.Tecla("s"); f.Tecla("s"); f.Tecla("");
+        await f.AbrirAbandono();
         await f.Esperar(() => f.Texto.Contains("¿Abandonar partida?"));
         Assert.Equal(0, f.Abandonos);
         f.Tecla(""); // No por defecto
         await Task.Delay(80);
         Assert.Equal(0, f.Abandonos);
-        f.Tecla("esc"); f.Tecla("s"); f.Tecla("s"); f.Tecla(""); f.Tecla("s"); f.Tecla("");
+        await f.AbrirAbandono();
+        await f.TeclaConPantalla("s");
+        f.Tecla("");
         await f.Esperar(() => f.Abandonos == 1);
     }
 
@@ -201,7 +203,9 @@ public sealed class SesionClienteTests
                 throw new HttpRequestException();
             return Task.FromResult<HttpResponseMessage?>(null);
         };
-        f.Tecla("esc"); f.Tecla("s"); f.Tecla("s"); f.Tecla(""); f.Tecla("s"); f.Tecla("");
+        await f.AbrirAbandono();
+        await f.TeclaConPantalla("s");
+        f.Tecla("");
         await f.Esperar(() => intentos == 1);
         Assert.Equal(0, f.Abandonos);
         f.Reloj.Avanzar(TimeSpan.FromSeconds(1));
@@ -228,7 +232,9 @@ public sealed class SesionClienteTests
         };
         f.Tecla(""); f.Tecla(""); f.Tecla(""); f.Tecla("");
         await f.Esperar(() => original is not null);
-        f.Tecla("esc"); f.Tecla("s"); f.Tecla("s"); f.Tecla(""); f.Tecla("s"); f.Tecla("");
+        await f.AbrirAbandono();
+        await f.TeclaConPantalla("s");
+        f.Tecla("");
         f.Reloj.Avanzar(TimeSpan.FromSeconds(5));
         await f.Esperar(() => f.Presencias > 0);
         Assert.Equal(0, f.Abandonos);
@@ -423,6 +429,22 @@ public sealed class SesionClienteTests
             Reloj.Avanzar(TimeSpan.FromSeconds(1));
         }
         internal void Tecla(string linea) => Entrada.Agregar(linea);
+        // Se espera el dibujo antes de enviar otra tecla para no adelantarse a la interfaz.
+        internal async Task TeclaConPantalla(string linea)
+        {
+            int longitud = Texto.Length;
+            Tecla(linea);
+            await Esperar(() => Texto.Length > longitud);
+        }
+        // La secuencia abre el menú y llega a la confirmación, todavía sobre la opción No.
+        internal async Task AbrirAbandono()
+        {
+            await TeclaConPantalla("esc");
+            await TeclaConPantalla("s");
+            await TeclaConPantalla("s");
+            await TeclaConPantalla("");
+        }
+
         internal async Task Esperar(Func<bool> condicion)
         {
             for (int i = 0; i < 150; i++)
