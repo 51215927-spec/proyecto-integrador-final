@@ -4,7 +4,7 @@ using Spectre.Console.Rendering;
 
 namespace Proyecto_Integrador_Final.Cliente;
 
-internal sealed class InterfazConsola
+internal sealed partial class InterfazConsola
 {
     private static readonly string[] Atributos =
         ["Fuerza", "Velocidad", "Resistencia", "Inteligencia", "Energía", "Habilidad"];

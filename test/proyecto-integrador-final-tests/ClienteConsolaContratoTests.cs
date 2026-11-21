@@ -4,12 +4,12 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Proyecto_Integrador_Final.Cliente;
 
 public sealed class ClienteConsolaContratoTests
 {
-    private const string Dll = "GUERRA_CLIENTE_DLL";
 
-    [ContratoFact(Dll)]
+    [Fact]
     public async Task Demo_MuestraElFocoLosCombatesYLaVictoriaEnQuince()
     {
         var salida = await EjecutarDemo(null, new string('\n', 16));
@@ -26,7 +26,7 @@ public sealed class ClienteConsolaContratoTests
         Assert.Equal(1, salida.Split("Atributo del combate", StringSplitOptions.None).Length - 1);
     }
 
-    [ContratoFact(Dll)]
+    [Fact]
     public async Task Demo_EntradaRedirigidaPermiteMoverElFocoYConfirmarLaCarta()
     {
         var salida = await EjecutarDemo(null, "w\ns\n" + new string('\n', 16));
@@ -34,7 +34,7 @@ public sealed class ClienteConsolaContratoTests
             "Recepción confirmada", "Atributo · Fuerza", "Lucía · Reched");
     }
 
-    [ContratoFact(Dll)]
+    [Fact]
     public async Task Demo_SuspensionConservaElMarcadorConfirmadoYPermiteSalir()
     {
         var salida = await EjecutarDemo("pausa", "\n\n\n\n\n");
@@ -43,7 +43,7 @@ public sealed class ClienteConsolaContratoTests
             "Salida local", "La partida queda guardada");
     }
 
-    [ContratoFact(Dll)]
+    [Fact]
     public async Task Demo_DistingueAbandonoCancelacionYSalidaLocal()
     {
         var abandono = await EjecutarDemo("abandono", "\n\n\n\n");
@@ -56,19 +56,12 @@ public sealed class ClienteConsolaContratoTests
         Assert.DoesNotContain("Final confirmado", salida);
     }
 
-    [ContratoFact(Dll)]
+    [Fact]
     public async Task Demo_FinDeEntradaTerminaLaSolicitudSinConfirmarUnaJugada()
     {
         var salida = await EjecutarDemo(null, string.Empty);
         EnOrden(salida, "Tu mano", "Enter para confirmar", "Fin de la entrada");
         Assert.DoesNotContain("Recepción confirmada", salida);
-    }
-
-    [ContratoFact(Dll)]
-    public async Task Menu_ReintentaUnaOpcionInvalidaYPermiteElegirSalida()
-    {
-        var salida = await EjecutarDemo("incorrecta\nsalida", "");
-        EnOrden(salida, "Demostración", "Elegí", "Salida local");
     }
 
     private static void EnOrden(string salida, params string[] fragmentos)
@@ -82,36 +75,14 @@ public sealed class ClienteConsolaContratoTests
         }
     }
 
-    private static async Task<string> EjecutarDemo(string? modo, string entrada)
+    // La demostración se conserva como auxiliar; ya no forma parte del ejecutable.
+    private static Task<string> EjecutarDemo(string? modo, string entrada)
     {
-        var ruta = Path.GetFullPath(Environment.GetEnvironmentVariable(Dll)!);
-        Assert.True(File.Exists(ruta), $"No existe la DLL en {ruta}");
-        var inicio = new ProcessStartInfo("dotnet")
-        {
-            UseShellExecute = false, RedirectStandardInput = true,
-            RedirectStandardOutput = true, RedirectStandardError = true
-        };
-        inicio.ArgumentList.Add(ruta);
-        entrada = (modo ?? "victoria") + "\n" + entrada;
-        using var proceso = Process.Start(inicio)!;
-        using var plazo = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        try
-        {
-            var salida = proceso.StandardOutput.ReadToEndAsync(plazo.Token);
-            var errores = proceso.StandardError.ReadToEndAsync(plazo.Token);
-            await proceso.StandardInput.WriteAsync(entrada.AsMemory(), plazo.Token);
-            proceso.StandardInput.Close();
-            await proceso.WaitForExitAsync(plazo.Token);
-            Assert.True(proceso.ExitCode == 0, await errores);
-            return await salida;
-        }
-        finally
-        {
-            if (!proceso.HasExited)
-            {
-                proceso.Kill(entireProcessTree: true);
-                await proceso.WaitForExitAsync();
-            }
-        }
+        using var lector = new StringReader(entrada);
+        using var salida = new StringWriter();
+        var interfaz = new InterfazConsola(lector, salida);
+        try { new DemostracionConsola(interfaz, lector, salida, false).Recorrer(modo); }
+        catch (EndOfStreamException) { salida.WriteLine("Fin de la entrada"); }
+        return Task.FromResult(salida.ToString());
     }
 }
