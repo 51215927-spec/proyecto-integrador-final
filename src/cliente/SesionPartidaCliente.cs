@@ -10,12 +10,14 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
     private readonly EstadoCliente estado = new(configuracion.Partida);
     private bool incorporado, terminal, protocolo, corregir, abandono, salidaFinal;
     private string aviso = "Conectando…";
+    // La selección y la huella visual son locales; el servidor conserva el estado de juego.
     private string? huella, seleccion;
     private int foco, carta, menu = -1;
     private bool atributo, confirmarAbandono;
     private EleccionCliente? pendiente;
     private bool reciboAusente;
     private ResultadoCliente? leyendo;
+    // Consulta, presencia y escritura tienen plazos y tareas independientes.
     private DateTimeOffset proximaVista, proximaPresencia, proximaEscritura;
     private int fallosVista, fallosPresencia, fallosEscritura;
     private Task<PresentacionCliente>? consulta;
@@ -26,10 +28,12 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
     private int generacion, generacionVista, generacionPresencia;
 
     private DateTimeOffset Ahora => tiempo.GetUtcNow();
+    // Los reintentos esperan uno, dos y luego cinco segundos para limitar las solicitudes.
     private TimeSpan Espera(ref int fallos) => TimeSpan.FromSeconds(++fallos switch { 1 => 1, 2 => 2, _ => 5 });
 
     internal async Task<bool> Ejecutar(EntradaCliente entrada, CancellationToken ct)
     {
+        // El cierre de sesión cancela también las lecturas y solicitudes que siguen en curso.
         using var cierre = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var token = cierre.Token;
         Task<(ConsoleKey? Tecla, int Version)>? tecla = null;
@@ -38,6 +42,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
             Dibujar();
             while (!ct.IsCancellationRequested && !corregir)
             {
+                // Se consumen las respuestas en este bucle antes de programar nuevas operaciones.
                 if (escritura?.IsCompleted == true) await CompletarEscritura();
                 if (consulta?.IsCompleted == true) await CompletarConsulta();
                 if (presencia?.IsCompleted == true) await CompletarPresencia();
@@ -47,10 +52,12 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
                     {
                         if (!protocolo && consulta is null && Ahora >= proximaVista)
                         {
+                            // La generación permite descartar respuestas iniciadas antes de una reincorporación.
                             generacionVista = generacion;
                             consulta = http.Presentacion(token);
                             proximaVista = Ahora.AddSeconds(1);
                         }
+                        // La presencia continúa mientras se lee o navega, salvo errores que la bloqueen.
                         if (!corregible && !presenciaBloqueada && presencia is null && Ahora >= proximaPresencia)
                         {
                             generacionPresencia = generacion;
@@ -58,14 +65,17 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
                             proximaPresencia = Ahora.AddSeconds(5);
                         }
                     }
+                    // Solo hay una escritura activa: incorporación, recibo, elección o abandono.
                     if (!protocolo && escritura is null && Ahora >= proximaEscritura)
                     {
                         if (!incorporado) IniciarEscritura("sesion", async () => await http.Incorporar(token));
                         else if (pendiente is not null)
                         {
+                            // Una respuesta incierta se resuelve consultando el recibo antes de reenviar.
                             if (!reciboAusente) IniciarEscritura("recibo", async () => await http.Recibo(pendiente.IdOperacion, token));
                             else if (estado.Actual && estado.Vista is { } v)
                             {
+                                // La pausa conserva la operación; una solicitud reemplazada impide reenviarla.
                                 if (v.Pausada) { /* La operación se conserva hasta reanudación. */ }
                                 else if (!Vigente(pendiente, v)) { pendiente = null; reciboAusente = false; aviso = "La solicitud cambió; no se reenvió la elección."; Dibujar(); }
                                 else IniciarEscritura("eleccion", async () => await http.Elegir(pendiente, token));
@@ -75,12 +85,14 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
                             IniciarEscritura("abandono", async () => { await http.Abandonar(token); return null; });
                     }
                 }
+                // La entrada se lee sin detener las consultas ni la renovación de presencia.
                 tecla ??= LeerEvento(entrada, token);
                 if (tecla.IsCompleted)
                 {
                     var evento = await tecla;
                     tecla = null;
                     if (evento.Tecla is null) { aviso = "Fin de la entrada."; break; }
+                    // Una tecla leída para otra versión de pantalla no confirma la selección actual.
                     if (evento.Version == versionPantalla && Procesar(evento.Tecla.Value)) break;
                 }
                 if (descartarEntrada) { entrada.DescartarSobrante(); descartarEntrada = false; }
@@ -90,11 +102,13 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
         finally
         {
+            // Se esperan las tareas canceladas para no dejar operaciones sin observar.
             cierre.Cancel();
             var tareas = new Task?[] { consulta, presencia, escritura, tecla }.Where(t => t is not null).Cast<Task>();
             foreach (var tarea in tareas)
                 try { await tarea; } catch (Exception ex) when (ex is FalloCliente or OperationCanceledException or IOException) { }
         }
+        // Salir localmente informa la incertidumbre sin convertirla en abandono confirmado.
         if (!corregir && !salidaFinal)
             interfaz.MostrarInterrupcion(configuracion.Nombre, "Salida local", abandono
                 ? "Abandono sin confirmar. La plaza puede seguir ocupada hasta quince segundos."
@@ -103,6 +117,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
     }
 
     private bool descartarEntrada;
+    // La clase de escritura determina cómo interpretar la respuesta al completarse.
     private void IniciarEscritura(string clase, Func<Task<object?>> iniciar)
     {
         claseEscritura = clase;
@@ -116,11 +131,13 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         escritura = null;
         try
         {
+            // Una respuesta válida restablece el intervalo de reintento de escritura.
             object? respuesta = await tarea;
             fallosEscritura = 0;
             proximaEscritura = Ahora;
             switch (claseEscritura)
             {
+                // La incorporación debe confirmar el UUID solicitado y uno de los dos roles válidos.
                 case "sesion":
                     var s = (SesionConfirmada)respuesta!;
                     if (s.IdSesion != http.IdSesion || s.Rol is not ("J1" or "J2")) throw new FalloCliente("protocoloIncompatible");
@@ -131,6 +148,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
                     break;
                 case "eleccion":
                 case "recibo":
+                    // El recibo debe corresponder a la operación pendiente y confirmar una revisión posterior.
                     var r = (ReciboCliente)respuesta!;
                     if (pendiente is null || r.IdOperacion != pendiente.IdOperacion || r.IdSolicitud != pendiente.IdSolicitud || r.RevisionConfirmada <= pendiente.RevisionEsperada)
                         throw new FalloCliente("protocoloIncompatible");
@@ -141,6 +159,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
                     proximaVista = Ahora;
                     aviso = "Recepción confirmada. Esperando presentación del servidor.";
                     break;
+                // Confirmar el abandono exige después consultar la vista final del servidor.
                 case "abandono":
                     revisionMinima = Math.Max(revisionMinima, (estado.Vista?.Revision ?? 0) + (terminal ? 0 : 1));
                     abandono = false;
@@ -152,12 +171,14 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         }
         catch (FalloCliente error)
         {
+            // Un recibo ausente obliga a refrescar la vista antes de decidir si reenviar.
             if (claseEscritura == "recibo" && error.Codigo == "recursoNoEncontrado")
             {
                 reciboAusente = true;
                 estado.PerderComunicacion();
                 proximaVista = Ahora;
             }
+            // Un rechazo definitivo libera la selección; no se reintenta como si fuera un corte.
             else if (claseEscritura == "eleccion" && error.Codigo is "entradaInvalida" or "eleccionInvalida" or "revisionDesactualizada" or "solicitudNoVigente" or "operacionIncompatible")
             {
                 pendiente = null;
@@ -168,6 +189,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
             }
             else
             {
+                // Tras un fallo incierto se vuelve a consultar el recibo de la misma operación.
                 if (claseEscritura == "eleccion") reciboAusente = false;
                 Tratar(error);
                 proximaEscritura = Ahora + Espera(ref fallosEscritura);
@@ -182,18 +204,21 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         consulta = null;
         try
         {
+            // Las respuestas antiguas no pueden hacer retroceder el estado ni la revisión confirmada.
             var vista = await tarea;
             if (generacionVista != generacion || terminal) return;
             if (vista.Revision < revisionMinima || vista.Revision < (estado.Vista?.Revision ?? 0))
             { proximaVista = Ahora; return; }
             estado.Aplicar(vista);
             fallosVista = 0;
+            // Un cambio de opciones invalida el foco y las teclas asociadas a la pantalla anterior.
             if (seleccion != ClaveSeleccion(vista))
             {
                 seleccion = ClaveSeleccion(vista); foco = 0; atributo = false; descartarEntrada = true; versionPantalla++;
             }
             if (leyendo is null && estado.Resultados.Count > 0)
             { leyendo = estado.Resultados.Dequeue(); descartarEntrada = true; versionPantalla++; }
+            // Solo la presentación del servidor vuelve terminal el estado de la partida.
             if (vista.Fase == "finalizada")
             {
                 terminal = true;
@@ -212,6 +237,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         }
     }
 
+    // La presencia se procesa aparte para no depender de cuánto tarde una consulta.
     private async Task CompletarPresencia()
     {
         var tarea = presencia!;
@@ -221,29 +247,34 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         {
             if (generacionPresencia != generacion || terminal) return;
             Tratar(error);
+            // Un error permanente de presencia requiere intervención antes de volver a renovarla.
             if (!error.Transitorio && error.Codigo != "sesionVencida") presenciaBloqueada = true;
             proximaPresencia = Ahora + Espera(ref fallosPresencia);
             Dibujar();
         }
     }
 
+    // Perder comunicación conserva la vista anterior, pero deshabilita sus acciones.
     private void Tratar(FalloCliente error)
     {
         estado.PerderComunicacion();
         seleccion = null;
         atributo = false;
         aviso = error.Transitorio ? "Sin comunicación · Último estado confirmado. Reconectando…" : error.Codigo;
+        // Una sesión vencida se reincorpora automáticamente con la identidad del transporte.
         if (error.Codigo == "sesionVencida")
         {
             incorporado = false; generacion++; reciboAusente = false;
             aviso = "Sesión vencida. Reincorporando con la misma identidad…";
         }
+        // Los errores de identidad permiten corregir datos sin inventar el resultado de un envío.
         else if (error.Codigo is "entradaInvalida" or "credencialInvalida" or "sinPermiso" or "recursoNoEncontrado")
         {
             protocolo = true;
             aviso += " · Enter para corregir los datos o Esc para salir. Una elección anterior puede haberse aplicado; recuperar requiere sus datos originales.";
             corregible = true;
         }
+        // Un contrato incompatible requiere reintento explícito para no aplicar datos parciales.
         else if (error.Codigo == "protocoloIncompatible")
         {
             protocolo = true;
@@ -256,11 +287,13 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
     private bool corregible, presenciaBloqueada;
     private int versionPantalla;
 
+    // El evento lleva la versión de pantalla observada al terminar la lectura.
     private async Task<(ConsoleKey? Tecla, int Version)> LeerEvento(EntradaCliente entrada, CancellationToken ct)
     {
         var tecla = await entrada.Leer(ct);
         return (tecla, Volatile.Read(ref versionPantalla));
     }
+    // Reenviar exige la misma revisión, solicitud y opciones originalmente permitidas.
     private static bool Vigente(EleccionCliente e, PresentacionCliente v) =>
         v.Revision == e.RevisionEsperada && v.Solicitud is { } s && s.IdSolicitud == e.IdSolicitud &&
         s.IdsPersonajePermitidos.Contains(e.IdPersonaje) && (s.Tipo == "carta" ? e.Atributo is null : s.AtributosPermitidos.Contains(e.Atributo));
@@ -268,6 +301,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
 
     private bool Procesar(ConsoleKey tecla)
     {
+        // Esc abre o cierra el menú sin ejecutar por sí mismo una acción de red.
         if (tecla == ConsoleKey.Escape)
         {
             menu = menu < 0 ? 0 : -1;
@@ -275,6 +309,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
             Dibujar(true);
             return false;
         }
+        // Flechas y letras comparten navegación; el foco se limita a las opciones disponibles.
         int paso = tecla switch
         {
             ConsoleKey.UpArrow or ConsoleKey.LeftArrow or ConsoleKey.W or ConsoleKey.A or ConsoleKey.H or ConsoleKey.K => -1,
@@ -286,6 +321,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
             if (paso != 0) menu = Math.Clamp(menu + paso, 0, confirmarAbandono ? 1 : 2);
             if (tecla == ConsoleKey.Enter)
             {
+                // El abandono solo queda pendiente al elegir Sí; el menú empieza por No.
                 if (confirmarAbandono)
                 {
                     if (menu == 1 && !terminal) { abandono = true; aviso = "Abandono pendiente de confirmación del servidor."; }
@@ -298,12 +334,14 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
             Dibujar(true);
             return false;
         }
+        // Enter corrige la configuración o reinicia la conexión según el error detectado.
         if (tecla == ConsoleKey.Enter && protocolo)
         {
             if (corregible) { corregir = true; return false; }
             protocolo = false; presenciaBloqueada = false; incorporado = false; generacion++; reciboAusente = false; proximaEscritura = Ahora;
             Dibujar(true); return false;
         }
+        // Enter avanza la lectura local antes de permitir seleccionar una nueva carta.
         if (leyendo is not null)
         {
             if (tecla == ConsoleKey.Enter)
@@ -314,16 +352,19 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
             }
             return false;
         }
+        // Después del cierre solo se permite salir; no se programa otra elección.
         if (terminal)
         {
             salidaFinal = tecla == ConsoleKey.Enter;
             return salidaFinal;
         }
+        // No se aceptan jugadas mientras falta una vista actual o hay una operación incierta.
         if (!estado.Actual || pendiente is not null || abandono || escritura is not null)
         { if (tecla == ConsoleKey.Enter) Dibujar(true); return false; }
         var v = estado.Vista!;
         if (v.Pausada || v.Solicitud is not { } s)
         { if (tecla == ConsoleKey.Enter) Dibujar(true); return false; }
+        // El foco se reconstruye si cambió la solicitud desde la última selección.
         if (seleccion != ClaveSeleccion(v)) { seleccion = ClaveSeleccion(v); foco = 0; atributo = false; Dibujar(true); return false; }
         if (paso != 0)
         {
@@ -334,9 +375,11 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         {
             if (!atributo)
             {
+                // Elegir carta y atributo son pasos separados cuando la solicitud pide ambos.
                 carta = s.IdsPersonajePermitidos[foco];
                 if (s.Tipo == "cartaYAtributo") { atributo = true; foco = 0; Dibujar(true); return false; }
             }
+            // Se crea un UUID por elección; los reintentos conservan este mismo objeto.
             var e = new EleccionCliente(Guid.NewGuid(), s.IdSolicitud, v.Revision, carta,
                 atributo ? s.AtributosPermitidos[foco] : null);
             if (!Vigente(e, v)) return false;
@@ -350,6 +393,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
     private void Dibujar(bool forzar = false)
     {
         var v = estado.Vista;
+        // La huella evita redibujar sin cambios y permite forzar el dibujo con una tecla.
         string nueva = JsonSerializer.Serialize(new { v, estado.Actual, aviso, menu, confirmarAbandono, leyendo, foco, atributo, pendiente, terminal });
         if (!forzar && huella == nueva) return;
         huella = nueva;

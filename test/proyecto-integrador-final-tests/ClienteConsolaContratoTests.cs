@@ -12,6 +12,7 @@ public sealed class ClienteConsolaContratoTests
     [Fact]
     public async Task Demo_MuestraElFocoLosCombatesYLaVictoriaEnQuince()
     {
+        // La demostración conserva un recorrido determinista para verificar las pantallas.
         var salida = await EjecutarDemo(null, new string('\n', 16));
         EnOrden(salida, "Tu mano", "> Lysander", "Enter para confirmar", "Atributo del combate", "> Fuerza",
             "Recepción confirmada", "Ganador", "Te toca responder", "Ganador",
@@ -21,6 +22,7 @@ public sealed class ClienteConsolaContratoTests
         Assert.Contains("Inteligencia", salida);
         Assert.Contains("Energía", salida);
         Assert.Contains("Habilidad", salida);
+        // La salida final mantiene la meta de quince y no repite la selección de atributo.
         Assert.Contains("Mateo 15", salida);
         Assert.Equal(2, salida.Split("Atributo · ", StringSplitOptions.None).Length - 1);
         Assert.Equal(1, salida.Split("Atributo del combate", StringSplitOptions.None).Length - 1);
@@ -29,6 +31,7 @@ public sealed class ClienteConsolaContratoTests
     [Fact]
     public async Task Demo_EntradaRedirigidaPermiteMoverElFocoYConfirmarLaCarta()
     {
+        // Las letras de navegación cambian el foco antes de confirmar la carta.
         var salida = await EjecutarDemo(null, "w\ns\n" + new string('\n', 16));
         EnOrden(salida, "> Lysander", "> Reched", "Atributo del combate",
             "Recepción confirmada", "Atributo · Fuerza", "Lucía · Reched");
@@ -37,6 +40,7 @@ public sealed class ClienteConsolaContratoTests
     [Fact]
     public async Task Demo_SuspensionConservaElMarcadorConfirmadoYPermiteSalir()
     {
+        // La pérdida de comunicación conserva el último marcador y permite salida local.
         var salida = await EjecutarDemo("pausa", "\n\n\n\n\n");
         EnOrden(salida, "Sin comunicación", "Estado actual sin confirmar",
             "reintentar o salir", "Último marcador confirmado", "Lucía 14 / Mateo 14",
@@ -46,6 +50,7 @@ public sealed class ClienteConsolaContratoTests
     [Fact]
     public async Task Demo_DistingueAbandonoCancelacionYSalidaLocal()
     {
+        // Los tres cierres se comparan por separado para no convertir toda salida en victoria.
         var abandono = await EjecutarDemo("abandono", "\n\n\n\n");
         var cancelacion = await EjecutarDemo("cancelacion", "\n\n\n\n");
         var salida = await EjecutarDemo("salida", "\n\n\n\n");
@@ -59,6 +64,7 @@ public sealed class ClienteConsolaContratoTests
     [Fact]
     public async Task Demo_FinDeEntradaTerminaLaSolicitudSinConfirmarUnaJugada()
     {
+        // EOF debe terminar la lectura sin inventar una confirmación de jugada.
         var salida = await EjecutarDemo(null, string.Empty);
         EnOrden(salida, "Tu mano", "Enter para confirmar", "Fin de la entrada");
         Assert.DoesNotContain("Recepción confirmada", salida);
@@ -66,6 +72,7 @@ public sealed class ClienteConsolaContratoTests
 
     private static void EnOrden(string salida, params string[] fragmentos)
     {
+        // La búsqueda avanza para exigir orden visual, además de presencia de los textos.
         var inicio = 0;
         foreach (var fragmento in fragmentos)
         {
@@ -78,6 +85,7 @@ public sealed class ClienteConsolaContratoTests
     // La demostración se conserva como auxiliar; ya no forma parte del ejecutable.
     private static Task<string> EjecutarDemo(string? modo, string entrada)
     {
+        // La demostración se prueba directamente; el arranque REST se verifica en otros casos.
         using var lector = new StringReader(entrada);
         using var salida = new StringWriter();
         var interfaz = new InterfazConsola(lector, salida);

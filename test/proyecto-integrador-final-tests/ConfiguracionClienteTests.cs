@@ -4,6 +4,7 @@ namespace Proyecto_Integrador_Final.Tests;
 
 public sealed class ConfiguracionClienteTests
 {
+    // La tabla cubre URLs admitidas y componentes que no deben aceptar datos de conexión.
     [Theory]
     [InlineData("http://localhost:5000", true)]
     [InlineData("https://localhost/prefijo", true)]
@@ -17,10 +18,12 @@ public sealed class ConfiguracionClienteTests
     [Fact]
     public void RecortaExterioresPreservaNombreYRepiteSoloCampoInvalido()
     {
+        // La entrada combina errores recuperables, espacios exteriores y un nombre con espacios internos.
         Guid id = Guid.NewGuid();
         using var entrada = new StringReader($"invalida\n https://localhost/prefijo \ninvalido\n{id}\n  secreto  \n  Ana  Pérez  \n");
         using var salida = new StringWriter();
         var config = ConfiguracionCliente.Leer(entrada, salida);
+        // La normalización no altera el nombre registrado ni expone la credencial en diagnósticos.
         Assert.Equal("Ana  Pérez", config.Nombre);
         Assert.Equal("secreto", config.Credencial);
         Assert.Equal(new Uri("https://localhost/prefijo/"), config.Url);

@@ -15,6 +15,8 @@ public sealed class SesionClienteTests
         await f.Esperar(() => f.Texto.Contains("Esperando inicio"));
         f.Tecla("esc");
         await f.Esperar(() => f.Texto.Contains("Salir sin abandonar"));
+        // El reloj avanza mientras el menú sigue abierto para comprobar consulta y presencia.
+        // Leer un resultado tampoco debe detener las renovaciones ni enviar elecciones.
         int antes = f.Consultas;
         f.Reloj.Avanzar(TimeSpan.FromSeconds(5));
         await f.Esperar(() => f.Consultas > antes && f.Presencias > 0);
@@ -23,6 +25,7 @@ public sealed class SesionClienteTests
         await f.Esperar(() => f.Texto.Contains("Pausa confirmada"));
         f.Tecla("esc");
         await f.Esperar(() => f.Texto.Contains("Enter: volver"));
+        // Reanudar recupera la solicitud, pero exige una nueva confirmación local.
         f.Vista = f.Vista with { Pausada = false, Resultados = [EstadoClienteTests.Resultado(1, 1)] };
         f.Reloj.Avanzar(TimeSpan.FromSeconds(1));
         await f.Esperar(() => f.Texto.Contains("Enter para continuar"));
@@ -40,6 +43,7 @@ public sealed class SesionClienteTests
     {
         await using var f = new Escenario();
         f.PrepararTurno();
+        // Las variantes distinguen una elección aceptada de otra que nunca llegó al servidor.
         f.Perdida = aplicado ? "despues" : "antes";
         await f.Esperar(() => f.Texto.Contains("Tu turno"));
         f.Tecla("");
@@ -47,6 +51,7 @@ public sealed class SesionClienteTests
         f.Tecla("");
         await f.Esperar(() => f.Elecciones == 1);
         f.Reloj.Avanzar(TimeSpan.FromSeconds(1));
+        // El recibo se consulta antes de decidir si corresponde reenviar el cuerpo original.
         await f.Esperar(() => f.Recibos > 0);
         if (!aplicado)
         {
@@ -70,6 +75,7 @@ public sealed class SesionClienteTests
         f.Tecla("");
         await f.Esperar(() => f.Texto.Contains("Tu turno"));
         Assert.Equal(0, f.Elecciones);
+        // Al recibir el final confirmado deben detenerse consultas y presencia.
         f.Vista = f.Vista with { Fase = "finalizada", Solicitud = null, MotivoFin = "cancelacion" };
         f.Reloj.Avanzar(TimeSpan.FromSeconds(1));
         await f.Esperar(() => f.Texto.Contains("El operador canceló"));
@@ -87,10 +93,12 @@ public sealed class SesionClienteTests
     {
         await using var f = new Escenario();
         await f.Esperar(() => f.Consultas > 0);
+        // El menú comienza por No para exigir una confirmación explícita de abandono.
         await f.AbrirAbandono();
         await f.Esperar(() => f.Texto.Contains("¿Abandonar partida?"));
         Assert.Equal(0, f.Abandonos);
         f.Tecla(""); // No por defecto
+        // Se deja procesar la negativa antes de comprobar que no hubo solicitud de abandono.
         await Task.Delay(80);
         Assert.Equal(0, f.Abandonos);
         await f.AbrirAbandono();
@@ -104,6 +112,7 @@ public sealed class SesionClienteTests
     {
         await using var f = new Escenario();
         await f.Esperar(() => f.Consultas > 0);
+        // La respuesta retenida permite comprobar que una consulta lenta no genera otra en paralelo.
         var retrasada = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
         int iniciadas = 0;
         f.Interceptar = req =>
@@ -114,6 +123,7 @@ public sealed class SesionClienteTests
         };
         f.Reloj.Avanzar(TimeSpan.FromSeconds(1));
         await f.Esperar(() => iniciadas == 1);
+        // El avance del reloj debe renovar presencia incluso mientras la vista está retenida.
         f.Reloj.Avanzar(TimeSpan.FromSeconds(10));
         await f.Esperar(() => f.Presencias > 0);
         Assert.Equal(1, iniciadas);
@@ -128,6 +138,7 @@ public sealed class SesionClienteTests
         await using var f = new Escenario();
         await f.Esperar(() => f.Consultas > 0);
         string? sesion = null;
+        // El doble vence una única consulta para provocar la reincorporación automática.
         bool vencer = true;
         int incorporaciones = 0;
         f.Interceptar = async req =>
@@ -137,6 +148,7 @@ public sealed class SesionClienteTests
             if (req.RequestUri.AbsolutePath.EndsWith("/sesion"))
             {
                 incorporaciones++;
+                // El cuerpo de incorporación debe usar la misma sesión que su cabecera.
                 var cuerpo = JsonDocument.Parse(await req.Content!.ReadAsStringAsync());
                 sesion = cuerpo.RootElement.GetProperty("idSesion").GetString();
                 Assert.Equal(req.Headers.GetValues("X-Sesion").Single(), sesion);
@@ -146,6 +158,7 @@ public sealed class SesionClienteTests
         f.Reloj.Avanzar(TimeSpan.FromSeconds(1));
         await f.Esperar(() => incorporaciones > 0 && f.Consultas > 1);
         Assert.NotNull(sesion);
+        // Recuperar una sesión no obliga a reproducir combates históricos.
         Assert.DoesNotContain("Enter para continuar", f.Texto);
     }
 
@@ -154,6 +167,7 @@ public sealed class SesionClienteTests
     {
         await using var f = new Escenario();
         await f.Esperar(() => f.Consultas > 0);
+        // Una vista mal formada provoca un error de protocolo que requiere intervención.
         int fallos = 0;
         f.Interceptar = req => Task.FromResult<HttpResponseMessage?>(req.RequestUri!.AbsolutePath.EndsWith("/presentacion")
             ? (++fallos > 0 ? Escenario.Json(new { fase = "inventada" }) : null) : null);
@@ -161,6 +175,7 @@ public sealed class SesionClienteTests
         await f.Esperar(() => f.Texto.Contains("Respuesta incompatible"));
         f.Reloj.Avanzar(TimeSpan.FromSeconds(20));
         await Task.Delay(50);
+        // El cliente no repite automáticamente el contrato incompatible ni permite elegir.
         Assert.Equal(1, fallos);
         Assert.Equal(0, f.Elecciones);
         f.Interceptar = null;
@@ -176,6 +191,7 @@ public sealed class SesionClienteTests
         await f.Esperar(() => f.Texto.Contains("Tu turno"));
         f.Tecla("");
         await f.Esperar(() => f.Texto.Contains("Atributo del combate"));
+        // La pausa retira las opciones visibles y cancela la selección local de atributo.
         var solicitud = f.Vista.Solicitud;
         f.Vista = f.Vista with { Pausada = true, Solicitud = null };
         f.Reloj.Avanzar(TimeSpan.FromSeconds(1));
@@ -196,6 +212,7 @@ public sealed class SesionClienteTests
     {
         await using var f = new Escenario();
         await f.Esperar(() => f.Consultas > 0);
+        // El primer abandono falla antes de aplicar cambios para comprobar la recuperación.
         int intentos = 0;
         f.Interceptar = req =>
         {
@@ -206,6 +223,7 @@ public sealed class SesionClienteTests
         await f.AbrirAbandono();
         await f.TeclaConPantalla("s");
         f.Tecla("");
+        // El cierre solo se muestra después de que el servidor confirme el abandono.
         await f.Esperar(() => intentos == 1);
         Assert.Equal(0, f.Abandonos);
         f.Reloj.Avanzar(TimeSpan.FromSeconds(1));
@@ -213,6 +231,7 @@ public sealed class SesionClienteTests
         await f.Esperar(() => f.Texto.Contains("Partida finalizada por abandono"));
     }
 
+    // El canal simula entrada de usuario sin bloquear el bucle de consultas.
     internal sealed class Lineas : TextReader
     {
         private readonly Channel<string?> canal = Channel.CreateUnbounded<string?>();
@@ -222,6 +241,7 @@ public sealed class SesionClienteTests
 
     internal sealed class Escenario : IAsyncDisposable
     {
+        // El escenario controla tiempo, estado remoto y contadores de las solicitudes.
         internal readonly RelojCliente Reloj = new();
         internal PresentacionCliente Vista;
         internal readonly Lineas Entrada = new();
@@ -229,6 +249,7 @@ public sealed class SesionClienteTests
         internal string? Perdida;
         internal Func<HttpRequestMessage, Task<HttpResponseMessage?>>? Interceptar;
         internal readonly List<string> Cuerpos = [];
+        // El doble conserva el recibo para responder consultas de una elección incierta.
         private ReciboCliente? recibo;
         private readonly CancellationTokenSource cierre = new();
         private readonly StringWriter salida = new();
@@ -237,11 +258,13 @@ public sealed class SesionClienteTests
         internal string Texto => salida.ToString();
         internal Escenario()
         {
+            // La sesión de prueba usa transporte interceptado y datos sin acceso a una red externa.
             var config = new ConfiguracionCliente(new Uri("http://localhost/"), Guid.NewGuid(), "secreto", "Ana");
             Guid sesion = Guid.NewGuid();
             Vista = EstadoClienteTests.Vista(config.Partida);
             http = new(config, sesion, new TransporteClienteTests.Handler(async req =>
             {
+                // Cada caso puede interceptar una ruta y dejar pasar las demás al comportamiento base.
                 if (Interceptar is not null && await Interceptar(req) is { } respuesta) return respuesta;
                 string ruta = req.RequestUri!.AbsolutePath;
                 if (ruta.EndsWith("/sesion")) return Json(new SesionConfirmada("J1", sesion, DateTimeOffset.UtcNow.AddSeconds(15)));
@@ -249,21 +272,25 @@ public sealed class SesionClienteTests
                 if (ruta.EndsWith("/presentacion")) { Interlocked.Increment(ref Consultas); return Json(Vista); }
                 if (ruta.EndsWith("/elecciones"))
                 {
+                    // Se guardan los cuerpos para verificar que un reintento no cambia la operación.
                     string cuerpo = await req.Content!.ReadAsStringAsync();
                     Cuerpos.Add(cuerpo);
                     Interlocked.Increment(ref Elecciones);
                     var e = JsonSerializer.Deserialize<EleccionCliente>(cuerpo, new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
                     if (Perdida == "antes") { Perdida = null; throw new HttpRequestException(); }
+                    // La variante posterior al envío confirma estado y recibo antes de perder la respuesta.
                     recibo = new(e.IdOperacion, e.IdSolicitud, e.RevisionEsperada + 1);
                     Vista = Vista with { Revision = e.RevisionEsperada + 1, Solicitud = null };
                     if (Perdida == "despues") { Perdida = null; throw new HttpRequestException(); }
                     return Json(recibo);
                 }
+                // La ausencia de recibo se diferencia de una aceptación perdida.
                 if (ruta.Contains("/elecciones/"))
                 {
                     Interlocked.Increment(ref Recibos);
                     return recibo is not null ? Json(recibo) : Json(new { codigo = "recursoNoEncontrado" }, HttpStatusCode.NotFound);
                 }
+                // El abandono simulado modifica el motivo final sin sumar marcador.
                 if (ruta.EndsWith("/abandono"))
                 {
                     Interlocked.Increment(ref Abandonos);
@@ -275,6 +302,7 @@ public sealed class SesionClienteTests
             Tarea = new SesionPartidaCliente(config, http, new InterfazConsola(Entrada, salida), Reloj)
                 .Ejecutar(new EntradaCliente(Entrada), cierre.Token);
         }
+        // Se ofrece una única carta válida para aislar la navegación y el envío.
         internal void PrepararTurno()
         {
             Vista = Vista with
@@ -286,12 +314,14 @@ public sealed class SesionClienteTests
             Reloj.Avanzar(TimeSpan.FromSeconds(1));
         }
         internal void Tecla(string linea) => Entrada.Agregar(linea);
+        // Se espera el dibujo antes de enviar otra tecla para no adelantarse a la interfaz.
         internal async Task TeclaConPantalla(string linea)
         {
             int longitud = Texto.Length;
             Tecla(linea);
             await Esperar(() => Texto.Length > longitud);
         }
+        // La secuencia abre el menú y llega a la confirmación, todavía sobre la opción No.
         internal async Task AbrirAbandono()
         {
             await Esperar(() => Texto.Contains("Esperando inicio"));
@@ -303,6 +333,7 @@ public sealed class SesionClienteTests
 
         internal async Task Esperar(Func<bool> condicion)
         {
+            // La espera acotada adelanta el reloj del cliente y propaga fallos del bucle.
             for (int i = 0; i < 150; i++)
             {
                 if (Tarea.IsFaulted) await Tarea;
@@ -312,6 +343,7 @@ public sealed class SesionClienteTests
             }
             Assert.True(condicion(), Texto);
         }
+        // La cancelación y el avance final permiten liberar todas las tareas del escenario.
         public async ValueTask DisposeAsync()
         {
             cierre.Cancel();
@@ -319,10 +351,12 @@ public sealed class SesionClienteTests
             await Tarea.WaitAsync(TimeSpan.FromSeconds(3));
             http.Dispose(); cierre.Dispose();
         }
+        // Las respuestas del doble usan los mismos nombres JSON que el protocolo HTTP.
         internal static HttpResponseMessage Json(object cuerpo, HttpStatusCode codigo = HttpStatusCode.OK) => new(codigo)
         { Content = new StringContent(JsonSerializer.Serialize(cuerpo, new JsonSerializerOptions(JsonSerializerDefaults.Web)), Encoding.UTF8, "application/json") };
     }
 
+    // El reloj manual permite probar intervalos de reintento sin esperar segundos reales.
     internal sealed class RelojCliente : TimeProvider
     {
         private DateTimeOffset ahora = DateTimeOffset.UtcNow;
@@ -332,6 +366,7 @@ public sealed class SesionClienteTests
         {
             lock (temporizadores)
             {
+                // Cada espera registra un temporizador que el avance manual puede despertar.
                 var timer = new Temporizador(this, callback, state);
                 temporizadores.Add(timer); timer.Change(dueTime, period); return timer;
             }
@@ -340,6 +375,7 @@ public sealed class SesionClienteTests
         {
             lock (temporizadores)
             {
+                // Se despiertan únicamente los temporizadores vencidos que todavía no se cerraron.
                 ahora += intervalo;
                 foreach (var t in temporizadores.ToArray())
                     if (!t.Cerrado && t.Vence <= ahora) { t.Vence = DateTimeOffset.MaxValue; t.Callback(t.State); }
@@ -351,6 +387,7 @@ public sealed class SesionClienteTests
             internal DateTimeOffset Vence;
             internal TimerCallback Callback = callback;
             internal object? State = state;
+            // El plazo infinito representa un temporizador suspendido hasta una nueva programación.
             public bool Change(TimeSpan dueTime, TimeSpan period)
             {
                 Vence = dueTime == Timeout.InfiniteTimeSpan ? DateTimeOffset.MaxValue : reloj.ahora + dueTime;
