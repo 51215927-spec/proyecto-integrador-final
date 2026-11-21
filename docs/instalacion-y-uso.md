@@ -69,7 +69,7 @@ dotnet test proyecto-integrador-final.sln
 dotnet run --project src/cliente
 ```
 
-El programa ofrece `victoria`, `pausa`, `abandono`, `cancelacion` y `salida`. Escribí una opción para recorrer las pantallas con una [partida simulada](diseno-de-interfaz.md#demostración-local). Las pruebas automatizadas cubren la base de dominio y los métodos de presentación y selección de la consola.
+El cliente solicita URL base, UUID de partida, credencial de plaza y nombre. Necesitás una partida creada en el servidor para jugar. Las pruebas incluyen transporte HTTP, coordinación de consola y servidor local con SQLite temporal.
 
 Las dependencias y los comandos del servidor están en [API y operación del servidor](protocolo-de-partida.md#operación-del-servidor).
 
@@ -94,20 +94,25 @@ dotnet run --project src/servidor/servidor.csproj
 - Respondé las preguntas de inicio: dirección de escucha (Enter: `http://0.0.0.0:5000`), archivo SQLite (Enter: `guerra.db`) y credencial de catálogo. Una credencial vacía deshabilita las altas y se informa en pantalla. La ruta relativa de la base se interpreta desde el directorio de ejecución; su directorio debe existir y permitir escritura.
 - Con el servidor en ejecución, usá otra terminal para [cargar personajes](#cargar-personajes-manualmente) hasta tener al menos seis activos en el catálogo.
 - Escribí `crear` y pulsá Enter en la consola del servidor. Copiá el UUID que aparece junto a `Partida` y entregale a cada jugador la credencial de su plaza (`J1` o `J2`).
-- Incorporá a ambos jugadores mediante `PUT /api/v1/partidas/{id}/participantes/me/sesion`, con la credencial de su plaza y un UUID de sesión distinto para cada jugador. Mantené vigentes las dos sesiones con la solicitud de presencia. [Contrato HTTP de la partida](protocolo-de-partida.md#contrato-http)
+- En otras dos terminales, ejecutá `dotnet run --project src/cliente`. Cada jugador ingresa la URL del servidor, el UUID de partida, su credencial de plaza y su nombre. Ambos esperan el inicio; las sesiones se renuevan automáticamente.
 - En la consola del servidor, escribí `iniciar`, pulsá Enter y respondé con el UUID que mostró `crear`. Si aparece «Partida iniciada.», el servidor repartió tres cartas a cada jugador y J1 puede elegir la primera carta y el atributo.
 
-La conexión del cliente de consola al servidor sigue pendiente. Podés verificar el inicio mediante la API en una computadora o recorrer las pantallas con la demostración local. [Prueba del servidor en una sola computadora](protocolo-de-partida.md#prueba-del-servidor-en-una-sola-computadora) · [Demostración local](diseno-de-interfaz.md#demostración-local)
+La comprobación entre dos computadoras corresponde al ensayo de red pendiente. Para localhost, usá `http://127.0.0.1:5000` en ambos clientes. Desde otra computadora, usá la IP del servidor. [Conexión en red local](protocolo-de-partida.md#conexión-en-red-local)
 
 ## Recorrer una partida
 
-Para conocer las pantallas, ejecutá la demostración local y elegí una carta y un atributo cuando se te pida. Seguí las pantallas de espera, resultado y marcador hasta el cierre de la demostración. La consola usa datos simulados en este modo.
+Elegí la carta con flechas, WASD o HJKL y confirmá con Enter. Al abrir, elegí también un atributo; al responder, elegí solo carta. El servidor confirma la recepción y resuelve el combate. Enter en un resultado confirma su lectura local y muestra el siguiente resultado pendiente o el estado actual. No envía una elección del turno siguiente. Fuera de selecciones, resultados y menús, Enter vuelve a mostrar el estado.
 
-Para verificar el flujo real del servidor, cargá seis personajes, creá una partida e incorporá ambas plazas como se indica arriba. En la API, consultá `presentacion` con la sesión de J1, tomá la solicitud y enviá una carta y un atributo permitidos. Consultá la vista de J2 y respondé con una carta de su propia solicitud. Volvé a consultar ambas vistas para comprobar el resultado y el marcador. Seguí las solicitudes hasta cerrar la ronda. [Contrato HTTP](protocolo-de-partida.md#contrato-http)
+Esc abre el menú: Continuar, Salir sin abandonar y Abandonar partida. La confirmación de abandono comienza en No. Ctrl+C o fin de entrada salen sin abandonar. Una salida local no otorga una victoria; la plaza puede continuar ocupada hasta quince segundos o hasta que el operador cierre la sesión.
+
+Ante una interrupción de red, esperá la reconexión automática o salí desde Esc. Mientras se recupera, se conserva el último estado confirmado y se bloquean nuevas jugadas. Una elección incierta se comprueba por su recibo antes de reenviar. Si el abandono no pudo confirmarse, el cliente lo advierte al salir.
+
+Para retomar tras cerrar, volvé a ejecutar el cliente e ingresá los mismos datos y el nombre exacto. El proceso crea una sesión nueva y puede tener que esperar la liberación de la plaza. No guarda datos locales ni reproduce resultados anteriores; muestra el estado persistido por el servidor.
 
 ## Problemas frecuentes
 
 - Si falla la restauración, comprobá el SDK con `dotnet --list-sdks` y la conexión a los orígenes NuGet.
 - Si falla la conexión, verificá que el servidor informe la escucha y que coincidan la IP y el puerto. En red local, comprobá que ambos equipos estén en la misma red y que el puerto configurado permita conexiones entrantes.
 - Si el alta devuelve 401, comprobá que la credencial de catálogo coincida con la ingresada al iniciar el servidor.
-- Si la sesión vence, repetí la incorporación y mantené activa la presencia antes de iniciar o elegir.
+- Si la sesión vence, el cliente se reincorpora automáticamente. Si indica sesión ocupada, esperá su vencimiento o pedí al operador que use `cerrar-sesion`.
+- Si rechaza credencial, nombre o partida, Enter permite volver a ingresar los datos. Si cambiaste el destino o plaza, una operación anterior puede haberse aplicado: su recuperación requiere los datos originales.

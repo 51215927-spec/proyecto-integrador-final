@@ -16,3 +16,7 @@ dotnet test proyecto-integrador-final.sln
 ```
 
 Estas variables son del arnés de pruebas; los programas se operan mediante preguntas y no necesitan variables de usuario. Las pruebas de procesos envían las respuestas por stdin. [Resultados del spec 003](../../docs/plan-de-pruebas.md#evidencia-del-spec-003)
+
+## Cliente REST
+
+Las pruebas del spec 001 cubren configuración, transporte con HttpMessageHandler controlado, coordinación con TimeProvider sustituible, privacidad y recibos contra servidor local con SQLite temporal y contratos del ejecutable. Las demostraciones anteriores se prueban directamente como auxiliar interno; no se ofrecen desde Program. Las tres DLL de contrato deben apuntar al mismo worktree que se compila y prueba. [Evidencia y límites](../../docs/plan-de-pruebas.md#cliente-rest-spec-001)
