@@ -1,6 +1,6 @@
 # API REST y operación del servidor
 
-HTTP en red local está aprobado para la entrega de la [actividad 6](consigna.md). Este documento describe el contrato REST y la operación del servidor de la solución. Los clientes de consola y la comprobación en dos computadoras siguen pendientes.
+HTTP en red local está aprobado para la entrega de la [actividad 6](consigna.md). Este documento describe el contrato REST y la operación del servidor de la solución. El cliente de consola implementa este contrato; la comprobación en dos computadoras sigue pendiente.
 
 - [Despliegue y conexión](#organización-propuesta)
 - [Operación del servidor](#operación-del-servidor)
@@ -22,11 +22,11 @@ La API y el dominio tienen responsabilidades distintas: la API identifica al jug
 
 ## Conexión en red local
 
-El diseño prevé conexiones HTTP en la red local por el puerto TCP 5000. Cada cliente de juego deberá leer la dirección base del servidor de su configuración local al iniciar. Una URL de ejemplo es `http://192.168.1.20:5000`. En la instalación se usa la IP asignada al equipo servidor.
+El diseño prevé conexiones HTTP en la red local por el puerto TCP 5000. Cada cliente de juego solicita la dirección base del servidor por consola al iniciar. Una URL de ejemplo es `http://192.168.1.20:5000`. En la instalación se usa la IP asignada al equipo servidor.
 
 Localhost identifica la computadora del propio proceso: sirve para probar clientes y servidor en el mismo equipo. El cliente de otra computadora debe usar la dirección de red del servidor. Este debe aceptar conexiones en una interfaz accesible desde esa red, no limitarse a localhost; El servidor escucha por defecto en `0.0.0.0:5000`. La pregunta inicial permite elegir otra dirección de escucha.
 
-Si el servidor no está disponible, el cliente informa y ofrece reintentar o salir. Conserva una elección pendiente y no la transforma en una operación nueva al reintentar. La confirmación de una elección cuya respuesta se perdió se resolverá mediante los contratos de operaciones e idempotencia de este documento; no se asume que falló por un error de conexión.
+Si el servidor no está disponible, el cliente informa, reintenta automáticamente y permite salir mediante Esc. Conserva una elección pendiente y no la transforma en una operación nueva al reintentar. La confirmación de una elección cuya respuesta se perdió se resolverá mediante los contratos de operaciones e idempotencia de este documento; no se asume que falló por un error de conexión.
 
 HTTP no cifra el intercambio. Su elección se limita al entorno local de prueba acordado; no se define publicación en Internet. Primero se probará la comunicación para determinar si existe un bloqueo, sin asumir que sea necesario abrir el firewall. De requerirse una excepción en un equipo escolar, se coordinará con el responsable y se limitará al servicio, puerto y equipos participantes. No se requiere desactivar el firewall ni abrir puertos del router hacia Internet.
 

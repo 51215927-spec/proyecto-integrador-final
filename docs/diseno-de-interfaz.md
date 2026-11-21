@@ -25,14 +25,14 @@ Si cambia el estado mientras se introduce una opción, volver a comprobar si la 
 
 ## Consola e interacción
 
-Las siguientes respuestas son propuestas de diseño.
+El cliente REST aplica las siguientes respuestas de interacción.
 
-| Caso | Respuesta propuesta |
+| Caso | Respuesta |
 |---|---|
 | Ventana angosta o baja | Usar bloques verticales con desplazamiento. Priorizar opciones, valores y acción requerida. |
 | Redimensionamiento o tamaño desconocido | Adaptar la próxima presentación sin cambiar el significado de las opciones vigentes. Usar texto lineal si no se conocen las dimensiones. |
 | Cursor, limpieza o colores no disponibles | Presentar por líneas y distinguir acciones y resultados mediante texto. |
-| Arte ancho, texto largo o caracteres incompatibles | Ofrecer una ficha separada y conservar nombre y atributos aunque el arte no pueda mostrarse. Usar símbolos simples como alternativa y neutralizar caracteres de control de los datos. |
+| Arte ancho, texto largo o caracteres incompatibles | Mostrar nombre y atributos, sin arte ni descripción ni ficha separada. Neutralizar los caracteres de control de los datos. |
 | Salida redirigida | Emitir texto lineal sin repintado. Permitir la selección por líneas si la entrada sigue disponible y evitar repetir mensajes de espera sin cambios. |
 | Entrada redirigida o sin teclado | Definir si se permiten selecciones desde un flujo de líneas. Si no hay entrada utilizable, informar y cerrar sin quedar esperando. |
 | Fin de entrada | Distinguirlo de una línea vacía y terminar la solicitud. Una jugada en tránsito sigue pendiente hasta que el protocolo determine su estado. |
@@ -55,11 +55,11 @@ La consola limpia la pantalla al cambiar de vista en una terminal. Para elegir, 
 
 El flujo cliente debe comprobar que la solicitud siga vigente antes de enviar una opción. También debe gestionar el cambio de estado durante la escritura, la entrada sobrante entre solicitudes, las confirmaciones, la recuperación y la salida.
 
-## Decisiones pendientes
+## Decisiones implementadas para el cliente REST
 
-- Definir cómo se descarta la entrada interactiva sobrante entre solicitudes.
-- Definir cuándo mostrar el arte y la descripción. La propuesta es consultarlos en una ficha separada.
-- Definir cómo se presentan la incorporación, el rol asignado, la recuperación y la confirmación de salida. Decidir si el diseño visual abarca la consola del servidor.
+El cliente ofrece solo juego en red. Las actualizaciones de estado son automáticas; cada resultado tiene una pantalla separada y requiere Enter para avanzar. Esc abre Continuar, Salir sin abandonar y Abandonar partida, con confirmación No/Sí inicialmente en No. Ctrl+C y EOF salen sin abandonar. Los cambios remotos se señalan también durante resultados y menús.
+
+Al cambiar de solicitud o resultado se descarta la entrada interactiva sobrante. La entrada redirigida conserva las líneas futuras y consume una línea por acción. Una selección obsoleta se cancela antes de enviar; el servidor resuelve cualquier cambio posterior.
 
 ## Aspecto de las pantallas
 
@@ -94,36 +94,8 @@ En la maqueta «Duelo paralelo», el atributo comparado aparece encima de dos pa
 
 El cliente conserva la composición de las doce pantallas elegidas y usa [Spectre.Console](https://spectreconsole.net/console/) para renderizar las barras de estado, los paneles, las fichas y la planilla final sobre .NET 8. Aplica los acentos verdes de las maquetas cuando la terminal admite color. En pantallas angostas o con salida redirigida, apila los paneles y conserva el orden de lectura. El menú resalta la opción activa y actualiza la vista al mover el foco.
 
-## Demostración local
+## Recorrido del cliente REST
 
-Desde la raíz de la rama que contiene el cliente actualizado, ejecutá:
+Desde la raíz ejecutá `dotnet run --project src/cliente` e ingresá los datos de conexión y plaza. El operador crea e inicia la partida. La [guía de uso](instalacion-y-uso.md#cómo-iniciar-una-partida) detalla el recorrido de ambas plazas y la recuperación.
 
-```bash
-dotnet run --project src/cliente
-```
-
-Al iniciar, elegí `victoria` en el menú. La demo comienza con Lucía y Mateo empatados 14–14. Usa un mazo de ejemplo y ejecuta la ronda decisiva localmente.
-
-1. Pulsá Enter en los paneles de preparación, espera e inicio de ronda.
-2. En la apertura, mové el foco hasta una carta y confirmá con Enter. Repetí la selección en el menú de atributos.
-3. Avanzá por los estados de envío y revisá el duelo. La pantalla muestra ambas cartas, sus puntajes en el atributo usado y el marcador de combates.
-4. Cuando abre Mateo, avanzá desde la espera y elegí solo una carta. La demo usa Inteligencia para comparar este combate y muestra el atributo en el resultado.
-5. Al ganar dos combates, el vencedor de la ronda alcanza 15 victorias. El resumen final muestra quién ganó y el marcador 15–14.
-
-Para probar un cierre específico, iniciá el cliente y escribí una de estas opciones en el menú.
-
-| Opción del menú | Pantalla esperada |
-|---|---|
-| `pausa` | Suspensión por pérdida de sesión, seguida de un estado de comunicación sin confirmar. |
-| `abandono` | Interrupción confirmada porque el rival abandonó. |
-| `cancelacion` | Interrupción confirmada porque el operador canceló la partida. |
-| `salida` | Cierre local del cliente con la partida guardada en el escenario simulado. |
-
-Con entrada redirigida, la primera línea selecciona la variante del menú. Los paneles se imprimen en orden, las pantallas informativas avanzan automáticamente y solo las selecciones consumen líneas de entrada. Una línea vacía confirma la opción activa. La demostración simula las pantallas y sus transiciones. La conexión HTTP, los recibos reales y la recuperación siguen pendientes en el cliente.
-
-## Escenarios de prueba de la interfaz
-
-- Recorrer la partida como J1 y J2. Validar que el rival no vea la carta ni el atributo antes de la resolución.
-- Probar una ronda 2–0, una ronda 2–1 con empate de atributos y el cierre al alcanzar 15 rondas ganadas.
-- Combinar una ventana estrecha y baja con cartas extensas, redimensionamiento, redirección y fin de entrada.
-- Cambiar el turno mientras se escribe y perder la comunicación justo después de enviar una elección.
+Las demostraciones locales anteriores se conservan únicamente como auxiliar interno de pruebas. Sus variantes de cierre y su avance automático son evidencia histórica del spec 003; no son opciones del ejecutable actual.

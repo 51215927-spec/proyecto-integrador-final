@@ -84,3 +84,34 @@ Se ejecutó `dotnet build proyecto-integrador-final.sln`: cero errores y cero ad
 Evidencia de TDD: las nuevas pruebas fallaron primero por falta de preguntas administrativas, menú del cliente y configuración de carga; las firmas nuevas lanzaban `NotImplementedException`. Una prueba posterior reprodujo el cierre ante una base inválida antes de agregar el reintento. La suite original había aprobado sus 85 casos antes de los cambios. Tras implementar y simplificar la ayuda se obtuvo el resultado final anterior.
 
 Las pruebas de este cambio se realizaron en una computadora Linux. No acreditan ejecución en Windows, comunicación entre dos equipos ni implementación del cliente REST; esas comprobaciones siguen en el plan de continuidad. `specs/` continúa como material local excluido de Git según la convención existente; su copia de seguimiento se mantiene en el worktree documental.
+
+## Cliente REST (spec 001)
+
+Verificación del 21 de noviembre de 2026 en Linux, .NET SDK 8.0.133, rama `feature/cliente-rest`, worktree `worktree-feature-cliente-rest`, cambios locales sobre `3408144`. La documentación se prepara por separado en `docs/cliente-rest`, worktree `worktree-docs-cliente-rest`. La implementación y las guías se publican en PR separados; las comprobaciones siguientes se ejecutaron sobre los cambios locales de esas ramas.
+
+| Criterio | Comprobaciones | Resultado |
+|---|---|---|
+| CA1 | Configuración y corrección por campo; URL con prefijo; transporte con identidad estable y errores; incorporación de J1/J2 contra HTTP real; reapertura del ejecutable con sesión ocupada y posterior liberación. Pseudoterminal: credencial oculta. | Aprobado localmente. |
+| CA2 | Presentaciones completas y pausa con igual revisión; privacidad de manos; historial inicial omitido y resultados nuevos ordenados; marcador histórico; Enter de resultado separado del turno; consultas y presencia durante menú, selección y lectura; vista idéntica sin reiniciar foco; renderizado angosto y controles remotos neutralizados. | Aprobado localmente. |
+| CA3 | Apertura y respuesta; selección invalidada por pausa; una escritura pendiente; pérdidas antes/después del commit, consulta de recibo y reenvío idéntico; pausa con operación conservada; operación obsoleta o incompatible sin reenvío. | Aprobado localmente. |
+| CA4 | Reincorporación con UUID estable, reinicio real del servidor y SQLite temporal, respuesta tardía descartada; Esc, No/Sí al abandono y abandono incierto serializado tras la elección; EOF y salida local sin abandono; victoria tras lectura del último resultado; cero tráfico nuevo al finalizar. Pseudoterminal: Esc y Ctrl+C durante configuración y reconexión. Tubería cerrada: código 1 y diagnóstico sin credencial. | Aprobado localmente. |
+
+Desde el worktree de código se ejecutó:
+
+```bash
+dotnet build proyecto-integrador-final.sln --no-restore --nologo
+GUERRA_CLIENTE_DLL="$PWD/src/cliente/bin/Debug/net8.0/cliente.dll" \
+GUERRA_SERVIDOR_DLL="$PWD/src/servidor/bin/Debug/net8.0/servidor.dll" \
+GUERRA_CARGA_DLL="$PWD/src/subir-personajes/bin/Debug/net8.0/subir-personajes.dll" \
+dotnet test proyecto-integrador-final.sln --no-build --nologo
+```
+
+Resultado final: build con **cero errores y cero advertencias**; suite con **141 aprobadas, cero fallidas y cero omitidas**. Incluye servidor local y SQLite temporal, reloj sustituible, transporte controlado y procesos reales. Los logs de la sesión quedaron en `/tmp/spec001-entrega-build.log` y `/tmp/spec001-entrega-suite.log`.
+
+Inventario de expectativas adaptadas: los cinco recorridos de demostración se conservan como pruebas directas del auxiliar; se retira el contrato del menú de demostración y se reemplaza por configuración REST, corrección de campos, incorporación, reapertura y salida del ejecutable. No hay selector oculto. La evidencia del spec 003 de arriba describe su versión histórica y no el arranque actual.
+
+Se observaron ciclos rojo/verde en el arranque REST, estado, recorte de credencial y cierre de tubería; las pruebas adicionales de transporte, coordinación e integración se ampliaron junto con la implementación y después de ella. No se atribuye TDD completo a toda la suite.
+
+La comprobación interactiva usó una pseudoterminal con respuesta a consultas de cursor: ingresar configuración, verificar que el secreto no aparece, abrir Esc y elegir salida; repetir con Ctrl+C en reconexión y en la primera pregunta. Los tres procesos terminaron con código 0. La entrada redirigida se comprueba también mediante los contratos de proceso. Se revisaron el diff y los enlaces locales de las guías.
+
+Esta evidencia corresponde a una computadora Linux. No acredita Windows ni una partida entre dos equipos; esa validación permanece en el spec 002. No hubo cambios de API, reglas ni esquema SQLite. Para usar las guías junto al código deben incorporarse ambos PR, primero el cliente y después su documentación.
