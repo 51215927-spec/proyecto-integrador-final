@@ -1,24 +1,26 @@
 # Modelos y ejecución por archivo
 
-Esta guía desarrolla los tipos, datos y flujos de la [versión común del catálogo](archivos/README.md#versión-documentada): `main` en `135daa7eb196b9bca4e40a1aef76e1131a9b24e8`, 2026-11-22. Incluye las mismas explicaciones contrastadas por archivo que las páginas individuales: miembros públicos y privados, condiciones, fragmentos, recorridos, errores y evidencia. Las secciones se despliegan por archivo para permitir una lectura completa sin abrir el fuente. El [catálogo](archivos/README.md) ofrece navegación por proyecto; la [verificación](archivos/verificacion.md) registra cobertura y límites.
+Esta guía reúne los modelos y la ejecución por archivo del código `f0f292b`, fijado el 2026-11-22 para el spec 006. Las páginas individuales del [catálogo](archivos/README.md#versión-documentada) son la fuente de cada desarrollo; esta edición agrega las mismas explicaciones y fragmentos, con enlaces relativos adaptados. La [verificación documental](archivos/verificacion.md) registra cobertura y límites.
 
 ## Conceptos compartidos
 
-Una `class` encapsula estado y comportamiento; `internal` limita acceso al ensamblado, salvo amistad explícita de pruebas con `InternalsVisibleTo`. La visibilidad pública de un miembro no supera la de su tipo. `sealed` impide heredar; `static` sitúa el miembro en el tipo. `partial` reparte un mismo tipo entre fuentes, no crea instancias independientes. Las porciones de RepositorioJuego y de InterfazConsola se enlazan entre sí en sus páginas.
+Una `class` encapsula estado y comportamiento; `internal` limita acceso al ensamblado, salvo amistad explícita de pruebas con `InternalsVisibleTo`. La visibilidad pública de un miembro no supera la de su tipo. `sealed` impide heredar; `static` sitúa el miembro en el tipo. `partial` reparte un mismo tipo entre fuentes: las porciones de InterfazConsola forman una clase.
 
-Los `record` posicionales generan constructor, propiedades `init`, deconstrucción e igualdad por valor; no clonan automáticamente arrays, diccionarios ni objetos referidos. `with` copia el record superficialmente y sustituye propiedades indicadas. `readonly` evita reasignar un campo después de construirlo, pero no vuelve inmutable la lista que contiene. `required` exige inicializar una propiedad desde C#, sin reemplazar validaciones de dominio o de JSON.
+Los `record` posicionales generan constructor, propiedades `init`, deconstrucción e igualdad por valor; no clonan automáticamente arrays, diccionarios ni objetos referidos. `with` copia superficialmente. `readonly` evita reasignar un campo después de construirlo, sin volver inmutable su contenido. `required` exige inicialización desde C#, sin reemplazar validaciones de dominio o JSON.
 
-`?` en una referencia expresa nulabilidad; en un tipo valor como `Guid?` o `int?` permite representar ausencia sin confundirla con cero. `!` suprime la advertencia del compilador; no comprueba valores durante ejecución. `?? throw` convierte ausencia en error de forma explícita. Las guardas se ejecutan en el orden documentado: una excepción interrumpe las instrucciones posteriores, no revierte por sí sola los efectos previos.
+`?` en una referencia expresa nulabilidad; en `Guid?` o `int?` permite representar ausencia. `!` suprime advertencias sin comprobar valores durante ejecución. `?? throw` convierte ausencia en error. Las guardas se ejecutan en orden; una excepción detiene la acción, mientras que la transacción revierte los cambios persistidos que no se confirmaron.
 
-`async Task` permite esperar operaciones sin bloquear el hilo; no significa que todas se ejecuten en paralelo. El cliente mantiene una tarea por canal HTTP y serializa escrituras. `CancellationToken` comunica cancelación cooperativa. `using`/`await using` liberan recursos al salir del ámbito, incluso por excepción; no equivalen a abandonar una partida. `lock` serializa acceso en una instancia de repositorio; las transacciones SQLite cubren el estado persistido y su commit.
+`async Task` permite esperar operaciones sin bloquear el hilo; no implica ejecución paralela. El cliente mantiene una tarea por canal HTTP y serializa escrituras. `CancellationToken` comunica cancelación cooperativa. `using` y `await using` liberan recursos al salir del ámbito, sin equivaler a abandonar una partida. El bloqueo compartido de SqliteJuego coordina estado y sesiones; la transacción SQLite confirma las filas persistidas y el recibo juntos.
 
-Los DTO son mensajes HTTP; las entidades EF Core son filas persistidas; los modelos visibles son datos del renderizador. Nombres repetidos como `CartaVisible` en cliente y API pertenecen a namespaces/ensamblados diferentes. El cliente no referencia el proyecto servidor. El coordinador local `Partida.Jugar()` sigue incompleto; el juego REST usa las porciones de RepositorioJuego. No se atribuye al primero el éxito de las pruebas de integración del segundo.
+Partida ejecuta inicio, elecciones, resolución y cierres por acciones sucesivas. EstadoPartida y sus datos son dominio puro: no contienen EF Core, HTTP, hashes, presencia ni recibos. AlmacenPartidas mapea ese estado a las entidades de BaseJuego; CoordinadorPartidas organiza acceso y acciones, AdministradorSesiones conserva presencia temporal, CatalogoPersonajes administra el catálogo y VistaPartida construye la proyección privada sin modificar el estado. El [UML](diagramas/uml.uxf) muestra sus relaciones.
 
-Los fragmentos siguientes son reales y están explicados junto al comportamiento correspondiente. Los recorridos escritos por lectura no se presentan como ejecuciones. La [suite de esta referencia](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) aprobó 179 casos con contratos de procesos habilitados; no acredita red física entre dos Windows ni repite todos los ejemplos manualmente.
+Los DTO son mensajes HTTP; las entidades EF Core son filas persistidas. EstadoPartida en el directorio servidor es el estado del dominio; Api/EstadoPartida.cs conserva las entidades y contratos. Tipos como CartaVisible en cliente y API pertenecen a namespaces/ensamblados diferentes. El cliente no referencia el servidor. La reconstrucción de Partida recibe el estado existente sin repartir ni repetir resultados.
+
+Los fragmentos son código real; los recorridos deducidos por lectura no se presentan como ejecuciones. La [verificación de código del spec 006](plan-de-pruebas.md) registra 190 casos aprobados con contratos de procesos habilitados. La ejecución local no acredita la prueba física entre dos Windows del spec 002.
 
 ## Desarrollo completo
 
-Cada sección despliega un archivo y conserva su enlace a la página individual. Al modificarlo, mantener ambos desarrollos coherentes; esta edición usa las mismas explicaciones y fragmentos para evitar divergencias entre dos inventarios.
+Cada sección despliega una página individual del catálogo. Al modificar una fuente, actualizar su página y regenerar esta agregación; no mantener una segunda explicación distinta del mismo miembro.
 
 <details>
 <summary>src/cliente/ClientePartidaHttp.cs</summary>
@@ -2318,6 +2320,444 @@ ReadKey intercepta, Enter devuelve, controles EOF lanzan y Backspace modifica so
 </details>
 
 <details>
+<summary>src/servidor/Api/AdministradorSesiones.cs</summary>
+
+[Página individual](archivos/src/servidor/Api/AdministradorSesiones.md)
+
+## src/servidor/Api/AdministradorSesiones.cs
+
+Fuente: [src/servidor/Api/AdministradorSesiones.cs](../src/servidor/Api/AdministradorSesiones.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Presencia e identidad temporal por plaza.
+
+### Estado, miembros y ejecución
+
+Incorporar valida ID/nombre, autentica, comprueba exclusión y nombre registrado y confirma la incorporación antes de publicar presencia. Renovar exige la misma sesión vigente y extiende quince segundos. CerrarSesion verifica la plaza y retira presencia. ReemplazarCredencial confirma el hash nuevo antes de retirar presencia; un fallo de escritura conserva la sesión. AmbosPresentes consulta las dos plazas; Vigente compara el vencimiento con TimeProvider; ExigirSesion exige identidad y vigencia. Sincronizacion es el bloqueo compartido de SQLite, también tomado por el coordinador. El diccionario sesiones no se persiste.
+
+### Errores, límites y efectos
+
+Una sesión distinta recibe sesionOcupada; al vencer recibe sesionVencida. La renovación y las consultas de presencia no incrementan revisión. El reloj es sustituible; no se añaden garantías entre servidores independientes.
+
+### Implementación contrastada
+
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
+
+```csharp
+namespace Proyecto_Integrador_Final.Api;
+
+internal sealed record Incorporacion(Guid IdSesion, string? Nombre);
+internal sealed record Sesion(string Rol, Guid IdSesion, DateTimeOffset VenceUtc);
+
+internal sealed class AdministradorSesiones(AlmacenPartidas almacen, TimeProvider reloj)
+{
+    private readonly Dictionary<(Guid, string), Sesion> sesiones = [];
+    internal object Sincronizacion => almacen.Infraestructura.Sincronizacion;
+
+    internal Sesion Incorporar(Guid id, string? credencial, Incorporacion datos)
+    {
+        if (datos.IdSesion == Guid.Empty || string.IsNullOrWhiteSpace(datos.Nombre))
+            throw ErrorApi.Entrada();
+        lock (Sincronizacion)
+        {
+            var rol = almacen.RegistrarNombre(id, credencial, datos.Nombre, rol =>
+            {
+                if (Vigente(id, rol) is { } actual && actual.IdSesion != datos.IdSesion)
+                    throw new ErrorApi(409, "sesionOcupada", "La plaza tiene una sesión vigente.");
+            });
+            var sesion = new Sesion(rol, datos.IdSesion, reloj.GetUtcNow().AddSeconds(15));
+            sesiones[(id, rol)] = sesion;
+            return sesion;
+        }
+    }
+
+    internal void Renovar(Guid id, string? credencial, Guid idSesion)
+    {
+        lock (Sincronizacion)
+        {
+            var rol = almacen.Autenticar(id, credencial);
+            var sesion = ExigirSesion(id, rol, idSesion);
+            sesiones[(id, rol)] = sesion with { VenceUtc = reloj.GetUtcNow().AddSeconds(15) };
+        }
+    }
+
+    internal void CerrarSesion(Guid id, string rol)
+    {
+        lock (Sincronizacion)
+        {
+            almacen.ExigirParticipante(id, rol);
+            sesiones.Remove((id, rol));
+        }
+    }
+
+    internal string ReemplazarCredencial(Guid id, string rol)
+    {
+        lock (Sincronizacion)
+        {
+            var nueva = almacen.ReemplazarCredencial(id, rol);
+            sesiones.Remove((id, rol));
+            return nueva;
+        }
+    }
+
+    internal bool AmbosPresentes(Guid id)
+    {
+        lock (Sincronizacion) return Vigente(id, "J1") is not null && Vigente(id, "J2") is not null;
+    }
+
+    private Sesion? Vigente(Guid id, string rol) =>
+        sesiones.TryGetValue((id, rol), out var sesion) && sesion.VenceUtc > reloj.GetUtcNow() ? sesion : null;
+
+    internal Sesion ExigirSesion(Guid id, string rol, Guid idSesion)
+    {
+        lock (Sincronizacion)
+            return Vigente(id, rol) is { } sesion && sesion.IdSesion == idSesion
+                ? sesion : throw new ErrorApi(409, "sesionVencida", "Se requiere una sesión vigente.");
+    }
+}
+```
+
+### Relaciones y verificación
+
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
+
+</details>
+
+<details>
+<summary>src/servidor/Api/AlmacenPartidas.cs</summary>
+
+[Página individual](archivos/src/servidor/Api/AlmacenPartidas.md)
+
+## src/servidor/Api/AlmacenPartidas.cs
+
+Fuente: [src/servidor/Api/AlmacenPartidas.cs](../src/servidor/Api/AlmacenPartidas.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Reconstrucción y persistencia de partidas SQLite.
+
+### Estado, miembros y ejecución
+
+Los constructores reciben cadena o infraestructura compartida. CrearPartida genera UUID y dos credenciales, conserva solamente hashes SHA256 y crea las plazas. Ejecutar carga estado y operaciones bajo transacción, crea UnidadPartida, invoca la acción y mapea estado y operaciones nuevas antes del único SaveChanges de infraestructura. Cargar copia todos los campos escalares y colecciones a EstadoPartida sin jugar ni repartir. Guardar actualiza o inserta cartas, rondas, combates y solicitudes; conserva sus claves y orden. Autenticar tiene sobrecargas para ID y participantes; compara hashes en tiempo constante. RegistrarNombre mantiene identidad y ejecuta la comprobación de exclusión dentro de la transacción. ExigirParticipante valida existencia; ReemplazarCredencial confirma el hash. Buscar resuelve 404; Hash y NuevaCredencial encapsulan criptografía; Dispose libera infraestructura. PartidaCreada transporta los secretos iniciales al operador.
+
+### Errores, límites y efectos
+
+No decide victorias, turnos ni opciones. Presta el contexto transaccional a CatalogoPersonajes para copiar activos; el catálogo mantiene la consulta y el mapeo. Estado, solicitud consumida y recibo se guardan juntos; una excepción antes del commit revierte el conjunto. No modifica el esquema previo.
+
+### Implementación contrastada
+
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
+
+```csharp
+using System.Security.Cryptography;
+using System.Text;
+
+namespace Proyecto_Integrador_Final.Api;
+
+internal sealed record PartidaCreada(Guid Id, string CredencialJ1, string CredencialJ2);
+
+internal sealed class AlmacenPartidas : IDisposable
+{
+    internal SqliteJuego Infraestructura { get; }
+    internal AlmacenPartidas(string cadena) : this(new SqliteJuego(cadena)) { }
+    internal AlmacenPartidas(SqliteJuego infraestructura) => Infraestructura = infraestructura;
+
+    internal PartidaCreada CrearPartida()
+    {
+        var id = Guid.NewGuid();
+        var j1 = NuevaCredencial();
+        var j2 = NuevaCredencial();
+        return Infraestructura.Ejecutar(true, db =>
+        {
+            db.Partidas.Add(new PartidaGuardada { Id = id });
+            db.Participantes.AddRange(
+                new ParticipanteGuardado { IdPartida = id, Rol = "J1", Hash = Hash(j1) },
+                new ParticipanteGuardado { IdPartida = id, Rol = "J2", Hash = Hash(j2) });
+            return new PartidaCreada(id, j1, j2);
+        });
+    }
+
+    internal T Ejecutar<T>(Guid id, bool escritura, Func<UnidadPartida, T> accion) =>
+        Infraestructura.Ejecutar(escritura, db =>
+        {
+            var guardada = Buscar(db, id);
+            var participantes = db.Participantes.Where(p => p.IdPartida == id).ToArray();
+            var estado = Cargar(db, guardada, participantes);
+            var operaciones = db.Operaciones.Where(o => o.IdPartida == id).ToList();
+            var unidad = new UnidadPartida(new Partida(estado), participantes,
+                operaciones, catalogo => catalogo.CopiarActivos(db));
+            var resultado = accion(unidad);
+            if (escritura)
+            {
+                Guardar(db, guardada, participantes, estado);
+                foreach (var operacion in unidad.NuevasOperaciones) db.Operaciones.Add(operacion);
+            }
+            return resultado;
+        });
+
+    internal string Autenticar(Guid id, string? credencial) => Infraestructura.Ejecutar(false, db =>
+    {
+        Buscar(db, id);
+        return Autenticar(db.Participantes.Where(p => p.IdPartida == id), credencial).Rol;
+    });
+
+    internal string RegistrarNombre(Guid id, string? credencial, string nombre, Action<string> comprobar) =>
+        Infraestructura.Ejecutar(true, db =>
+        {
+            Buscar(db, id);
+            var jugador = Autenticar(db.Participantes.Where(p => p.IdPartida == id), credencial);
+            comprobar(jugador.Rol);
+            if (jugador.Nombre is not null && jugador.Nombre != nombre)
+                throw new ErrorApi(403, "sinPermiso", "El nombre registrado debe coincidir.");
+            jugador.Nombre ??= nombre;
+            return jugador.Rol;
+        });
+
+    internal void ExigirParticipante(Guid id, string rol) => Infraestructura.Ejecutar(false,
+        db => db.Participantes.Find(id, rol) ?? throw ErrorApi.NoEncontrado());
+
+    internal string ReemplazarCredencial(Guid id, string rol)
+    {
+        var nueva = NuevaCredencial();
+        Infraestructura.Ejecutar(true, db =>
+        {
+            var jugador = db.Participantes.Find(id, rol) ?? throw ErrorApi.NoEncontrado();
+            jugador.Hash = Hash(nueva);
+            return true;
+        });
+        return nueva;
+    }
+
+    private static PartidaGuardada Buscar(BaseJuego db, Guid id) =>
+        db.Partidas.Find(id) ?? throw ErrorApi.NoEncontrado();
+
+    internal static ParticipanteGuardado Autenticar(IEnumerable<ParticipanteGuardado> jugadores, string? credencial)
+    {
+        if (!string.IsNullOrWhiteSpace(credencial))
+        {
+            var hash = Hash(credencial);
+            foreach (var jugador in jugadores)
+                if (CryptographicOperations.FixedTimeEquals(jugador.Hash, hash)) return jugador;
+        }
+        throw new ErrorApi(401, "credencialInvalida", "La credencial no es válida.");
+    }
+
+    private static byte[] Hash(string credencial) => SHA256.HashData(Encoding.UTF8.GetBytes(credencial));
+    private static string NuevaCredencial() => Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+    public void Dispose() => Infraestructura.Dispose();
+
+    private static EstadoPartida Cargar(BaseJuego db, PartidaGuardada p, ParticipanteGuardado[] participantes) => new()
+    {
+        Id = p.Id,
+        Revision = p.Revision,
+        NumeroRonda = p.NumeroRonda,
+        NumeroCombate = p.NumeroCombate,
+        IdSolicitud = p.IdSolicitud,
+        MotivoFin = p.MotivoFin,
+        Ganador = p.Ganador,
+        AbandonoDe = p.AbandonoDe,
+        Fase = p.Fase,
+        Participantes = participantes.Select(p => new ParticipantePartida { Rol = p.Rol, Nombre = p.Nombre, RondasGanadas = p.RondasGanadas }).ToList(),
+        Cartas = db.Cartas.Where(c => c.IdPartida == p.Id).ToArray().Select(c => new CartaPartida
+        {
+            IdPersonaje = c.IdPersonaje,
+            Nombre = c.Nombre,
+            Descripcion = c.Descripcion,
+            Ascii = c.Ascii,
+            Fuerza = c.Fuerza,
+            Velocidad = c.Velocidad,
+            Resistencia = c.Resistencia,
+            Inteligencia = c.Inteligencia,
+            Energia = c.Energia,
+            Habilidad = c.Habilidad,
+            Ubicacion = c.Ubicacion,
+            Orden = c.Orden,
+        }).ToList(),
+        Rondas = db.Rondas.Where(c => c.IdPartida == p.Id).ToArray().Select(c => new RondaPartida
+        {
+            Numero = c.Numero,
+            Mano = c.Mano,
+            VictoriasJ1 = c.VictoriasJ1,
+            VictoriasJ2 = c.VictoriasJ2,
+            Ganador = c.Ganador,
+        }).ToList(),
+        Combates = db.Combates.Where(c => c.IdPartida == p.Id).ToArray().Select(c => new CombatePartida
+        {
+            NumeroRonda = c.NumeroRonda,
+            Numero = c.Numero,
+            Elector = c.Elector,
+            IdCartaElector = c.IdCartaElector,
+            IdCartaRival = c.IdCartaRival,
+            Atributo = c.Atributo,
+            PuntajeElector = c.PuntajeElector,
+            PuntajeRival = c.PuntajeRival,
+            Ganador = c.Ganador,
+        }).ToList(),
+        Solicitudes = db.Solicitudes.Where(c => c.IdPartida == p.Id).ToArray().Select(c => new SolicitudPartida
+        {
+            Id = c.Id,
+            NumeroRonda = c.NumeroRonda,
+            NumeroCombate = c.NumeroCombate,
+            Rol = c.Rol,
+            Tipo = c.Tipo,
+            Consumida = c.Consumida,
+        }).ToList(),
+    };
+
+    private static void Guardar(BaseJuego db, PartidaGuardada p, ParticipanteGuardado[] participantes, EstadoPartida estado)
+    {
+        p.Id = estado.Id;
+        p.Revision = estado.Revision;
+        p.NumeroRonda = estado.NumeroRonda;
+        p.NumeroCombate = estado.NumeroCombate;
+        p.IdSolicitud = estado.IdSolicitud;
+        p.MotivoFin = estado.MotivoFin;
+        p.Ganador = estado.Ganador;
+        p.AbandonoDe = estado.AbandonoDe;
+        p.Fase = estado.Fase;
+        foreach (var jugador in participantes)
+        {
+            var actual = estado.Participantes.Single(j => j.Rol == jugador.Rol);
+            jugador.Nombre = actual.Nombre;
+            jugador.RondasGanadas = actual.RondasGanadas;
+        }
+        foreach (var actual in estado.Cartas)
+        {
+            var fila = db.Cartas.Find(estado.Id, actual.IdPersonaje);
+            if (fila is null)
+            {
+                fila = new PersonajePartida
+                {
+                    IdPartida = estado.Id,
+                    IdPersonaje = actual.IdPersonaje,
+                    Nombre = actual.Nombre,
+                    Descripcion = actual.Descripcion,
+                    Ascii = actual.Ascii,
+                    Fuerza = actual.Fuerza,
+                    Velocidad = actual.Velocidad,
+                    Resistencia = actual.Resistencia,
+                    Inteligencia = actual.Inteligencia,
+                    Energia = actual.Energia,
+                    Habilidad = actual.Habilidad,
+                    Ubicacion = actual.Ubicacion,
+                    Orden = actual.Orden,
+                };
+                db.Cartas.Add(fila);
+            }
+            else
+            {
+                fila.IdPersonaje = actual.IdPersonaje;
+                fila.Nombre = actual.Nombre;
+                fila.Descripcion = actual.Descripcion;
+                fila.Ascii = actual.Ascii;
+                fila.Fuerza = actual.Fuerza;
+                fila.Velocidad = actual.Velocidad;
+                fila.Resistencia = actual.Resistencia;
+                fila.Inteligencia = actual.Inteligencia;
+                fila.Energia = actual.Energia;
+                fila.Habilidad = actual.Habilidad;
+                fila.Ubicacion = actual.Ubicacion;
+                fila.Orden = actual.Orden;
+            }
+        }
+        foreach (var actual in estado.Rondas)
+        {
+            var fila = db.Rondas.Find(estado.Id, actual.Numero);
+            if (fila is null)
+            {
+                fila = new RondaGuardada
+                {
+                    IdPartida = estado.Id,
+                    Numero = actual.Numero,
+                    Mano = actual.Mano,
+                    VictoriasJ1 = actual.VictoriasJ1,
+                    VictoriasJ2 = actual.VictoriasJ2,
+                    Ganador = actual.Ganador,
+                };
+                db.Rondas.Add(fila);
+            }
+            else
+            {
+                fila.Numero = actual.Numero;
+                fila.Mano = actual.Mano;
+                fila.VictoriasJ1 = actual.VictoriasJ1;
+                fila.VictoriasJ2 = actual.VictoriasJ2;
+                fila.Ganador = actual.Ganador;
+            }
+        }
+        foreach (var actual in estado.Combates)
+        {
+            var fila = db.Combates.Find(estado.Id, actual.NumeroRonda, actual.Numero);
+            if (fila is null)
+            {
+                fila = new CombateGuardado
+                {
+                    IdPartida = estado.Id,
+                    NumeroRonda = actual.NumeroRonda,
+                    Numero = actual.Numero,
+                    Elector = actual.Elector,
+                    IdCartaElector = actual.IdCartaElector,
+                    IdCartaRival = actual.IdCartaRival,
+                    Atributo = actual.Atributo,
+                    PuntajeElector = actual.PuntajeElector,
+                    PuntajeRival = actual.PuntajeRival,
+                    Ganador = actual.Ganador,
+                };
+                db.Combates.Add(fila);
+            }
+            else
+            {
+                fila.NumeroRonda = actual.NumeroRonda;
+                fila.Numero = actual.Numero;
+                fila.Elector = actual.Elector;
+                fila.IdCartaElector = actual.IdCartaElector;
+                fila.IdCartaRival = actual.IdCartaRival;
+                fila.Atributo = actual.Atributo;
+                fila.PuntajeElector = actual.PuntajeElector;
+                fila.PuntajeRival = actual.PuntajeRival;
+                fila.Ganador = actual.Ganador;
+            }
+        }
+        foreach (var actual in estado.Solicitudes)
+        {
+            var fila = db.Solicitudes.Find(actual.Id);
+            if (fila is null)
+            {
+                fila = new SolicitudGuardada
+                {
+                    IdPartida = estado.Id,
+                    Id = actual.Id,
+                    NumeroRonda = actual.NumeroRonda,
+                    NumeroCombate = actual.NumeroCombate,
+                    Rol = actual.Rol,
+                    Tipo = actual.Tipo,
+                    Consumida = actual.Consumida,
+                };
+                db.Solicitudes.Add(fila);
+            }
+            else
+            {
+                fila.Id = actual.Id;
+                fila.NumeroRonda = actual.NumeroRonda;
+                fila.NumeroCombate = actual.NumeroCombate;
+                fila.Rol = actual.Rol;
+                fila.Tipo = actual.Tipo;
+                fila.Consumida = actual.Consumida;
+            }
+        }
+    }
+
+}
+```
+
+### Relaciones y verificación
+
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
+
+</details>
+
+<details>
 <summary>src/servidor/Api/BaseJuego.cs</summary>
 
 [Página individual](archivos/src/servidor/Api/BaseJuego.md)
@@ -2328,7 +2768,7 @@ Fuente: [src/servidor/Api/BaseJuego.cs](../src/servidor/Api/BaseJuego.cs). Proye
 
 ### Propósito y responsabilidad
 
-Define el contexto de Entity Framework Core y las entidades principales de partida/plaza. Centraliza nombres de tablas, claves y relaciones para que [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md) abra unidades de trabajo sobre SQLite. No autentica ni ejecuta turnos por sí mismo.
+Define el contexto de Entity Framework Core y las entidades principales de partida/plaza. Centraliza nombres de tablas, claves y relaciones para que [SqliteJuego](archivos/src/servidor/Api/SqliteJuego.md) abra unidades de trabajo sobre SQLite. No autentica ni ejecuta turnos por sí mismo.
 
 ### Dependencias
 
@@ -2351,7 +2791,7 @@ Define el contexto de Entity Framework Core y las entidades principales de parti
 | Solicitudes | internal DbSet<SolicitudGuardada>, getter `Set<T>()` |
 | Operaciones | internal DbSet<OperacionGuardada>, getter `Set<T>()` |
 
-Estos accesores no ejecutan consultas ni guardan cambios; exponen conjuntos del contexto. El contexto se desecha por operación en el repositorio, que gobierna conexión y transacción.
+Estos accesores no ejecutan consultas ni guardan cambios; exponen conjuntos del contexto. El contexto se desecha por operación en SqliteJuego, que gobierna conexión y transacción.
 
 `PartidaGuardada` tiene propiedades públicas get/set: `Guid Id` (clave por convención), `int Revision` (cero inicial); `int? NumeroRonda`, `NumeroCombate`; `Guid? IdSolicitud`; `string? MotivoFin`, `Ganador`, `AbandonoDe`, todos inicialmente null; `string Fase = "esperandoInicio"`. Los anulables distinguen preparación o ausencia de final de una partida activa; no hay guardas en sus setters.
 
@@ -2359,7 +2799,7 @@ Estos accesores no ejecutan consultas ni guardan cambios; exponen conjuntos del 
 
 ### Miembros y ejecución
 
-El constructor de BaseJuego no abre ni crea SQLite: lo hace el repositorio después. `OnModelCreating` se invoca por EF al construir el modelo. No retorna datos ni recorre partidas; declara este mapa:
+El constructor de BaseJuego no abre ni crea SQLite: lo hace SqliteJuego después. `OnModelCreating` se invoca por EF al construir el modelo. No retorna datos ni recorre partidas; declara este mapa:
 
 | Entidad → tabla | Clave y restricciones declaradas aquí |
 |---|---|
@@ -2398,11 +2838,117 @@ Normal: crear partida P y participantes `(P,J1)` y `(P,J2)` permite dos plazas c
 
 ### Errores, límites y efectos observables
 
-Este archivo no convierte excepciones de base ni verifica umbrales académicos, roles o fases. Los setters admiten asignaciones que luego pueden fallar al guardar. EnsureCreated del repositorio crea esquema si falta; este archivo no contiene migraciones ni actualiza por sí solo un esquema antiguo. La configuración exacta de proveedor se recibe en opciones.
+Este archivo no convierte excepciones de base ni verifica umbrales académicos, roles o fases. Los setters admiten asignaciones que luego pueden fallar al guardar. EnsureCreated de SqliteJuego crea esquema si falta; este archivo no contiene migraciones ni actualiza por sí solo un esquema antiguo. La configuración exacta de proveedor se recibe en opciones.
 
 ### Relaciones y verificación
 
 [ApiHttpTests](archivos/test/proyecto-integrador-final-tests/ApiHttpTests.md) define recuperación tras reinicio y rollback de elección; [CargaJsonTests](archivos/test/proyecto-integrador-final-tests/CargaJsonTests.md) define persistencia exacta y reversión de reemplazo fallido. Cubren usos del esquema, no toda asignación arbitraria a las entidades. Véase [plan de pruebas](plan-de-pruebas.md) para ejecución y limitaciones.
+
+</details>
+
+<details>
+<summary>src/servidor/Api/CatalogoPersonajes.cs</summary>
+
+[Página individual](archivos/src/servidor/Api/CatalogoPersonajes.md)
+
+## src/servidor/Api/CatalogoPersonajes.cs
+
+Fuente: [src/servidor/Api/CatalogoPersonajes.cs](../src/servidor/Api/CatalogoPersonajes.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Administración y copia del catálogo.
+
+### Estado, miembros y ejecución
+
+DarDeAlta valida antes de escribir, asigna máximo ID positivo más uno y rechaza agotamiento. CantidadCatalogo cuenta todas las entradas. ReemplazarCatalogo rechaza lista vacía, valida todos los personajes y nombres duplicados antes de borrar; asigna IDs desde uno y reemplaza en una transacción. Desactivar excluye futuras copias sin borrar el personaje. CopiarActivos consulta activos dentro del contexto transaccional suministrado al inicio. CartaCatalogo crea CartaPartida con todos los datos y atributos.
+
+### Errores, límites y efectos
+
+El reemplazo no cambia las copias de partidas iniciadas. Comparación de nombres ignora mayúsculas y recorta extremos; no se introduce otra política de concurrencia. Validación y diagnóstico públicos conservan ErrorApi.
+
+### Implementación contrastada
+
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+
+namespace Proyecto_Integrador_Final.Api;
+
+internal sealed class CatalogoPersonajes(SqliteJuego infraestructura)
+{
+    internal int DarDeAlta(AltaPersonaje datos)
+    {
+        var personaje = datos.Validar();
+        return infraestructura.Ejecutar(true, db =>
+        {
+            int mayor = db.Catalogo.Where(p => p.Id > 0).Select(p => (int?)p.Id).Max() ?? 0;
+            if (mayor == int.MaxValue)
+                throw new ErrorApi(409, "operacionIncompatible", "Se agotaron los IDs de alta automática.");
+            personaje.Id = mayor + 1;
+            db.Catalogo.Add(personaje);
+            return personaje.Id;
+        });
+    }
+
+    internal int CantidadCatalogo() => infraestructura.Ejecutar(false, db => db.Catalogo.Count());
+
+    internal int ReemplazarCatalogo(AltaPersonaje[] datos)
+    {
+        if (datos.Length == 0) throw LotePersonajes.Invalido("La lista no puede estar vacía.");
+        var nombres = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var personajes = datos.Select((dato, indice) =>
+        {
+            try
+            {
+                var personaje = dato.Validar();
+                if (!nombres.Add(personaje.Nombre.Trim())) throw LotePersonajes.Invalido("nombre duplicado.");
+                personaje.Id = indice + 1;
+                return personaje;
+            }
+            catch (ErrorApi error)
+            {
+                throw LotePersonajes.Invalido($"Personaje {indice + 1} ({dato.Nombre}): {error.Message}");
+            }
+        }).ToArray();
+        return infraestructura.Ejecutar(true, db =>
+        {
+            db.Catalogo.ExecuteDelete();
+            db.Catalogo.AddRange(personajes);
+            return personajes.Length;
+        });
+    }
+
+    internal void Desactivar(int id) => infraestructura.Ejecutar(true, db =>
+    {
+        var personaje = db.Catalogo.Find(id) ?? throw ErrorApi.NoEncontrado();
+        personaje.Activo = false;
+        return true;
+    });
+
+    internal CartaPartida[] CopiarActivos(BaseJuego db) =>
+        db.Catalogo.Where(p => p.Activo).ToArray().Select(CartaCatalogo).ToArray();
+
+    private static CartaPartida CartaCatalogo(PersonajeCatalogo c) => new()
+    {
+        IdPersonaje = c.Id,
+        Nombre = c.Nombre,
+        Descripcion = c.Descripcion,
+        Ascii = c.Ascii,
+        Fuerza = c.Fuerza,
+        Velocidad = c.Velocidad,
+        Resistencia = c.Resistencia,
+        Inteligencia = c.Inteligencia,
+        Energia = c.Energia,
+        Habilidad = c.Habilidad,
+    };
+}
+```
+
+### Relaciones y verificación
+
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
 
 </details>
 
@@ -2492,76 +3038,48 @@ Solo escribe preguntas/diagnósticos y consume entrada. Un directorio existente 
 
 ## src/servidor/Api/ConsolaServidor.cs
 
-Fuente: [src/servidor/Api/ConsolaServidor.cs](../src/servidor/Api/ConsolaServidor.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión común: [catálogo](archivos/README.md#versión-documentada).
+Fuente: [src/servidor/Api/ConsolaServidor.cs](../src/servidor/Api/ConsolaServidor.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
 
 ### Propósito y responsabilidad
 
-Expone operaciones administrativas por entrada/salida del operador local, con preguntas separadas para UUID, plaza o personaje. [Program](archivos/src/servidor/Program.md) ejecuta su bucle junto al host. No ofrece un protocolo de consola para los jugadores: ellos usan HTTP.
+Comandos administrativos del operador.
 
-### Dependencias
+### Estado, miembros y ejecución
 
-[RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md) crea/cancela partidas, revoca sesiones y desactiva cartas; [transiciones](archivos/src/servidor/Api/TransicionesPartida.md) inicia. [EntradaConsola](archivos/src/comun/EntradaConsola.md) valida y repite preguntas. SqliteException y DbUpdateException producen diagnóstico de almacenamiento. [Protocolo](protocolo-de-partida.md) describe operación del servidor.
+comandos conserva grupos y descripciones. Ejecutar recibe CoordinadorPartidas, AdministradorSesiones y CatalogoPersonajes, muestra ayuda y lee hasta EOF/cancelación. Comando pregunta UUID/plaza/ID con EntradaConsola y despacha crear/iniciar/cancelar al coordinador, cerrar-sesion/reemplazar-credencial a sesiones y desactivar al catálogo. Ayuda agrupa las siete entradas sin escribir estado.
 
-### Estructura y estado
+### Errores, límites y efectos
 
-`internal static class ConsolaServidor`, sin instancia, partial, eventos o interfaces. Campo privado estático readonly `Dictionary<string,(string Grupo,string Descripcion)> comandos`: crear/iniciar/cancelar en Partidas; cerrar-sesion/reemplazar-credencial en Jugadores; desactivar en Catálogo; ayuda en Ayuda. El diccionario conserva textos para mostrar ayuda, no delegados que ejecuten comandos; el switch de Comando hace el despacho. No se modifica después de inicializar.
+EOF durante preguntas cancela la acción incompleta. ErrorApi muestra mensaje y continúa; SqliteException/DbUpdateException muestran almacenamiento no disponible. Las credenciales creadas o reemplazadas se entregan intencionalmente al operador. El formato de comandos y salidas se conserva.
 
-### Miembros y ejecución
+### Implementación contrastada
 
-`internal static void Ejecutar(RepositorioJuego juego,TextReader entrada,TextWriter salida,CancellationToken detener)` imprime Ayuda y repite mientras no haya cancelación y ReadLine devuelva línea. Vuelve a comprobar cancelación después de leer para no aplicar una línea recibida al detener. Pasa `linea.Trim()` a Comando. EOF durante preguntas produce EndOfStreamException capturada y retorno sin ejecutar la acción incompleta; ErrorApi imprime Message y continúa con próximo comando; SqliteException o DbUpdateException imprimen «El almacenamiento no está disponible.» y continúan. Otras excepciones se propagan. Una cancelación no interrumpe una ReadLine ya bloqueada: se comprueba al recuperar control.
-
-`private static void Comando(RepositorioJuego juego,string linea,TextReader entrada,TextWriter salida)` pasa comando a minúsculas invariantes, crea lector, inicia id=Guid.Empty y rol=null. Para iniciar/cancelar/cerrar-sesion/reemplazar-credencial pregunta UUID, exige TryParse y no Empty y repite si falla; después Parse es seguro para la cadena aceptada. Para cerrar/reemplazar pregunta rol con aceptación J1/J2 ignorando caso y almacena mayúsculas. Para desactivar pide entero positivo. No mezcla los argumentos con la línea del comando: escribir `iniciar UUID` se trata como comando desconocido.
-
-Fragmento real de las precondiciones de preguntas:
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
 
 ```csharp
-        if (comando is "iniciar" or "cancelar" or "cerrar-sesion" or "reemplazar-credencial")
-            id = Guid.Parse(lector.Validar("UUID de la partida", v => Guid.TryParse(v, out var g) && g != Guid.Empty,
-                "Ingresá un UUID válido y distinto de cero."));
-        if (comando is "cerrar-sesion" or "reemplazar-credencial")
-            rol = lector.Validar("Plaza: J1 o J2", v => v.ToUpperInvariant() is "J1" or "J2",
-                "Elegí J1 o J2.").ToUpperInvariant();
-        string argumento = comando == "desactivar"
-            ? lector.Validar("ID numérico del personaje", v => int.TryParse(v, out int n) && n > 0,
-                "Ingresá un ID numérico positivo.") : "";
-```
+using Proyecto_Integrador_Final.Consola;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
-Despacho y efectos del switch:
+namespace Proyecto_Integrador_Final.Api;
 
-| Comando | Acción y salida |
-|---|---|
-| cadena vacía | No hace nada; vuelve al bucle. |
-| ayuda | Reimprime Ayuda. |
-| crear | CrearPartida; imprime `Partida {UUID}`, `J1 {credencial}` y `J2 {credencial}`. Las credenciales se revelan aquí intencionalmente al operador. |
-| iniciar | Iniciar(id); si acepta imprime «Partida iniciada.». |
-| cancelar | Cancelar(id); imprime «Partida cancelada.». |
-| cerrar-sesion | CerrarSesion(id,rol); imprime «Sesión cerrada.». |
-| reemplazar-credencial | ReemplazarCredencial(id,rol); imprime rol y nuevo secreto. |
-| desactivar | Si argumento parsea int, Desactivar; imprime «Personaje desactivado.». La pregunta ya validó positivo. |
-| cualquier otro | Imprime comando desconocido y sugiere ayuda; no llama al repositorio. |
+internal static class ConsolaServidor
+{
+    private static readonly Dictionary<string, (string Grupo, string Descripcion)> comandos = new()
+    {
+        ["crear"] = ("Partidas", "Crea una partida y muestra su ID y las credenciales de J1 y J2."),
+        ["iniciar"] = ("Partidas", "Inicia la partida cuando están presentes los dos jugadores y hay al menos seis personajes activos."),
+        ["cancelar"] = ("Partidas", "Finaliza la partida por cancelación."),
+        ["cerrar-sesion"] = ("Jugadores", "Cierra la sesión del jugador. Puede volver a conectarse con su credencial."),
+        ["reemplazar-credencial"] = ("Jugadores", "Cierra la sesión, invalida la credencial anterior y muestra la nueva."),
+        ["desactivar"] = ("Catálogo", "Excluye al personaje de las partidas que se inicien en adelante."),
+        ["ayuda"] = ("Ayuda", "Vuelve a mostrar esta guía.")
+    };
 
-`private static void Ayuda(TextWriter salida)` imprime título e instrucciones crear/iniciar, agrupa comandos por Grupo con GroupBy, recorre cada grupo y luego cada entrada mostrando nombre y descripción. Termina con instrucciones de responder preguntas y EOF. Las iteraciones son finitas sobre siete entradas; no interactúan con la base ni consumen entrada.
-
-Fragmento real del bucle de ayuda:
-
-```csharp
-        foreach (var grupo in comandos.GroupBy(comando => comando.Value.Grupo))
-        {
-            salida.WriteLine();
-            salida.WriteLine(grupo.Key);
-            foreach (var comando in grupo)
-            {
-                salida.WriteLine($"  {comando.Key}");
-                salida.WriteLine($"    {comando.Value.Descripcion}");
-            }
-        }
-```
-
-#### Fragmentos de despacho y control del bucle
-
-Ejecutar vuelve a comprobar cancelación después de leer; EOF en una pregunta retorna, mientras ErrorApi permite continuar. El diagnóstico de base no imprime detalles internos:
-
-```csharp
+    internal static void Ejecutar(CoordinadorPartidas juego, AdministradorSesiones sesiones, CatalogoPersonajes catalogo, TextReader entrada, TextWriter salida,
+        CancellationToken detener)
+    {
+        Ayuda(salida);
         while (!detener.IsCancellationRequested && entrada.ReadLine() is string linea)
         {
             if (detener.IsCancellationRequested)
@@ -2569,7 +3087,7 @@ Ejecutar vuelve a comprobar cancelación después de leer; EOF en una pregunta r
 
             try
             {
-                Comando(juego, linea.Trim(), entrada, salida);
+                Comando(juego, sesiones, catalogo, linea.Trim(), entrada, salida);
             }
             catch (EndOfStreamException)
             {
@@ -2584,11 +3102,30 @@ Ejecutar vuelve a comprobar cancelación después de leer; EOF en una pregunta r
                 salida.WriteLine("El almacenamiento no está disponible.");
             }
         }
-```
+    }
 
-Estos casos del switch vinculan comandos aceptados con efectos reales: crear revela credenciales al operador; iniciar/cancelar solo imprimen éxito después del retorno del repositorio; cerrar/reemplazar afectan sesión/credencial; desactivar actúa sobre catálogo:
-
-```csharp
+    private static void Comando(CoordinadorPartidas juego, AdministradorSesiones sesiones, CatalogoPersonajes catalogo, string linea, TextReader entrada, TextWriter salida)
+    {
+        string comando = linea.ToLowerInvariant();
+        var lector = new EntradaConsola(entrada, salida);
+        Guid id = Guid.Empty;
+        string? rol = null;
+        if (comando is "iniciar" or "cancelar" or "cerrar-sesion" or "reemplazar-credencial")
+            id = Guid.Parse(lector.Validar("UUID de la partida", v => Guid.TryParse(v, out var g) && g != Guid.Empty,
+                "Ingresá un UUID válido y distinto de cero."));
+        if (comando is "cerrar-sesion" or "reemplazar-credencial")
+            rol = lector.Validar("Plaza: J1 o J2", v => v.ToUpperInvariant() is "J1" or "J2",
+                "Elegí J1 o J2.").ToUpperInvariant();
+        string argumento = comando == "desactivar"
+            ? lector.Validar("ID numérico del personaje", v => int.TryParse(v, out int n) && n > 0,
+                "Ingresá un ID numérico positivo.") : "";
+        switch (comando)
+        {
+            case "":
+                break;
+            case "ayuda":
+                Ayuda(salida);
+                break;
             case "crear":
                 var partida = juego.CrearPartida();
                 salida.WriteLine($"Partida {partida.Id}");
@@ -2604,34 +3141,160 @@ Estos casos del switch vinculan comandos aceptados con efectos reales: crear rev
                 salida.WriteLine("Partida cancelada.");
                 break;
             case "cerrar-sesion":
-                juego.CerrarSesion(id, rol!);
+                sesiones.CerrarSesion(id, rol!);
                 salida.WriteLine("Sesión cerrada.");
                 break;
             case "reemplazar-credencial":
-                salida.WriteLine($"{rol} {juego.ReemplazarCredencial(id, rol!)}");
+                salida.WriteLine($"{rol} {sesiones.ReemplazarCredencial(id, rol!)}");
                 break;
             case "desactivar" when int.TryParse(argumento, out int personaje):
-                juego.Desactivar(personaje);
+                catalogo.Desactivar(personaje);
                 salida.WriteLine("Personaje desactivado.");
                 break;
             default:
                 salida.WriteLine("Comando desconocido. Escribí ayuda para ver los comandos.");
                 break;
+        }
+    }
+
+    private static void Ayuda(TextWriter salida)
+    {
+        salida.WriteLine("=== Consola del servidor de Guerra ===");
+        salida.WriteLine("Para empezar, escribí crear y compartí con cada jugador el ID de la partida y su credencial.");
+        salida.WriteLine("Cuando ambos estén conectados, escribí iniciar y luego ingresá ese ID.");
+
+        foreach (var grupo in comandos.GroupBy(comando => comando.Value.Grupo))
+        {
+            salida.WriteLine();
+            salida.WriteLine(grupo.Key);
+            foreach (var comando in grupo)
+            {
+                salida.WriteLine($"  {comando.Key}");
+                salida.WriteLine($"    {comando.Value.Descripcion}");
+            }
+        }
+
+        salida.WriteLine();
+        salida.WriteLine("Elegí una acción y luego respondé sus preguntas. Fin de entrada cierra la consola.");
+        salida.WriteLine();
+    }
+}
 ```
-
-### Recorridos y ejemplos
-
-Normal: escribir `crear` produce UUID P y dos credenciales; tras incorporar ambas plazas y cargar seis cartas, escribir `iniciar`, luego P, inicia y confirma. Entrada ` CERRAR-SESION ` se recorta y baja a minúsculas; pregunta UUID y plaza, acepta `j1` y la convierte a J1 antes de cerrar.
-
-Alternativo: `cancelar`, UUID inválido, UUID válido reintenta solo el dato y finalmente cancela. EOF mientras espera UUID cierra sin Cancelar. `iniciar P` en una sola línea imprime desconocido. ErrorApi de partida inexistente imprime su mensaje y permite otro comando. Recorridos de lectura, no administración de servicios reales.
-
-### Errores, límites y efectos observables
-
-Hay escritura persistida cuando el repositorio la ejecuta y cambios de sesión en memoria para cerrar/reemplazar. No imprime stack ni errores SQLite internos. Solo captura los fallos enumerados. Una cancelación durante lectura no puede cerrar el flujo por sí misma; Program coordina parada del host.
 
 ### Relaciones y verificación
 
-[ConsolaServidorTests](archivos/test/proyecto-integrador-final-tests/ConsolaServidorTests.md) define ayuda, corrección de UUID/plaza y EOF antes de confirmar. [EntradaProcesosContratoTests](archivos/test/proyecto-integrador-final-tests/EntradaProcesosContratoTests.md) ejercita entrada del proceso real. La suite de referencia se registra en [verificación spec 004](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004); no equivale a ensayo de administración de un servidor real de producción.
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
+
+</details>
+
+<details>
+<summary>src/servidor/Api/CoordinadorPartidas.cs</summary>
+
+[Página individual](archivos/src/servidor/Api/CoordinadorPartidas.md)
+
+## src/servidor/Api/CoordinadorPartidas.cs
+
+Fuente: [src/servidor/Api/CoordinadorPartidas.cs](../src/servidor/Api/CoordinadorPartidas.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Coordinación de acciones, acceso y recibos.
+
+### Estado, miembros y ejecución
+
+CrearPartida delega la creación. Iniciar conserva el orden observable fase, presencia, catálogo y dominio. Cancelar y Abandonar invocan Partida; Abandonar exige acceso. Elegir valida la estructura, normaliza atributo, exige acceso, recupera primero el recibo previo y solo después comprueba presencia y registra la elección. ConsultarRecibo exige acceso y busca por rol. Presentacion autentica y delega la proyección a VistaPartida con presencia calculada. Acceso autentica y exige sesión; ExigirPresencia conserva partidaPausada. Ejecutar mantiene el bloqueo compartido durante carga, acceso, acción y confirmación, y traduce ExcepcionPartida a ErrorApi.
+
+### Errores, límites y efectos
+
+Una operación idéntica devuelve el recibo aunque cambien revisión o turno; el mismo ID con otros datos falla. No contiene reglas de combate o reparto ni expone DbContext. La presentación no renueva presencia.
+
+### Implementación contrastada
+
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
+
+```csharp
+namespace Proyecto_Integrador_Final.Api;
+
+internal sealed class CoordinadorPartidas(AlmacenPartidas almacen, AdministradorSesiones sesiones, CatalogoPersonajes catalogo)
+{
+    private readonly VistaPartida vista = new();
+    internal PartidaCreada CrearPartida() => almacen.CrearPartida();
+
+    internal void Iniciar(Guid id) => Ejecutar(id, true, unidad =>
+    {
+        if (unidad.Partida.Estado.Fase != "esperandoInicio")
+            throw new ErrorApi(409, "operacionIncompatible", "La partida ya se inició o finalizó.");
+        ExigirPresencia(id);
+        unidad.Partida.Iniciar(unidad.CopiarCatalogoActivo(catalogo));
+        return true;
+    });
+
+    internal void Cancelar(Guid id) => Ejecutar(id, true, unidad =>
+    {
+        unidad.Partida.Cancelar();
+        return true;
+    });
+
+    internal Confirmacion Elegir(Guid id, string? credencial, Guid idSesion, Eleccion datos)
+    {
+        if (datos.IdOperacion == Guid.Empty || datos.IdSolicitud == Guid.Empty ||
+            datos.RevisionEsperada is null or < 0 || datos.IdPersonaje is null)
+            throw ErrorApi.Entrada();
+        datos = datos with { Atributo = Partida.NormalizarAtributo(datos.Atributo) };
+        return Ejecutar(id, true, unidad =>
+        {
+            var rol = Acceso(unidad, id, credencial, idSesion);
+            if (unidad.Recuperar(rol, datos) is { } anterior) return anterior;
+            if (unidad.Partida.Estado.Fase is "esperandoElector" or "esperandoRival") ExigirPresencia(id);
+            unidad.Partida.RegistrarEleccion(rol, datos.IdSolicitud, datos.RevisionEsperada.Value,
+                datos.IdPersonaje.Value, datos.Atributo);
+            return unidad.Confirmar(rol, datos);
+        });
+    }
+
+    internal Recibo ConsultarRecibo(Guid id, string? credencial, Guid idSesion, Guid idOperacion) =>
+        Ejecutar(id, false, unidad => unidad.ConsultarRecibo(Acceso(unidad, id, credencial, idSesion), idOperacion));
+
+    internal void Abandonar(Guid id, string? credencial, Guid idSesion) => Ejecutar(id, true, unidad =>
+    {
+        unidad.Partida.Abandonar(Acceso(unidad, id, credencial, idSesion));
+        return true;
+    });
+
+    internal PresentacionVisible Presentacion(Guid id, string? credencial, Guid idSesion) =>
+        Ejecutar(id, false, unidad => vista.Construir(unidad.Partida.Estado,
+            Acceso(unidad, id, credencial, idSesion), sesiones.AmbosPresentes(id)));
+
+    private string Acceso(UnidadPartida unidad, Guid id, string? credencial, Guid idSesion)
+    {
+        var rol = unidad.Autenticar(credencial);
+        sesiones.ExigirSesion(id, rol, idSesion);
+        return rol;
+    }
+
+    private void ExigirPresencia(Guid id)
+    {
+        if (!sesiones.AmbosPresentes(id))
+            throw new ErrorApi(409, "partidaPausada", "Se necesitan los dos participantes presentes.");
+    }
+
+    private T Ejecutar<T>(Guid id, bool escritura, Func<UnidadPartida, T> accion)
+    {
+        lock (sesiones.Sincronizacion)
+        {
+            try { return almacen.Ejecutar(id, escritura, accion); }
+            catch (ExcepcionPartida error)
+            {
+                throw new ErrorApi(error.Codigo == "eleccionInvalida" ? 422 : 409, error.Codigo, error.Message);
+            }
+        }
+    }
+}
+```
+
+### Relaciones y verificación
+
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
 
 </details>
 
@@ -2646,7 +3309,7 @@ Fuente: [src/servidor/Api/EstadoPartida.cs](../src/servidor/Api/EstadoPartida.cs
 
 ### Propósito y responsabilidad
 
-Agrupa los datos persistidos de cartas de una partida, rondas, combates, solicitudes y recibos idempotentes. Proporciona conversiones entre copia persistida, dominio local y JSON visible. [TransicionesPartida](archivos/src/servidor/Api/TransicionesPartida.md) modifica estas entidades; [PresentacionPartida](archivos/src/servidor/Api/PresentacionPartida.md) compone la vista sin filtrar manos ajenas por accidente.
+Agrupa los datos persistidos de cartas de una partida, rondas, combates, solicitudes y recibos idempotentes. Proporciona conversiones entre copia persistida, dominio local y JSON visible. [AlmacenPartidas](archivos/src/servidor/Api/AlmacenPartidas.md) mapea estas entidades al estado del dominio; [VistaPartida](archivos/src/servidor/Api/VistaPartida.md) construye la salida desde ese estado. Las conversiones auxiliares originales permanecen disponibles, sin trasladar al dominio las entidades persistidas.
 
 ### Dependencias
 
@@ -2718,7 +3381,7 @@ Alternativo: Dominio de una fila con seis 500 falla por falta de fortaleza aunqu
 
 ### Errores, límites y efectos observables
 
-No guarda ni hace transacciones. El repositorio asigna IDs, cambia ubicaciones y marca Consumida. Required no equivale a validación de JSON ni SQL de reglas académicas. Las propiedades permiten estados intermedios deliberados (combate sin ambas cartas); las transiciones fijan cuándo pueden publicarse.
+No guarda ni hace transacciones. Partida genera solicitudes y cambia ubicaciones/Consumida en el estado de dominio; AlmacenPartidas mapea esos cambios a estas entidades. Required no equivale a validación de JSON ni SQL de reglas académicas. Las propiedades permiten estados intermedios deliberados (combate sin ambas cartas); las transiciones fijan cuándo pueden publicarse.
 
 ### Relaciones y verificación
 
@@ -2737,7 +3400,7 @@ Fuente: [src/servidor/Api/LotePersonajes.cs](../src/servidor/Api/LotePersonajes.
 
 ### Propósito y responsabilidad
 
-Convierte el JSON de reemplazo de catálogo en un array tipado, comprobando forma, tipos, IDs prohibidos y nombres duplicados antes de persistir. [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md) lo llama para PUT del catálogo; [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md) vuelve a validar reglas de dominio y realiza el reemplazo atómico.
+Convierte el JSON de reemplazo de catálogo en un array tipado, comprobando forma, tipos, IDs prohibidos y nombres duplicados antes de persistir. [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md) lo llama para PUT del catálogo; [CatalogoPersonajes](archivos/src/servidor/Api/CatalogoPersonajes.md) vuelve a validar reglas de dominio y realiza el reemplazo atómico.
 
 ### Dependencias
 
@@ -2808,7 +3471,7 @@ Al construir AltaPersonaje, cada llamada local exige tipo exacto. El conjunto co
 
 ### Recorridos y ejemplos
 
-Normal: un objeto con nombre Ada, descripcion vacía, ascii `*` y seis enteros `(250,350,450,550,650,750)` produce un alta; RepositorioJuego decidirá el ID. Alternativo: nombres `Ada` y ` ada ` provocan `Personaje 2 ( ada ): nombre duplicado.`; una propiedad `ID` se rechaza aunque los demás datos sean correctos. Un array `[7]` falla como objeto antes de leer campos. Recorridos de lectura, no peticiones ejecutadas aquí.
+Normal: un objeto con nombre Ada, descripcion vacía, ascii `*` y seis enteros `(250,350,450,550,650,750)` produce un alta; CatalogoPersonajes decidirá el ID. Alternativo: nombres `Ada` y ` ada ` provocan `Personaje 2 ( ada ): nombre duplicado.`; una propiedad `ID` se rechaza aunque los demás datos sean correctos. Un array `[7]` falla como objeto antes de leer campos. Recorridos de lectura, no peticiones ejecutadas aquí.
 
 ### Errores, límites y efectos observables
 
@@ -2816,7 +3479,7 @@ No impone tamaño máximo de lote propio, ni verifica nombre en blanco, límites
 
 ### Relaciones y verificación
 
-[CargaJsonTests](archivos/test/proyecto-integrador-final-tests/CargaJsonTests.md) define rechazo de formato incompleto, duplicados normalizados, obligatoriedad y tipos estrictos. La atomicidad pertenece al repositorio y se prueba allí mediante reemplazo y fallo de inserción. Véase [plan de pruebas](plan-de-pruebas.md) para ejecución real y [carga](archivos/src/subir-personajes/Program.md) para la comprobación previa del cliente.
+[CargaJsonTests](archivos/test/proyecto-integrador-final-tests/CargaJsonTests.md) define rechazo de formato incompleto, duplicados normalizados, obligatoriedad y tipos estrictos. La atomicidad pertenece al catálogo y se prueba allí mediante reemplazo y fallo de inserción. Véase [plan de pruebas](plan-de-pruebas.md) para ejecución real y [carga](archivos/src/subir-personajes/Program.md) para la comprobación previa del cliente.
 
 </details>
 
@@ -2831,7 +3494,7 @@ Fuente: [src/servidor/Api/PersonajeCatalogo.cs](../src/servidor/Api/PersonajeCat
 
 ### Propósito y responsabilidad
 
-Declara el contrato de alta y la entidad persistida del catálogo. `AltaPersonaje.Validar` transforma un pedido en una entidad válida, combinando reglas del arte y del modelo [Personaje](archivos/src/servidor/Personaje.md). El ID lo asigna [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md).
+Declara el contrato de alta y la entidad persistida del catálogo. `AltaPersonaje.Validar` transforma un pedido en una entidad válida, combinando reglas del arte y del modelo [Personaje](archivos/src/servidor/Personaje.md). El ID lo asigna [CatalogoPersonajes](archivos/src/servidor/Api/CatalogoPersonajes.md).
 
 ### Dependencias
 
@@ -2880,7 +3543,7 @@ No hay setters con lógica: el bloque final de inicialización simplemente copia
 
 #### Fragmento de entidad aceptada
 
-Solo después de las validaciones se devuelve esta entidad. La inicialización no asigna ID ni Activo: quedan en cero y true por sus declaraciones hasta que el repositorio les asigne identidad:
+Solo después de las validaciones se devuelve esta entidad. La inicialización no asigna ID ni Activo: quedan en cero y true por sus declaraciones hasta que el catálogo les asigne identidad:
 
 ```csharp
         return new()
@@ -2918,361 +3581,45 @@ Todos los rechazos explícitos son `ErrorApi(400, entradaInvalida, ...)`. No com
 
 ## src/servidor/Api/PresentacionPartida.cs
 
-Fuente: [src/servidor/Api/PresentacionPartida.cs](../src/servidor/Api/PresentacionPartida.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión común: [catálogo](archivos/README.md#versión-documentada).
+Fuente: [src/servidor/Api/PresentacionPartida.cs](../src/servidor/Api/PresentacionPartida.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
 
 ### Propósito y responsabilidad
 
-Construye el estado visible para una plaza autenticada, sin revelar la mano rival ni cartas de combates incompletos. Es la porción de lectura de `internal sealed partial RepositorioJuego`, junto a [repositorio](archivos/src/servidor/Api/RepositorioJuego.md) y [transiciones](archivos/src/servidor/Api/TransicionesPartida.md). La presencia puede cambiar Pausada sin modificar revisión persistida.
+Contratos JSON de presentación.
 
-### Dependencias
+### Estado, miembros y ejecución
 
-[EstadoPartida](archivos/src/servidor/Api/EstadoPartida.md) proporciona CartaVisible y entidades; [BaseJuego](archivos/src/servidor/Api/BaseJuego.md) permite consultas EF. `System.Text.Json.Serialization.JsonIgnore` omite dos campos de cierre cuando son null. LINQ ordena y agrupa historial. [Protocolo](protocolo-de-partida.md) describe privacidad y orden de resultados.
+SolicitudVisible contiene UUID, tipo, IDs y atributos permitidos. ResultadoVisible conserva número de ronda/combate, cartas, atributo, puntajes y ganadores. PresentacionVisible reúne identidad, revisión, fase, pausa, rol, nombres, números, marcador, mano, solicitud, resultados y cierre. Sus records producen propiedades posicionales e igualdad por valor; no declaran métodos de negocio. JsonIgnore omite MotivoFin y Ganador cuando son null.
 
-### Estructura
+### Errores, límites y efectos
 
-Además del método de la clase parcial declara tres `internal sealed record` posicionales. Constructor, propiedades públicas init e igualdad se generan; no hay setters con lógica, eventos ni funciones locales. El record no hace copia profunda de arrays o diccionarios.
+Este archivo solo declara DTO; VistaPartida construye sus valores. No queda una clase partial ni acceso al almacenamiento. La forma JSON externa permanece igual.
 
-### Estado y datos
+### Implementación contrastada
 
-| Record | Propiedades completas |
-|---|---|
-| SolicitudVisible | Guid IdSolicitud; string Tipo; int[] IdsPersonajePermitidos; string[] AtributosPermitidos. Solo se entrega a quien debe elegir. |
-| ResultadoVisible | int NumeroRonda/NumeroCombate; Dictionary<string,CartaVisible> Cartas; string Atributo; Dictionary<string,int> Puntajes; string GanadorCombate; string? GanadorRonda. Mapas indexados por J1/J2. |
-| PresentacionVisible | Guid IdPartida; int Revision; string Fase; bool Pausada; string RolPropio; Dictionary<string,string?> Nombres; int? NumeroRonda/NumeroCombate; Dictionary<string,int> Marcador; CartaVisible[] Mano; SolicitudVisible? Solicitud; ResultadoVisible[] Resultados; string? MotivoFin/Ganador. |
-
-MotivoFin y Ganador llevan `[property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]`: se omiten solo al ser null. Otros anulables no tienen ese atributo. No hay campos de estado nuevos en la porción parcial; las colecciones temporales duran una lectura.
-
-### Miembros y ejecución
-
-`internal PresentacionVisible Presentacion(Guid id,string? credencial,Guid idSesion)` llama Ejecutar(false,...), por tanto abre una transacción de lectura y lock sin SaveChanges. Dentro:
-
-1. Acceso exige existencia, credencial y sesión propia vigente. Calcula Pausada según ambos presentes y fase.
-2. Consulta participantes de la partida y cartas ordenadas por Orden. Filtra mano por Ubicacion == rol propio y proyecta Vista. No incluye la reserva ni cartas en jugada dentro de Mano.
-3. Inicia visible=null. Solo si no pausada y hay IdSolicitud busca la fila; solo si Rol coincide crea SolicitudVisible con IDs de la mano propia. Para cartaYAtributo incluye las seis claves canónicas del mapa; para respuesta carta devuelve atributos vacíos. No entrega solicitud al observador de turno ajeno.
-4. Consulta combates de la partida con Ganador no null, ordenados primero por ronda y luego número. Obtiene ganadores de rondas ya definidas y el último combate resuelto por ronda. Crea diccionario de cartas por ID para reconstruir resultados con ambas cartas y puntajes.
-5. Por cada combate resuelto arma ResultadoVisible. GanadorRonda solo se incluye en el último combate resuelto de su ronda y si la ronda está definida; los anteriores llevan null. Devuelve todos los resultados históricos resueltos, no solo los nuevos para un cliente.
-6. Retorna presentación con revisión/fase persistidas, pausa calculada, rol, nombres, números actuales, marcador de rondas, mano propia, solicitud visible, resultados y cierre. No renueva presencia ni incrementa revisión.
-
-Fragmento real de la condición de solicitud:
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
 
 ```csharp
-            SolicitudVisible? visible = null;
-            if (!pausada && partida.IdSolicitud is Guid idSolicitud)
-            {
-                var solicitud = db.Solicitudes.Find(idSolicitud)!;
-                if (solicitud.Rol == jugador.Rol)
-                    visible = new(solicitud.Id, solicitud.Tipo, mano.Select(c => c.IdPersonaje).ToArray(),
-                        solicitud.Tipo == "cartaYAtributo" ? atributos.Keys.ToArray() : []);
-            }
+using System.Text.Json.Serialization;
+
+namespace Proyecto_Integrador_Final.Api;
+
+internal sealed record SolicitudVisible(Guid IdSolicitud, string Tipo,
+    int[] IdsPersonajePermitidos, string[] AtributosPermitidos);
+internal sealed record ResultadoVisible(int NumeroRonda, int NumeroCombate,
+    Dictionary<string, CartaVisible> Cartas, string Atributo, Dictionary<string, int> Puntajes,
+    string GanadorCombate, string? GanadorRonda);
+internal sealed record PresentacionVisible(Guid IdPartida, int Revision, string Fase, bool Pausada,
+    string RolPropio, Dictionary<string, string?> Nombres, int? NumeroRonda, int? NumeroCombate,
+    Dictionary<string, int> Marcador, CartaVisible[] Mano, SolicitudVisible? Solicitud,
+    ResultadoVisible[] Resultados,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? MotivoFin,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Ganador);
 ```
-
-Fragmento de selección y orden del historial; excluye elecciones aún pendientes:
-
-```csharp
-            var historial = db.Combates.Where(c => c.IdPartida == id && c.Ganador != null)
-                .OrderBy(c => c.NumeroRonda).ThenBy(c => c.Numero).ToArray();
-            var ganadores = db.Rondas.Where(r => r.IdPartida == id && r.Ganador != null)
-                .ToDictionary(r => r.Numero, r => r.Ganador);
-            var ultimos = historial.GroupBy(c => c.NumeroRonda).ToDictionary(g => g.Key, g => g.Last().Numero);
-            var cartasPorId = cartas.ToDictionary(c => c.IdPersonaje);
-```
-
-Las lambdas de proyección usan `Otro(c.Elector)` para asociar segunda carta y puntaje al rival, no a un orden fijo de J1/J2. Los `!.Value` presuponen que un combate con ganador tiene cartas y puntajes completos. Las claves duplicadas o referencias faltantes revelarían una base inconsistente mediante excepción, no se silencian.
-
-#### Fragmento de proyección de resultados y vista final
-
-Cada resultado asigna carta/puntaje por rol del elector y su opuesto. La condición del último combate liga GanadorRonda solo al cierre de esa ronda; luego se combinan nombres/marcador y mano propia sin secreto:
-
-```csharp
-            var resultados = historial.Select(c => new ResultadoVisible(
-                c.NumeroRonda, c.Numero,
-                new()
-                {
-                    [c.Elector] = cartasPorId[c.IdCartaElector!.Value].Vista(),
-                    [Otro(c.Elector)] = cartasPorId[c.IdCartaRival!.Value].Vista()
-                },
-                c.Atributo!,
-                new()
-                {
-                    [c.Elector] = c.PuntajeElector!.Value,
-                    [Otro(c.Elector)] = c.PuntajeRival!.Value
-                },
-                c.Ganador!,
-                ultimos[c.NumeroRonda] == c.Numero ? ganadores.GetValueOrDefault(c.NumeroRonda) : null))
-                .ToArray();
-
-            return new PresentacionVisible(id, partida.Revision, partida.Fase, pausada, jugador.Rol,
-                participantes.ToDictionary(p => p.Rol, p => p.Nombre), partida.NumeroRonda,
-                partida.NumeroCombate, participantes.ToDictionary(p => p.Rol, p => p.RondasGanadas),
-                mano, visible, resultados, partida.MotivoFin, partida.Ganador);
-```
-
-### Recorridos y ejemplos
-
-Normal: J1 espera elegir y ambos presentes; su Mano tiene tres cartas, Solicitud incluye sus tres IDs y seis atributos. J2 recibe su propia mano y Solicitud null. Tras resolver combate 1 ambos ven las dos cartas del combate en Resultados ordenados; las cartas restantes del rival siguen fuera de Mano.
-
-Alternativo: vence presencia de J2 durante esperandoElector; J1 aún autenticado recibe Pausada true y Solicitud null con la misma Revision. Si consultara J2 con su sesión vencida, falla Acceso antes de proyectar. En esperandoInicio, números pueden ser null e historial vacío; no hay carta que revelar. Recorridos de lectura, no requests ejecutados aquí.
-
-### Errores, límites y efectos observables
-
-Errores de acceso son 404/401/409 desde helpers. No hay escritura ni secreto dentro del payload. El historial crece con toda la partida; este método no pagina ni acepta revisión desde la cual leer. `no-store` lo agrega el handler HTTP, no este método. Los diccionarios y arrays son nuevos para la respuesta, pero el código no aplica saneamiento terminal: lo hace el cliente al presentar.
 
 ### Relaciones y verificación
 
-[ApiHttpTests](archivos/test/proyecto-integrador-final-tests/ApiHttpTests.md) define elecciones privadas y presencia sin cambio de revisión; [ServidorContratoTests](archivos/test/proyecto-integrador-final-tests/ServidorContratoTests.md) define visibilidad por plaza, pausa y misma solicitud tras recuperar. [EstadoCliente](archivos/src/cliente/EstadoCliente.md) decide qué resultados nuevos mostrar. Véase [plan de pruebas](plan-de-pruebas.md) para evidencia de ejecución.
-
-</details>
-
-<details>
-<summary>src/servidor/Api/RepositorioJuego.cs</summary>
-
-[Página individual](archivos/src/servidor/Api/RepositorioJuego.md)
-
-## src/servidor/Api/RepositorioJuego.cs
-
-Fuente: [src/servidor/Api/RepositorioJuego.cs](../src/servidor/Api/RepositorioJuego.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión común: [catálogo](archivos/README.md#versión-documentada).
-
-### Propósito y responsabilidad
-
-Proporciona acceso serializado al catálogo y partidas, transacciones SQLite y autenticación por plaza. Conserva presencia en memoria durante 15 segundos. Es la parte central de un tipo parcial: [TransicionesPartida](archivos/src/servidor/Api/TransicionesPartida.md) ejecuta jugadas y [PresentacionPartida](archivos/src/servidor/Api/PresentacionPartida.md) proyecta el estado.
-
-### Dependencias
-
-[BaseJuego](archivos/src/servidor/Api/BaseJuego.md) y EF Core consultan/persisten entidades; Microsoft.Data.Sqlite abre transacciones. SHA256, UTF8 y `CryptographicOperations.FixedTimeEquals` comparan hashes; RandomNumberGenerator genera credenciales. TimeProvider permite tiempo sustituible. [AltaPersonaje](archivos/src/servidor/Api/PersonajeCatalogo.md) valida altas. [Protocolo](protocolo-de-partida.md) explica presencia, errores y operación administrativa; [base de datos](bases-de-datos.md) explica durabilidad.
-
-### Estructura
-
-`internal sealed partial class RepositorioJuego : IDisposable`, con constructor interno y Dispose público. Esta porción declara catálogo, credenciales, sesiones, apertura y ejecución; los métodos privados son compartidos por las otras porciones. Los records `internal sealed record PartidaCreada(Guid Id,string CredencialJ1,string CredencialJ2)`, `internal sealed record Incorporacion(Guid IdSesion,string? Nombre)` y `internal sealed record Sesion(string Rol,Guid IdSesion,DateTimeOffset VenceUtc)` generan constructor, propiedades públicas init e igualdad por valor. No tienen lógica adicional ni guardas propias.
-
-### Estado y datos
-
-Campos privados readonly: `string cadena` (conexión); `SqliteConnection? memoria` (solo se abre para DataSource exactamente `:memory:`); `TimeProvider reloj`; `object sincronizacion = new()`; `Dictionary<(Guid,string),Sesion> sesiones = []`. Readonly impide reasignar el contenedor, no mutar el diccionario. Las claves son partida/rol y no se persisten; reiniciar pierde sesiones, mientras nombres, hashes, turnos y recibos quedan en SQLite. Las credenciales en claro se devuelven al crear/reemplazar, pero solo su hash se guarda.
-
-### Miembros y ejecución
-
-#### Apertura, transacción y recursos
-
-`internal RepositorioJuego(string cadena, TimeProvider reloj)` conserva argumentos, interpreta la cadena y, si DataSource es `:memory:`, abre una conexión ancla para que la base sobreviva a los contextos. Luego crea un contexto temporal y llama EnsureCreated; no migra esquema existente. Errores de cadena, permisos o SQLite se propagan.
-
-`private BaseJuego Abrir()` construye opciones EF: UseSqlite(cadena) para archivo o UseSqlite(memoria) para conexión ancla; devuelve contexto nuevo, aún sin ejecutar consultas. `public void Dispose()` desecha la conexión ancla si existe; para archivos no tiene conexión permanente que cerrar.
-
-`private T Ejecutar<T>(bool escritura, Func<BaseJuego,T> operacion)` adquiere lock del repositorio, abre contexto y conexión, inicia transacción con `deferred: !escritura`, asocia EF, ejecuta el delegado, hace SaveChanges solo en escritura, confirma y devuelve resultado. Escritura reserva bloqueo SQLite antes de leer lo que modificará. Excepción antes de Commit sale mediante using y revierte la transacción; no retorna un resultado parcial. Lock de C# es reentrante, por eso puede llamarse desde otros bloques sobre el mismo objeto. Fragmento completo:
-
-```csharp
-    private T Ejecutar<T>(bool escritura, Func<BaseJuego, T> operacion)
-    {
-        lock (sincronizacion)
-        {
-            using var db = Abrir();
-            db.Database.OpenConnection();
-            // La escritura adquiere el bloqueo de SQLite antes de leer el estado que va a modificar.
-            using var transaccion = ((SqliteConnection)db.Database.GetDbConnection())
-                .BeginTransaction(deferred: !escritura);
-            db.Database.UseTransaction(transaccion);
-            var resultado = operacion(db);
-            if (escritura)
-                db.SaveChanges();
-            transaccion.Commit();
-            return resultado;
-        }
-    }
-
-```
-
-No hay await dentro del lock. El delegado no debe escapar con un contexto vivo; el contexto queda desechado al retornar.
-
-#### Catálogo
-
-`internal int DarDeAlta(AltaPersonaje datos)` valida antes de la transacción. Dentro calcula el máximo ID positivo (cero si no existe); si es int.MaxValue falla 409 operacionIncompatible. Asigna max+1, agrega entidad y retorna ID después del commit. No comprueba duplicado de nombre en alta individual.
-
-`internal int CantidadCatalogo()` ejecuta lectura Count de todos, incluidos inactivos.
-
-`internal int ReemplazarCatalogo(AltaPersonaje[] datos)` rechaza array vacío; valida cada alta en orden con Select, asigna IDs índice+1, rechaza nombres repetidos tras Trim con comparación OrdinalIgnoreCase. ErrorApi durante esa preparación se envuelve con índice desde 1 y nombre. ToArray fuerza validación completa antes de borrar. Luego, en una única transacción de escritura, ExecuteDelete borra catálogo, AddRange inserta todos y retorna cantidad después de SaveChanges/Commit. Si falla inserción, rollback recupera catálogo anterior; las copias PersonajePartida no se borran. Fragmento decisivo:
-
-```csharp
-        return Ejecutar(true, db =>
-        {
-            db.Catalogo.ExecuteDelete();
-            db.Catalogo.AddRange(personajes);
-            return personajes.Length;
-        });
-```
-
-`internal void Desactivar(int id)` busca entidad por ID o falla 404; pone Activo false y confirma. Repetirlo conserva false; no altera copias ya repartidas.
-
-#### Administración de partidas y credenciales
-
-`internal PartidaCreada CrearPartida()` genera Guid y dos secretos antes de escribir. Agrega PartidaGuardada (fase esperandoInicio, revisión cero) y dos participantes J1/J2 con hashes; retorna ID y ambos secretos tras commit. No inicia ni copia cartas.
-
-`internal void CerrarSesion(Guid id,string rol)` dentro de lock exige participante existente mediante lectura, luego elimina presencia en memoria. No cambia revisión ni hash; rol ausente produce 404 antes de borrar.
-
-`internal string ReemplazarCredencial(Guid id,string rol)` genera secreto nuevo, guarda su hash sobre participante existente en transacción y luego retira la sesión; retorna nuevo secreto. Si falla guardado no elimina sesión ni devuelve secreto válido.
-
-`internal void Cancelar(Guid id)` busca partida o 404; si ya finalizada falla 409 operacionIncompatible. Incrementa revisión y llama Finalizar con motivo cancelacion sin ganador. No borra plazas ni historial.
-
-#### Incorporación y presencia
-
-`internal Sesion Incorporar(Guid id,string? credencial,Incorporacion datos)` rechaza IdSesion Empty o nombre null/blanco con 400 antes del lock. Dentro exige partida, autentica plaza, consulta sesión vigente; una vigente con UUID distinto falla 409 sesionOcupada. Si ya hay nombre registrado y no coincide exactamente (incluidos espacios/caso), falla 403 sinPermiso. Si no existe, asigna nombre. Crea sesión que vence en reloj UTC+15s, confirma transacción y recién entonces actualiza diccionario. Misma sesión vigente puede renovarse mediante incorporación; una vencida permite nuevo UUID con mismo nombre. No incrementa revisión.
-
-`internal void Renovar(Guid id,string? credencial,Guid idSesion)` dentro de lock exige partida, credencial y sesión vigente exacta. Después sustituye record por `with { VenceUtc = ahora+15s }`; no persiste sesión ni cambia revisión. Datos inválidos no prolongan presencia.
-
-#### Ayudantes privados
-
-- `static ParticipanteGuardado BuscarParticipante(BaseJuego db,Guid id,string rol)`: Find compuesto o ErrorApi.NoEncontrado (404).
-- `static PartidaGuardada Buscar(BaseJuego db,Guid id)`: Find de partida o 404.
-- `static ParticipanteGuardado Autenticar(BaseJuego db,Guid id,string? credencial)`: si no es null/blanco, calcula hash y recorre participantes de esa partida, devolviendo primero con FixedTimeEquals. Si ninguna coincidencia, 401 credencialInvalida. No recorta secreto ni revela qué plaza falló.
-- `Sesion? Vigente(Guid id,string rol)`: devuelve sesión del diccionario solo si VenceUtc > reloj UTC actual; igualdad exacta ya está vencida. No elimina entradas vencidas.
-- `Sesion ExigirSesion(Guid id,string rol,Guid idSesion)`: exige Vigente y UUID igual o 409 sesionVencida.
-- `static byte[] Hash(string credencial)`: SHA256 de bytes UTF8 exactos.
-- `static string NuevaCredencial()`: 32 bytes criptográficos a hexadecimal (64 caracteres); no usa Random.Shared.
-
-Fragmento real de sesión vigente y errores:
-
-```csharp
-    private Sesion? Vigente(Guid id, string rol) =>
-        sesiones.TryGetValue((id, rol), out var sesion) && sesion.VenceUtc > reloj.GetUtcNow()
-            ? sesion : null;
-
-    private Sesion ExigirSesion(Guid id, string rol, Guid idSesion) =>
-        Vigente(id, rol) is { } sesion && sesion.IdSesion == idSesion
-            ? sesion : throw new ErrorApi(409, "sesionVencida", "Se requiere una sesión vigente.");
-```
-
-#### Fragmentos de autenticación y mutaciones
-
-El constructor conserva una conexión solo para `:memory:`; mantenerla abierta evita que cada contexto vea una base nueva. EnsureCreated usa ese mismo origen:
-
-```csharp
-        if (new SqliteConnectionStringBuilder(cadena).DataSource == ":memory:")
-        {
-            memoria = new SqliteConnection(cadena);
-            memoria.Open();
-        }
-
-        using var db = Abrir();
-        db.Database.EnsureCreated();
-```
-
-DarDeAlta calcula un ID positivo nuevo bajo transacción; agotar int32 produce conflicto en vez de desbordar:
-
-```csharp
-            int mayor = db.Catalogo.Where(p => p.Id > 0).Select(p => (int?)p.Id).Max() ?? 0;
-            if (mayor == int.MaxValue)
-                throw new ErrorApi(409, "operacionIncompatible", "Se agotaron los IDs de alta automática.");
-            personaje.Id = mayor + 1;
-            db.Catalogo.Add(personaje);
-            return personaje.Id;
-```
-
-Antes de ReemplazarCatalogo, el Select se materializa con ToArray: valida y asigna IDs antes del bloque que borra. Cada error señala personaje y nombre:
-
-```csharp
-        if (datos.Length == 0) throw LotePersonajes.Invalido("La lista no puede estar vacía.");
-        var nombres = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var personajes = datos.Select((dato, indice) =>
-        {
-            try
-            {
-                var personaje = dato.Validar();
-                if (!nombres.Add(personaje.Nombre.Trim())) throw LotePersonajes.Invalido("nombre duplicado.");
-                personaje.Id = indice + 1;
-                return personaje;
-            }
-            catch (ErrorApi error)
-            {
-                throw LotePersonajes.Invalido($"Personaje {indice + 1} ({dato.Nombre}): {error.Message}");
-            }
-        }).ToArray();
-```
-
-CrearPartida agrega partida y ambas plazas en la misma operación; las credenciales en claro `j1`/`j2` solo forman el valor de retorno y sus hashes se persisten:
-
-```csharp
-        var id = Guid.NewGuid();
-        var j1 = NuevaCredencial();
-        var j2 = NuevaCredencial();
-        return Ejecutar(true, db =>
-        {
-            db.Partidas.Add(new PartidaGuardada { Id = id });
-            db.Participantes.AddRange(
-                new ParticipanteGuardado { IdPartida = id, Rol = "J1", Hash = Hash(j1) },
-                new ParticipanteGuardado { IdPartida = id, Rol = "J2", Hash = Hash(j2) });
-            return new PartidaCreada(id, j1, j2);
-```
-
-ReemplazarCredencial solo borra sesión después de confirmar el hash nuevo. Si falla el guardado, no ejecuta Remove:
-
-```csharp
-            var nueva = NuevaCredencial();
-            Ejecutar(true, db => BuscarParticipante(db, id, rol).Hash = Hash(nueva));
-            sesiones.Remove((id, rol));
-            return nueva;
-```
-
-Cancelar rechaza una partida ya cerrada antes del incremento y usa el helper compartido de finalización:
-
-```csharp
-        if (partida.Fase == "finalizada")
-            throw new ErrorApi(409, "operacionIncompatible", "La partida ya finalizó.");
-        partida.Revision++;
-        Finalizar(db, partida, "cancelacion");
-```
-
-Incorporar distingue plaza ocupada de nombre distinto y guarda el nombre una sola vez. El diccionario de sesiones se actualiza tras la transacción:
-
-```csharp
-                var actual = Vigente(id, participante.Rol);
-                if (actual is not null && actual.IdSesion != datos.IdSesion)
-                    throw new ErrorApi(409, "sesionOcupada", "La plaza tiene una sesión vigente.");
-                if (participante.Nombre is not null && participante.Nombre != datos.Nombre)
-                    throw new ErrorApi(403, "sinPermiso", "El nombre registrado debe coincidir.");
-
-                participante.Nombre ??= datos.Nombre;
-                return new Sesion(participante.Rol, datos.IdSesion, reloj.GetUtcNow().AddSeconds(15));
-            });
-            sesiones[(id, sesion.Rol)] = sesion;
-            return sesion;
-```
-
-La renovación exige acceso vigente y sustituye únicamente vencimiento de presencia; no cambia estado de partida:
-
-```csharp
-                Buscar(db, id);
-                var jugador = Autenticar(db, id, credencial);
-                return ExigirSesion(id, jugador.Rol, idSesion);
-            });
-            sesiones[(id, sesion.Rol)] = sesion with { VenceUtc = reloj.GetUtcNow().AddSeconds(15) };
-```
-
-Autenticar recorre solo plazas de la partida pedida y compara hashes con tiempo fijo; un secreto null o blanco cae directamente en 401:
-
-```csharp
-        if (!string.IsNullOrWhiteSpace(credencial))
-        {
-            var hash = Hash(credencial);
-            foreach (var jugador in db.Participantes.Where(p => p.IdPartida == id))
-            {
-                if (CryptographicOperations.FixedTimeEquals(jugador.Hash, hash))
-                    return jugador;
-            }
-        }
-
-        throw new ErrorApi(401, "credencialInvalida", "La credencial no es válida.");
-```
-
-### Recorridos y ejemplos
-
-Normal: CrearPartida produce P y secretos ficticios representados aquí como C1/C2; Incorporar(P,C1,{S1,"Ana"}) guarda Ana y presencia hasta t+15; Renovar a t+10 mueve vencimiento a t+25 sin cambiar revisión. Reiniciar conserva Ana/hash pero exige nueva incorporación porque sesiones está vacío.
-
-Alternativo: a t+14, UUID S2 sobre la misma plaza falla sesionOcupada; a t+15 exacto la sesión anterior ya venció y S2 puede incorporarse si nombre coincide. ReemplazarCatalogo con dos nombres `Ada`/` ada ` falla antes del borrado. Un fallo de inserción tras ExecuteDelete revierte todo. Recorridos por lectura, no operaciones contra servicios reales.
-
-### Errores, límites y efectos observables
-
-Catalogo, nombres y hashes son persistentes; presencia solo en memoria. No hay cancelación asíncrona ni reintento automático de SQLite. Null en datos o array no está defendido por estos contratos internos. El lock serializa esta instancia, no otros procesos; transacciones SQLite protegen almacenamiento. EnsureCreated no sustituye migraciones. Dispose no limpia sesiones individualmente ni elimina la base.
-
-### Relaciones y verificación
-
-[ApiHttpTests](archivos/test/proyecto-integrador-final-tests/ApiHttpTests.md) define incorporación, reloj, credencial reemplazada, rollback y reinicio. [CargaJsonTests](archivos/test/proyecto-integrador-final-tests/CargaJsonTests.md) define reemplazo repetido sin acumulación, validación previa, datos exactos y rollback por fallo de inserción. [ServidorContratoTests](archivos/test/proyecto-integrador-final-tests/ServidorContratoTests.md) ejercita procesos reales. Consultar [plan de pruebas](plan-de-pruebas.md) para ejecución real; la descripción de los casos no prueba que se hayan ejecutado aquí.
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
 
 </details>
 
@@ -3283,82 +3630,60 @@ Catalogo, nombres y hashes son persistentes; presencia solo en memoria. No hay c
 
 ## src/servidor/Api/ServidorHttp.cs
 
-Fuente: [src/servidor/Api/ServidorHttp.cs](../src/servidor/Api/ServidorHttp.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión común: [catálogo](archivos/README.md#versión-documentada).
+Fuente: [src/servidor/Api/ServidorHttp.cs](../src/servidor/Api/ServidorHttp.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
 
 ### Propósito y responsabilidad
 
-Construye el host ASP.NET Core, configura JSON y dependencias, traduce errores a respuestas y registra rutas del protocolo. No arranca la escucha: [Program](archivos/src/servidor/Program.md) llama StartAsync. [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md) es el dueño de las transacciones y autenticación de plazas.
+Rutas HTTP y traducción del protocolo.
 
-### Dependencias
+### Estado, miembros y ejecución
 
-ASP.NET Core aporta WebApplication, middleware, grupos de rutas, DI y Results. EF Core/SQLite clasifican errores de almacenamiento. SHA256/UTF8 y FixedTimeEquals comprueban secreto administrativo; AuthenticationHeaderValue parsea Bearer. [ConfiguracionServidor](archivos/src/servidor/Api/ConfiguracionServidor.md) suministra inicio; [LotePersonajes](archivos/src/servidor/Api/LotePersonajes.md), [EstadoPartida](archivos/src/servidor/Api/EstadoPartida.md) y [PresentacionPartida](archivos/src/servidor/Api/PresentacionPartida.md) definen entradas/salidas. [Protocolo](protocolo-de-partida.md) es la guía operativa compartida.
+Crear configura host, dirección, cadena SQLite y credencial administrativa. Registra un AlmacenPartidas, un CatalogoPersonajes con infraestructura compartida, AdministradorSesiones, CoordinadorPartidas y TimeProvider. Conserva JSON numérico estricto. El middleware traduce ErrorApi, cuerpo inválido y errores SQLite/EF a los códigos del protocolo. Los handlers de catálogo llaman al catálogo; sesión/presencia al administrador; presentación/elecciones/recibos/abandono al coordinador. ExigirCatalogo comprueba hash del secreto administrativo; Credencial lee Bearer e IdSesion lee X-Sesion. ErrorApi conserva Estado/Codigo y los factories Entrada/NoEncontrado/Indisponible; Responder agrega idSeguimiento.
 
-### Estructura y estado
+### Errores, límites y efectos
 
-`internal sealed class ErrorApi(int estado,string codigo,string mensaje) : Exception(mensaje)` conserva propiedades internas get-only `int Estado` y `string Codigo`, e hereda Message. Declara fábricas y Responder. `internal static class ServidorHttp` declara Crear, Credencial e IdSesion. Crear contiene función local ExigirCatalogo y lambdas de configuración, middleware y handlers. No hay partial, eventos ni campos estáticos propios.
+Las rutas, formas JSON y códigos no cambian. La autenticación de jugador y la comprobación de sesión se ejecutan bajo coordinación de servicios; el handler no decide victorias o turnos. Presentación y recibos conservan no-store.
 
-### Miembros y ejecución
+### Implementación contrastada
 
-#### ErrorApi
-
-El constructor primario guarda estado/código y pasa mensaje a Exception. `internal static ErrorApi Entrada()` crea 400/entradaInvalida; `NoEncontrado()` 404/recursoNoEncontrado; `Indisponible()` 503/servicioNoDisponible. No lanzan por sí mismas. `internal Task Responder(HttpContext contexto)` fija StatusCode y retorna WriteAsJsonAsync con Codigo, mensaje=Message e idSeguimiento=TraceIdentifier; no incluye stack ni credenciales. La configuración JSON web serializa Codigo como `codigo`.
-
-#### `internal static WebApplication Crear(string[] args,TimeProvider? reloj = null,ConfiguracionServidor? inicio = null)`
-
-Crea builder con args. Si inicio no null agrega configuración en memoria: urls, cadena SQLite con DataSource=inicio.Archivo y DefaultTimeout=1 segundo, Catalogo:Credencial; además UseUrls. Si configuración urls sigue null usa http://0.0.0.0:5000. Registra repositorio singleton con cadena configurada o `Data Source=guerra.db;Default Timeout=1`, y TimeProvider suministrado o System. La lambda de DI obtiene reloj al materializar repositorio; no crea una instancia por petición. JSON NumberHandling.Strict impide convertir strings a números. ThrowOnBadRequest permite traducir fallos de binding a error común.
-
-Tras Build agrega middleware asíncrono: await siguiente; captura ErrorApi y responde con sus datos; BadHttpRequestException → 400; SqliteException → 503; DbUpdateException solo si InnerException es SqliteException → 503. Otras excepciones no se convierten aquí. Configura rutas y devuelve app sin StartAsync.
-
-#### Autenticación y funciones auxiliares
-
-`private static string? Credencial(HttpContext contexto)` usa TryParse Authorization; acepta esquema Bearer ignorando caso y devuelve Parameter, o null para cabecera ausente/inválida/esquema diferente. No recorta manualmente secreto. `private static Guid IdSesion(HttpContext contexto)` parsea X-Sesion o devuelve Guid.Empty, que será rechazado por el acceso del repositorio.
-
-La función local `void ExigirCatalogo(HttpContext contexto)` lee Catalogo:Credencial y Bearer; secreto configurado null/blanco, recibido null o hashes SHA256 diferentes fallan 401 credencialInvalida. Compara hashes con FixedTimeEquals. Se aplica tanto al resumen como al reemplazo y alta; secreto vacío deshabilita las tres rutas administrativas, sin acceso anónimo.
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
 
 ```csharp
-        void ExigirCatalogo(HttpContext contexto)
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Net.Http.Headers;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+
+namespace Proyecto_Integrador_Final.Api;
+
+internal sealed class ErrorApi(int estado, string codigo, string mensaje) : Exception(mensaje)
+{
+    internal int Estado { get; } = estado;
+    internal string Codigo { get; } = codigo;
+
+    internal static ErrorApi Entrada() => new(400, "entradaInvalida", "Los datos de entrada no son válidos.");
+    internal static ErrorApi NoEncontrado() => new(404, "recursoNoEncontrado", "El recurso no existe.");
+    internal static ErrorApi Indisponible() => new(503, "servicioNoDisponible", "El almacenamiento no está disponible.");
+
+    internal Task Responder(HttpContext contexto)
+    {
+        contexto.Response.StatusCode = Estado;
+        return contexto.Response.WriteAsJsonAsync(new
         {
-            var esperada = app.Configuration["Catalogo:Credencial"];
-            var recibida = Credencial(contexto);
-            if (string.IsNullOrWhiteSpace(esperada) || recibida is null ||
-                !CryptographicOperations.FixedTimeEquals(
-                    SHA256.HashData(Encoding.UTF8.GetBytes(esperada)),
-                    SHA256.HashData(Encoding.UTF8.GetBytes(recibida))))
-                throw new ErrorApi(401, "credencialInvalida", "La credencial no es válida.");
-        }
-```
+            Codigo,
+            mensaje = Message,
+            idSeguimiento = contexto.TraceIdentifier
+        });
+    }
+}
 
-#### Rutas y lambdas de handlers
-
-Las rutas de partidas tienen prefijo `/api/v1/partidas/{id}`, con id Guid; Bearer identifica plaza y X-Sesion su sesión vigente salvo incorporación, que lleva UUID en cuerpo. No hay endpoint público para crear/iniciar partidas: eso se hace en consola.
-
-| Método y ruta | Entrada/autenticación → llamada | Salida y efecto |
-|---|---|---|
-| POST `/api/v1/personajes` | AltaPersonaje + secreto catálogo → DarDeAlta | 201 `{idPersonaje}`; inserta una carta activa con ID automático. |
-| GET `/api/v1/personajes/resumen` | Secreto catálogo → CantidadCatalogo | 200 `{cantidad}`; cuenta activos e inactivos, sin mutar. |
-| PUT `/api/v1/personajes` | JsonElement array + secreto catálogo → Leer y ReemplazarCatalogo | 200 `{cantidad}`; reemplazo atómico completo, no acumulación. |
-| PUT `.../participantes/me/sesion` | Incorporacion {idSesion,nombre}, Bearer → Incorporar | 200 Sesion {rol,idSesion,venceUtc}; fija nombre inicial y presencia. No requiere X-Sesion. |
-| PUT `.../participantes/me/presencia` | Bearer/X-Sesion, sin cuerpo → Renovar | 204; prolonga presencia, no revisión. |
-| GET `.../presentacion` | Bearer/X-Sesion → Presentacion | 200 PresentacionVisible; Cache-Control no-store; no muta ni renueva. |
-| POST `.../elecciones` | Eleccion + Bearer/X-Sesion → Elegir | Primera 201 + Location `.../elecciones/{idOperacion}`; repetida idéntica 200. Ambas retornan Recibo. |
-| GET `.../elecciones/{idOperacion}` | Guid operación + Bearer/X-Sesion → ConsultarRecibo | 200 Recibo propio o 404; no muta. |
-| PUT `.../participantes/me/abandono` | Bearer/X-Sesion, sin cuerpo → Abandonar | 204; finaliza por abandono o conserva repetición del mismo rol. |
-
-Fragmento real que distingue confirmación nueva de reintento:
-
-```csharp
-                var resultado = juego.Elegir(id, Credencial(contexto), IdSesion(contexto), datos);
-                return resultado.Repetida ? Results.Ok(resultado.Recibo)
-                    : Results.Created($"/api/v1/partidas/{id}/elecciones/{datos.IdOperacion}", resultado.Recibo);
-```
-
-Los contratos de carta/elección/sesión se documentan en sus páginas enlazadas. Binding inválido produce 400; dominio del catálogo también 400; credencial inválida 401; nombre registrado distinto 403; recurso/recibo inexistente 404; sesión ocupada/vencida, pausa, revisión desactualizada, solicitud no vigente u operación incompatible 409; carta/atributo no permitido 422; almacenamiento no disponible 503. El orden exacto de validaciones por operación está en repositorio/transiciones.
-
-#### Fragmentos de configuración, traducción y efectos HTTP
-
-Crear incorpora configuración interactiva si se suministra; en ausencia de URL usa la dirección de escucha por defecto. El repositorio singleton recibe el reloj registrado y SQLite con timeout de un segundo:
-
-```csharp
+internal static class ServidorHttp
+{
+    internal static WebApplication Crear(string[] args, TimeProvider? reloj = null, ConfiguracionServidor? inicio = null)
+    {
+        var builder = WebApplication.CreateBuilder(args);
         if (inicio is not null)
         {
             builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
@@ -3374,17 +3699,22 @@ Crear incorpora configuración interactiva si se suministra; en ausencia de URL 
         }
         if (builder.Configuration["urls"] is null)
             builder.WebHost.UseUrls("http://0.0.0.0:5000");
-        builder.Services.AddSingleton(sp => new RepositorioJuego(
-            builder.Configuration.GetConnectionString("Juego") ?? "Data Source=guerra.db;Default Timeout=1",
-            sp.GetRequiredService<TimeProvider>()));
+        builder.Services.AddSingleton(_ => new AlmacenPartidas(
+            builder.Configuration.GetConnectionString("Juego") ?? "Data Source=guerra.db;Default Timeout=1"));
+        builder.Services.AddSingleton(sp => new CatalogoPersonajes(sp.GetRequiredService<AlmacenPartidas>().Infraestructura));
+        builder.Services.AddSingleton<AdministradorSesiones>();
+        builder.Services.AddSingleton<CoordinadorPartidas>();
         builder.Services.AddSingleton(reloj ?? TimeProvider.System);
         builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
         builder.Services.Configure<RouteHandlerOptions>(o => o.ThrowOnBadRequest = true);
-```
 
-El middleware convierte únicamente las excepciones enumeradas; `DbUpdateException` requiere SQLite interno. No promete convertir todos los fallos en un error del protocolo:
-
-```csharp
+        var app = builder.Build();
+        app.Use(async (contexto, siguiente) =>
+        {
+            try
+            {
+                await siguiente(contexto);
+            }
             catch (ErrorApi error)
             {
                 await error.Responder(contexto);
@@ -3402,26 +3732,67 @@ El middleware convierte únicamente las excepciones enumeradas; `DbUpdateExcepti
                 await ErrorApi.Indisponible().Responder(contexto);
             }
         });
-```
 
-Los tres handlers del catálogo autentican antes de invocar operaciones. Resumen no escribe; PUT primero interpreta el lote y luego llama al reemplazo transaccional:
+        app.MapPost("/api/v1/personajes",
+            (AltaPersonaje datos, HttpContext contexto, CatalogoPersonajes juego) =>
+            {
+                ExigirCatalogo(contexto);
 
-```csharp
-        app.MapGet("/api/v1/personajes/resumen", (HttpContext contexto, RepositorioJuego juego) =>
+                return Results.Json(new { idPersonaje = juego.DarDeAlta(datos) }, statusCode: 201);
+            });
+        void ExigirCatalogo(HttpContext contexto)
+        {
+            var esperada = app.Configuration["Catalogo:Credencial"];
+            var recibida = Credencial(contexto);
+            if (string.IsNullOrWhiteSpace(esperada) || recibida is null ||
+                !CryptographicOperations.FixedTimeEquals(
+                    SHA256.HashData(Encoding.UTF8.GetBytes(esperada)),
+                    SHA256.HashData(Encoding.UTF8.GetBytes(recibida))))
+                throw new ErrorApi(401, "credencialInvalida", "La credencial no es válida.");
+        }
+        app.MapGet("/api/v1/personajes/resumen", (HttpContext contexto, CatalogoPersonajes juego) =>
         {
             ExigirCatalogo(contexto);
             return Results.Ok(new { cantidad = juego.CantidadCatalogo() });
         });
-        app.MapPut("/api/v1/personajes", (System.Text.Json.JsonElement datos, HttpContext contexto, RepositorioJuego juego) =>
+        app.MapPut("/api/v1/personajes", (System.Text.Json.JsonElement datos, HttpContext contexto, CatalogoPersonajes juego) =>
         {
             ExigirCatalogo(contexto);
             return Results.Ok(new { cantidad = juego.ReemplazarCatalogo(LotePersonajes.Leer(datos)) });
         });
-```
+        var partidas = app.MapGroup("/api/v1/partidas/{id}");
+        partidas.MapPut("/participantes/me/sesion",
+            (Guid id, Incorporacion datos, HttpContext contexto, AdministradorSesiones juego) =>
+                Results.Ok(juego.Incorporar(id, Credencial(contexto), datos)));
+        partidas.MapPut("/participantes/me/presencia",
+            (Guid id, HttpContext contexto, AdministradorSesiones juego) =>
+            {
+                juego.Renovar(id, Credencial(contexto), IdSesion(contexto));
+                return Results.NoContent();
+            });
+        partidas.MapGet("/presentacion", (Guid id, HttpContext contexto, CoordinadorPartidas juego) =>
+        {
+            contexto.Response.Headers.CacheControl = "no-store";
+            return Results.Ok(juego.Presentacion(id, Credencial(contexto), IdSesion(contexto)));
+        });
+        partidas.MapPost("/elecciones",
+            (Guid id, Eleccion datos, HttpContext contexto, CoordinadorPartidas juego) =>
+            {
+                var resultado = juego.Elegir(id, Credencial(contexto), IdSesion(contexto), datos);
+                return resultado.Repetida ? Results.Ok(resultado.Recibo)
+                    : Results.Created($"/api/v1/partidas/{id}/elecciones/{datos.IdOperacion}", resultado.Recibo);
+            });
+        partidas.MapGet("/elecciones/{idOperacion}",
+            (Guid id, Guid idOperacion, HttpContext contexto, CoordinadorPartidas juego) =>
+                Results.Ok(juego.ConsultarRecibo(id, Credencial(contexto), IdSesion(contexto), idOperacion)));
+        partidas.MapPut("/participantes/me/abandono", (Guid id, HttpContext contexto, CoordinadorPartidas juego) =>
+        {
+            juego.Abandonar(id, Credencial(contexto), IdSesion(contexto));
+            return Results.NoContent();
+        });
+        return app;
+    }
 
-La extracción de cabeceras no lanza por formato inválido: devuelve null o Guid.Empty, para que las reglas de acceso respondan con el error correspondiente:
-
-```csharp
     private static string? Credencial(HttpContext contexto) =>
         AuthenticationHeaderValue.TryParse(contexto.Request.Headers.Authorization, out var cabecera)
             && cabecera.Scheme.Equals("Bearer", StringComparison.OrdinalIgnoreCase)
@@ -3429,290 +3800,258 @@ La extracción de cabeceras no lanza por formato inválido: devuelve null o Guid
 
     private static Guid IdSesion(HttpContext contexto) =>
         Guid.TryParse(contexto.Request.Headers["X-Sesion"], out var id) ? id : Guid.Empty;
+}
 ```
-
-### Recorridos y ejemplos
-
-Normal: GET resumen con secreto ficticio correcto devuelve cantidad 6; PUT con seis objetos válidos devuelve cantidad 6 y reemplaza en una transacción. Una elección nueva devuelve 201, reenviar mismo cuerpo y UUID devuelve 200 con el mismo recibo.
-
-Alternativo: secreto configurado vacío causa 401 incluso al consultar resumen. Una incorporación con X-Sesion inválido todavía puede proceder porque usa idSesion del cuerpo; una presentación con ese X-Sesion falla sesionVencida. Un puntaje JSON `"650"` es string y falla binding estricto antes del handler de alta. Ejemplos contrastados por lectura y pruebas definidas, sin petición real aquí.
-
-### Errores, límites y efectos observables
-
-No redirige ni configura HTTPS/autorización de operador remotamente. Credencial viaja en cabecera Bearer, no en URL ni cuerpo de error. No hay rate limiting, paginación ni captura universal de excepciones. Configuración de host puede recibir otras fuentes cuando se llama Crear sin inicio; el ejecutable de servidor usa arreglo args vacío e inicio interactivo. La identidad de sesión no es una credencial independiente y siempre se valida junto a Bearer.
 
 ### Relaciones y verificación
 
-[ApiHttpTests](archivos/test/proyecto-integrador-final-tests/ApiHttpTests.md) define rutas, códigos, privacidad y binding estricto. [CargaJsonTests](archivos/test/proyecto-integrador-final-tests/CargaJsonTests.md) define autenticación y atomicidad HTTP del catálogo. [ServidorContratoTests](archivos/test/proyecto-integrador-final-tests/ServidorContratoTests.md) define protocolos por proceso. Consultar [plan de pruebas](plan-de-pruebas.md) para resultados reales; estas definiciones no acreditan ejecución de esta página.
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
 
 </details>
 
 <details>
-<summary>src/servidor/Api/TransicionesPartida.cs</summary>
+<summary>src/servidor/Api/SqliteJuego.cs</summary>
 
-[Página individual](archivos/src/servidor/Api/TransicionesPartida.md)
+[Página individual](archivos/src/servidor/Api/SqliteJuego.md)
 
-## src/servidor/Api/TransicionesPartida.cs
+## src/servidor/Api/SqliteJuego.cs
 
-Fuente: [src/servidor/Api/TransicionesPartida.cs](../src/servidor/Api/TransicionesPartida.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión común: [catálogo](archivos/README.md#versión-documentada).
+Fuente: [src/servidor/Api/SqliteJuego.cs](../src/servidor/Api/SqliteJuego.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
 
 ### Propósito y responsabilidad
 
-Implementa la máquina de estados persistida de partidas en red: inicio, elecciones, combate, rondas, victoria y abandono. Es una porción de `internal sealed partial RepositorioJuego`; [RepositorioJuego.cs](archivos/src/servidor/Api/RepositorioJuego.md) aporta conexión, transacciones, autenticación y sesiones; [PresentacionPartida](archivos/src/servidor/Api/PresentacionPartida.md) publica vistas. No usa el bucle incompleto de Partida.Jugar: reconstruye cada Combate para aplicar sus reglas.
+Conexiones, transacciones y exclusión compartida.
 
-### Dependencias
+### Estado, miembros y ejecución
 
-[BaseJuego](archivos/src/servidor/Api/BaseJuego.md) persiste claves/relaciones; [EstadoPartida](archivos/src/servidor/Api/EstadoPartida.md) declara las entidades y contratos. [Combate](archivos/src/servidor/Combate.md), [Jugador](archivos/src/servidor/Jugador.md), [Personaje](archivos/src/servidor/Personaje.md), [Ronda](archivos/src/servidor/Ronda.md) y [Partida](archivos/src/servidor/Partida.md) aportan comparación y constantes de 2 combates/15 rondas. Random.Shared.Shuffle mezcla copias. [Protocolo](protocolo-de-partida.md) define solicitudes, revisión e idempotencia.
+El constructor conserva la cadena, abre una conexión permanente para :memory: y llama EnsureCreated. Ejecutar toma Sincronizacion, abre contexto y conexión, inicia una transacción inmediata para escritura o diferida para lectura, ejecuta el callback, hace un único SaveChanges si corresponde y confirma. Abrir configura EF con cadena o conexión de memoria. Dispose cierra la conexión permanente.
 
-### Estructura y estado
+### Errores, límites y efectos
 
-No declara otro tipo ni constructores, eventos o interfaces. Campo privado estático readonly `Dictionary<string,TipoAtributo> atributos`, con OrdinalIgnoreCase, contiene Fuerza, Velocidad, Resistencia, Inteligencia, Energía y Habilidad mapeados al enum. Readonly no vuelve inmutable el diccionario, aunque esta implementación no lo modifica tras inicializar. Los demás estados viven en entidades y en las sesiones de la otra porción; no hay campos de ronda en memoria en este archivo.
+La escritura toma el bloqueo SQLite antes de leer el estado modificable. La salida excepcional dispone la transacción sin commit. No tiene reglas de partidas, catálogo o sesiones; no requiere migración ni descarta bases previas.
 
-### Miembros y ejecución
+### Implementación contrastada
 
-#### `internal void Iniciar(Guid id)`
-
-Ejecuta transacción de escritura. Busca partida o 404; exige fase esperandoInicio (si no, 409 operacionIncompatible), luego ambos presentes (409 partidaPausada). Copia solo catálogo activo con PersonajePartida.Copiar; menos de seis falla 409 operacionIncompatible antes de agregar copias. Agrega las cartas, reparte ronda 1 mano J1, incrementa revisión una vez y confirma. Las copias aíslan partidas iniciadas de cambios futuros del catálogo.
-
-#### `internal Confirmacion Elegir(Guid id,string? credencial,Guid idSesion,Eleccion datos)`
-
-Antes de escribir rechaza IdOperacion/IdSolicitud Empty, RevisionEsperada null o negativa e IdPersonaje null con 400 entradaInvalida. Normaliza atributo. Dentro de transacción llama Acceso; consulta operación previa por `(id,rol,idOperacion)` **antes** de evaluar pausa/revisión/turno. Si existe y Datos difiere de la elección normalizada, falla 409 operacionIncompatible; si coincide retorna recibo previo con Repetida true, sin consumir nada ni incrementar revisión.
-
-Para primera operación verifica en este orden: no Pausada (409 partidaPausada); revisión igual (409 revisionDesactualizada); IdSolicitud igual al puntero actual, fila existente, no consumida y Rol propio (409 solicitudNoVigente). Busca carta por partida e ID; exige ubicación propia. Si tipo cartaYAtributo exige atributo no nulo y existente en el mapa; al responder carta exige atributo null. Cualquiera de estos errores produce 422 eleccionInvalida, sin cambiar estado.
-
-Luego marca solicitud Consumida e incrementa revisión. Elector: guarda IdCartaElector y Atributo, abre solicitud carta al otro. Respondedor: llama Resolver. En ambos crea OperacionGuardada con entrada normalizada y revisión posterior, añade al contexto y retorna Confirmacion con Repetida false. SaveChanges y commit se realizan junto al avance por Ejecutar; un fallo revierte recibo y jugada. Fragmento real de la prioridad de idempotencia:
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
 
 ```csharp
-            var anterior = db.Operaciones.Find(id, jugador.Rol, datos.IdOperacion);
-            if (anterior is not null)
-            {
-                if (anterior.Datos() != datos)
-                    throw new ErrorApi(409, "operacionIncompatible", "La operación ya tiene otros datos.");
-                return new Confirmacion(anterior.Recibo(), true);
-            }
-```
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
-La comparación de records incluye operación, solicitud, revisión esperada, ID de carta y atributo. Un reintento idéntico sigue siendo recuperable después de avanzar turno o finalizar, siempre que credencial/sesión sean válidas.
+namespace Proyecto_Integrador_Final.Api;
 
-#### Consulta y abandono
+// Infraestructura compartida: ninguna regla de partidas, catálogo o sesiones.
+internal sealed class SqliteJuego : IDisposable
+{
+    private readonly string cadena;
+    private readonly SqliteConnection? memoria;
+    internal object Sincronizacion { get; } = new();
 
-`internal Recibo ConsultarRecibo(Guid id,string? credencial,Guid idSesion,Guid idOperacion)` ejecuta lectura, exige Acceso y busca solo operación de la plaza propia. Devuelve Recibo o 404; no renueva presencia ni cambia revisión.
-
-`internal void Abandonar(Guid id,string? credencial,Guid idSesion)` ejecuta escritura y exige Acceso. Si AbandonoDe ya es ese rol retorna sin cambios, incluso si la partida finalizó por ese abandono. Si finalizó por otra causa/rol, 409 operacionIncompatible. En otro caso guarda AbandonoDe, incrementa revisión y Finalizar con motivo abandono, sin ganador. No transforma una salida local en victoria del rival.
-
-#### Acceso, presencia y normalización
-
-- `private (PartidaGuardada Partida,ParticipanteGuardado Jugador) Acceso(BaseJuego db,Guid id,string? credencial,Guid idSesion)`: Busca, Autenticar, ExigirSesion, en ese orden; retorna la tupla. No renueva sesión.
-- `private bool AmbosPresentes(Guid id)`: exige Vigente de J1 y J2; el && evita consultar J2 si falta J1.
-- `private bool Pausada(PartidaGuardada partida)`: true solo en esperandoElector/esperandoRival cuando no están ambos; preparación/finalizada nunca aparecen pausadas por esta regla. No guarda flag ni incrementa revisión.
-- `private static string Otro(string rol)`: J1 → J2; cualquier otro string → J1. Solo se llama con roles internos válidos.
-- `private static string? NormalizarAtributo(string? atributo)`: null sigue null; si no, Trim y Normalize (forma Unicode predeterminada). Energia sin tilde, en cualquier caso, pasa a Energía. Busca nombre canónico del diccionario ignorando caso; desconocido conserva texto normalizado para posterior rechazo. No convierte cadena vacía a null.
-
-#### Reparto y apertura
-
-`private static void Repartir(BaseJuego db,PartidaGuardada partida,PersonajePartida[] cartas,int numero,string mano)` mezcla todo el array. For desde 0 hasta Length−1 asigna Orden=i y Ubicacion J1 para i<3, J2 para 3≤i<6 y mazo para el resto. Agrega ronda con Mano, asigna NumeroRonda y abre combate 1 con ese elector. No consulta catálogo ni añade rondas ganadas. Precondición interna: al menos seis cartas; Iniciar la garantiza y las rondas siguientes reutilizan el conjunto completo.
-
-`private static void AbrirCombate(BaseJuego db,PartidaGuardada partida,int numero,string elector)` crea fila usando NumeroRonda no nulo, agrega, asigna NumeroCombate y abre solicitud cartaYAtributo del elector. `private static void AbrirSolicitud(BaseJuego db,PartidaGuardada partida,CombateGuardado combate,string rol,string tipo)` crea Guid nuevo, copia coordenadas, rol y tipo, deja Consumida false; agrega solicitud, actualiza IdSolicitud y pone esperandoRival si tipo carta, esperandoElector en cualquier otro caso.
-
-#### Resolución y finalización
-
-`private static void Resolver(BaseJuego db,PartidaGuardada partida,CombateGuardado guardado,PersonajePartida cartaRival)` busca carta del elector, crea dos Jugador con nombres J1/J2, convierte cartas al dominio y las entrega a cada jugador temporal. Mapea atributo, crea Combate, fija atributo y ambas cartas y resuelve. Usa nombre del ganador como rol; empate gana rival del elector según Combate. Guarda carta rival, ambos puntajes y ganador, y ubica ambas cartas en jugada.
-
-Incrementa victorias de combate de J1 o J2 en RondaGuardada. Si quedan por debajo de 2, abre combate siguiente con elector alternado y retorna. Si llega a 2, guarda ganador de ronda y suma una ronda al participante; si alcanza 15, Finalizar(victoria,ganador) y retorna **sin repartir otra ronda**. En otro caso carga todas las cartas de la partida y Repartir con número siguiente y mano opuesta. No incrementa revisión adicional: Elegir ya lo hizo una vez por elección.
-
-Fragmento real que sustenta cierre de combate/ronda/partida:
-
-```csharp
-        var ronda = db.Rondas.Find(partida.Id, guardado.NumeroRonda)!;
-        var victorias = ganador == "J1" ? ++ronda.VictoriasJ1 : ++ronda.VictoriasJ2;
-        if (victorias < Ronda.CombatesParaGanar)
+    internal SqliteJuego(string cadena)
+    {
+        this.cadena = cadena;
+        if (new SqliteConnectionStringBuilder(cadena).DataSource == ":memory:")
         {
-            AbrirCombate(db, partida, guardado.Numero + 1, Otro(guardado.Elector));
-            return;
+            memoria = new SqliteConnection(cadena);
+            memoria.Open();
         }
+        using var db = Abrir();
+        db.Database.EnsureCreated();
+    }
 
-        ronda.Ganador = ganador;
-        var jugador = db.Participantes.Find(partida.Id, ganador)!;
-        if (++jugador.RondasGanadas >= Partida.RondasParaGanar)
+    internal T Ejecutar<T>(bool escritura, Func<BaseJuego, T> operacion)
+    {
+        lock (Sincronizacion)
         {
-            Finalizar(db, partida, "victoria", ganador);
-            return;
+            using var db = Abrir();
+            db.Database.OpenConnection();
+            using var transaccion = ((SqliteConnection)db.Database.GetDbConnection())
+                .BeginTransaction(deferred: !escritura);
+            db.Database.UseTransaction(transaccion);
+            var resultado = operacion(db);
+            if (escritura) db.SaveChanges();
+            transaccion.Commit();
+            return resultado;
         }
+    }
 
-        var cartas = db.Cartas.Where(p => p.IdPartida == partida.Id).ToArray();
-        Repartir(db, partida, cartas, ronda.Numero + 1, Otro(ronda.Mano));
+    private BaseJuego Abrir()
+    {
+        var opciones = new DbContextOptionsBuilder<BaseJuego>();
+        if (memoria is null) opciones.UseSqlite(cadena);
+        else opciones.UseSqlite(memoria);
+        return new BaseJuego(opciones.Options);
+    }
+
+    public void Dispose() => memoria?.Dispose();
+}
 ```
-
-`private static void Finalizar(BaseJuego db,PartidaGuardada partida,string motivo,string? ganador = null)` consume solicitud actual si existe, deja IdSolicitud null, fase finalizada y motivo/ganador. No borra historial, no incrementa revisión ni entrega cartas; cada llamador gestiona su incremento. Usa null-forgiving en búsquedas internas porque presupone integridad de transiciones.
-
-#### Fragmentos de las decisiones y efectos restantes
-
-En `Iniciar`, estos guardas preceden al reparto y evitan crear copias si falta presencia o catálogo. Tras agregar/repartir, la revisión sube una vez:
-
-```csharp
-        var partida = Buscar(db, id);
-        if (partida.Fase != "esperandoInicio")
-            throw new ErrorApi(409, "operacionIncompatible", "La partida ya se inició o finalizó.");
-        if (!AmbosPresentes(id))
-            throw new ErrorApi(409, "partidaPausada", "Se necesitan los dos participantes presentes.");
-
-        // Cada partida conserva su propia copia de los personajes activos al iniciar.
-        var cartas = db.Catalogo.Where(p => p.Activo).ToArray()
-            .Select(p => PersonajePartida.Copiar(id, p)).ToArray();
-        if (cartas.Length < 6)
-            throw new ErrorApi(409, "operacionIncompatible", "Se necesitan seis personajes activos.");
-        db.Cartas.AddRange(cartas);
-        Repartir(db, partida, cartas, 1, "J1");
-        partida.Revision++;
-```
-
-En `Elegir`, las validaciones de primera operación preceden a toda mutación. `esElector` selecciona la regla de atributo: obligatorio al abrir y prohibido al responder:
-
-```csharp
-            if (Pausada(partida))
-                throw new ErrorApi(409, "partidaPausada", "Se necesitan los dos participantes presentes.");
-            if (partida.Revision != datos.RevisionEsperada)
-                throw new ErrorApi(409, "revisionDesactualizada", "La revisión ya cambió.");
-            var solicitud = partida.IdSolicitud == datos.IdSolicitud
-                ? db.Solicitudes.Find(datos.IdSolicitud) : null;
-            if (solicitud is null || solicitud.Consumida || solicitud.Rol != jugador.Rol)
-                throw new ErrorApi(409, "solicitudNoVigente", "La solicitud no está vigente para esta plaza.");
-
-            var carta = db.Cartas.Find(id, datos.IdPersonaje.Value);
-            bool esElector = solicitud.Tipo == "cartaYAtributo";
-            if (carta is null || carta.Ubicacion != jugador.Rol ||
-                (esElector ? datos.Atributo is null || !atributos.ContainsKey(datos.Atributo) : datos.Atributo is not null))
-                throw new ErrorApi(422, "eleccionInvalida", "La carta o el atributo no está entre las opciones.");
-```
-
-La solicitud se consume y la revisión sube antes de bifurcar apertura/respuesta. La fila de operación se añade en la misma transacción; por eso respuesta perdida no exige volver a consumir la solicitud:
-
-```csharp
-            var combate = db.Combates.Find(id, solicitud.NumeroRonda, solicitud.NumeroCombate)!;
-            solicitud.Consumida = true;
-            partida.Revision++;
-            if (esElector)
-            {
-                combate.IdCartaElector = carta.IdPersonaje;
-                combate.Atributo = datos.Atributo;
-                AbrirSolicitud(db, partida, combate, Otro(jugador.Rol), "carta");
-            }
-            else
-            {
-                Resolver(db, partida, combate, carta);
-            }
-
-            // El recibo se guarda en la misma transacción que la jugada que confirma.
-            var operacion = new OperacionGuardada
-            {
-                IdPartida = id, Rol = jugador.Rol, IdOperacion = datos.IdOperacion,
-                IdSolicitud = datos.IdSolicitud, RevisionEsperada = datos.RevisionEsperada.Value,
-                IdPersonaje = carta.IdPersonaje, Atributo = datos.Atributo,
-                RevisionConfirmada = partida.Revision
-            };
-            db.Operaciones.Add(operacion);
-            return new Confirmacion(operacion.Recibo(), false);
-```
-
-En `Abandonar`, la repetición del mismo rol se acepta antes del control de fase finalizada; el incremento corresponde solo a la primera aceptación:
-
-```csharp
-        if (partida.AbandonoDe == jugador.Rol)
-            return true;
-        if (partida.Fase == "finalizada")
-            throw new ErrorApi(409, "operacionIncompatible", "La partida ya finalizó.");
-        partida.AbandonoDe = jugador.Rol;
-        partida.Revision++;
-        Finalizar(db, partida, "abandono");
-```
-
-La normalización del atributo no transforma desconocidos en una opción válida. Devuelve el nombre canónico o el texto para que la validación posterior lo rechace:
-
-```csharp
-        if (atributo is null)
-            return null;
-        var texto = atributo.Trim().Normalize();
-        if (texto.Equals("Energia", StringComparison.OrdinalIgnoreCase))
-            return "Energía";
-        return atributos.Keys.FirstOrDefault(a => a.Equals(texto, StringComparison.OrdinalIgnoreCase)) ?? texto;
-```
-
-El reparto reasigna **todas** las ubicaciones y el orden. Esto reincorpora cartas jugadas y no jugadas al empezar otra ronda:
-
-```csharp
-        Random.Shared.Shuffle(cartas);
-        for (int i = 0; i < cartas.Length; i++)
-        {
-            cartas[i].Orden = i;
-            cartas[i].Ubicacion = i < 3 ? "J1" : i < 6 ? "J2" : "mazo";
-        }
-        db.Rondas.Add(new RondaGuardada { IdPartida = partida.Id, Numero = numero, Mano = mano });
-        partida.NumeroRonda = numero;
-        AbrirCombate(db, partida, 1, mano);
-```
-
-`AbrirSolicitud` crea una oportunidad nueva (UUID distinto) y cambia fase según tipo; no reutiliza una solicitud consumida:
-
-```csharp
-        var solicitud = new SolicitudGuardada
-        {
-            Id = Guid.NewGuid(), IdPartida = partida.Id, NumeroRonda = combate.NumeroRonda,
-            NumeroCombate = combate.Numero, Rol = rol, Tipo = tipo
-        };
-        db.Solicitudes.Add(solicitud);
-        partida.IdSolicitud = solicitud.Id;
-        partida.Fase = tipo == "carta" ? "esperandoRival" : "esperandoElector";
-```
-
-En Resolver, cartas temporales se convierten a dominio y el resultado se materializa antes de sumar la ronda. Los dos IDs y puntajes permiten publicar resultados completos, sin revelar elección antes de resolver:
-
-```csharp
-        var cartaElector = db.Cartas.Find(partida.Id, guardado.IdCartaElector!.Value)!;
-        var elector = new Jugador(guardado.Elector);
-        var rival = new Jugador(Otro(guardado.Elector));
-        var personajeElector = cartaElector.Dominio();
-        var personajeRival = cartaRival.Dominio();
-        elector.RecibirCartas([personajeElector]);
-        rival.RecibirCartas([personajeRival]);
-
-        var atributo = atributos[guardado.Atributo!];
-        var combate = new Combate(elector, rival);
-        combate.SetAtributo(atributo);
-        combate.SetCarta(elector, personajeElector);
-        combate.SetCarta(rival, personajeRival);
-        var ganador = combate.Resolver().GetNombre();
-
-        guardado.IdCartaRival = cartaRival.IdPersonaje;
-        guardado.PuntajeElector = personajeElector.GetAtributo(atributo);
-        guardado.PuntajeRival = personajeRival.GetAtributo(atributo);
-        guardado.Ganador = ganador;
-        cartaElector.Ubicacion = cartaRival.Ubicacion = "jugada";
-```
-
-Finalizar retira la solicitud vigente y no toca revisión; así cancelación, abandono y victoria mantienen el incremento decidido por su llamador:
-
-```csharp
-        if (partida.IdSolicitud is Guid id)
-            db.Solicitudes.Find(id)!.Consumida = true;
-        partida.IdSolicitud = null;
-        partida.Fase = "finalizada";
-        partida.MotivoFin = motivo;
-        partida.Ganador = ganador;
-```
-
-### Recorridos y ejemplos
-
-Normal: tras iniciar seis cartas, revisión pasa 0→1 y J1 recibe solicitud S1. J1 elige carta propia A/Fuerza con revisión 1: se consume S1, revisión 2, solicitud S2 carta para J2. J2 responde B sin atributo, revisión 2: revisión 3 y combate resuelto; si A y B tienen fuerza 650 ambos, gana J2. Si J2 llevaba una victoria de combate suma la segunda y gana ronda. Si llevaba 14 rondas alcanza 15 y finaliza con victoria, sin otra solicitud.
-
-Alternativo: reenviar exactamente operación de J1 recupera su recibo con revisión confirmada 2 aunque la partida esté en 3; cambiar solo la carta usando mismo IdOperacion falla operacionIncompatible. Primera operación con revisión 1 cuando actual es 3 falla revisionDesactualizada; mismo reintento auténtico no. Responder con atributo Fuerza falla 422. Recorridos de lectura, no peticiones ejecutadas en esta página.
-
-### Errores, límites y efectos observables
-
-Todas las mutaciones se agrupan con recibo en transacción. Se rechaza turno equivocado sin consumir solicitud. Presencia vencida impide Acceso de esa sesión; ausencia del otro jugador pausa nuevas elecciones. La carta del elector conserva ubicación propia hasta resolver, pero su solicitud ya fue consumida y no permite otra jugada. Los resultados aún incompletos no se publican por PresentacionPartida. No hay bot ni recuperación de esquema corrupto; los `!` no son comprobaciones en ejecución.
 
 ### Relaciones y verificación
 
-[ApiHttpTests](archivos/test/proyecto-integrador-final-tests/ApiHttpTests.md) define privacidad/idempotencia, rollback, reinicio, quince rondas y plazo de presencia. [ServidorContratoTests](archivos/test/proyecto-integrador-final-tests/ServidorContratoTests.md) define elecciones concurrentes, pausa y recuperación de solicitud, desempates y abandono repetido. [IntegracionRespuestaPerdidaTests](archivos/test/proyecto-integrador-final-tests/IntegracionRespuestaPerdidaTests.md) define recuperación del recibo tras pérdida de respuesta. Consultar [plan](plan-de-pruebas.md) para ejecución real; esta lectura no acredita tests ejecutados.
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
+
+</details>
+
+<details>
+<summary>src/servidor/Api/UnidadPartida.cs</summary>
+
+[Página individual](archivos/src/servidor/Api/UnidadPartida.md)
+
+## src/servidor/Api/UnidadPartida.cs
+
+Fuente: [src/servidor/Api/UnidadPartida.cs](../src/servidor/Api/UnidadPartida.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Estado y operaciones de una transacción cargada.
+
+### Estado, miembros y ejecución
+
+El constructor recibe Partida, participantes persistidos, operaciones previas y acceso transaccional al catálogo. Partida expone el dominio; NuevasOperaciones acumula exclusivamente los recibos que guardará AlmacenPartidas. Autenticar delega comparación de hash. CopiarCatalogoActivo invoca CatalogoPersonajes dentro de la misma transacción. Recuperar busca por rol/ID, compara Eleccion por valor y devuelve Confirmacion repetida o conflicto. Confirmar registra operación y revisión confirmada; ConsultarRecibo devuelve el recibo del rol o 404.
+
+### Errores, límites y efectos
+
+No expone DbContext ni IQueryable al coordinador. Confirmar no hace commit: solo AlmacenPartidas y SqliteJuego confirman estado y operaciones juntos. No conserva una segunda copia global del estado.
+
+### Implementación contrastada
+
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
+
+```csharp
+namespace Proyecto_Integrador_Final.Api;
+
+// Unidad cargada bajo una única transacción. No expone DbContext ni consultas diferidas.
+internal sealed class UnidadPartida(Partida partida, ParticipanteGuardado[] participantes,
+    List<OperacionGuardada> operaciones, Func<CatalogoPersonajes, CartaPartida[]> catalogo)
+{
+    internal Partida Partida { get; } = partida;
+    internal List<OperacionGuardada> NuevasOperaciones { get; } = [];
+    internal string Autenticar(string? credencial) => AlmacenPartidas.Autenticar(participantes, credencial).Rol;
+    internal CartaPartida[] CopiarCatalogoActivo(CatalogoPersonajes origen) => catalogo(origen);
+
+    internal Confirmacion? Recuperar(string rol, Eleccion datos)
+    {
+        var anterior = operaciones.Find(o => o.Rol == rol && o.IdOperacion == datos.IdOperacion);
+        if (anterior is null) return null;
+        if (anterior.Datos() != datos)
+            throw new ErrorApi(409, "operacionIncompatible", "La operación ya tiene otros datos.");
+        return new Confirmacion(anterior.Recibo(), true);
+    }
+
+    internal Confirmacion Confirmar(string rol, Eleccion datos)
+    {
+        var operacion = new OperacionGuardada
+        {
+            IdPartida = Partida.Estado.Id, Rol = rol, IdOperacion = datos.IdOperacion,
+            IdSolicitud = datos.IdSolicitud, RevisionEsperada = datos.RevisionEsperada!.Value,
+            IdPersonaje = datos.IdPersonaje!.Value, Atributo = datos.Atributo,
+            RevisionConfirmada = Partida.Estado.Revision
+        };
+        NuevasOperaciones.Add(operacion);
+        return new Confirmacion(operacion.Recibo(), false);
+    }
+
+    internal Recibo ConsultarRecibo(string rol, Guid idOperacion) =>
+        operaciones.Find(o => o.Rol == rol && o.IdOperacion == idOperacion)?.Recibo()
+        ?? throw ErrorApi.NoEncontrado();
+}
+```
+
+### Relaciones y verificación
+
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
+
+</details>
+
+<details>
+<summary>src/servidor/Api/VistaPartida.cs</summary>
+
+[Página individual](archivos/src/servidor/Api/VistaPartida.md)
+
+## src/servidor/Api/VistaPartida.cs
+
+Fuente: [src/servidor/Api/VistaPartida.cs](../src/servidor/Api/VistaPartida.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final.Api`. Versión: [catálogo común](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Proyección privada y sin efectos por plaza.
+
+### Estado, miembros y ejecución
+
+Construir recibe EstadoPartida, rol y presencia de ambos. Calcula pausa solo en fases activas, ordena cartas y copia únicamente la mano propia. Envía SolicitudVisible solo al rol correspondiente cuando no hay pausa; las opciones de atributos proceden de Partida.AtributosPermitidos. Filtra combates resueltos, ordena por ronda/combate y agrega GanadorRonda solo al último combate resuelto de una ronda definida. Otro invierte rol; Carta crea un DTO y un diccionario de atributos nuevos.
+
+### Errores, límites y efectos
+
+No consulta SQLite, autentica, renueva sesiones ni modifica estado. La salida puede revelar cartas de combates resueltos, nunca la mano rival pendiente. La pausa conserva revisión y solicitud del dominio. Los diccionarios y arrays de salida no comparten estado mutable con las cartas de dominio.
+
+### Implementación contrastada
+
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
+
+```csharp
+namespace Proyecto_Integrador_Final.Api;
+
+// La presencia es una entrada: presentar nunca modifica el dominio ni renueva sesiones.
+internal sealed class VistaPartida
+{
+    internal PresentacionVisible Construir(EstadoPartida partida, string rol, bool ambosPresentes)
+    {
+        bool pausada = partida.Fase is "esperandoElector" or "esperandoRival" && !ambosPresentes;
+        var cartas = partida.Cartas.OrderBy(c => c.Orden).ToArray();
+        var mano = cartas.Where(c => c.Ubicacion == rol).Select(Carta).ToArray();
+        SolicitudVisible? visible = null;
+        if (!pausada && partida.IdSolicitud is Guid idSolicitud)
+        {
+            var solicitud = partida.Solicitudes.Single(s => s.Id == idSolicitud);
+            if (solicitud.Rol == rol)
+                visible = new(solicitud.Id, solicitud.Tipo, mano.Select(c => c.IdPersonaje).ToArray(),
+                    solicitud.Tipo == "cartaYAtributo" ? Partida.AtributosPermitidos : []);
+        }
+
+        var historial = partida.Combates.Where(c => c.Ganador != null)
+            .OrderBy(c => c.NumeroRonda).ThenBy(c => c.Numero).ToArray();
+        var ganadores = partida.Rondas.Where(r => r.Ganador != null)
+            .ToDictionary(r => r.Numero, r => r.Ganador);
+        var ultimos = historial.GroupBy(c => c.NumeroRonda).ToDictionary(g => g.Key, g => g.Last().Numero);
+        var cartasPorId = cartas.ToDictionary(c => c.IdPersonaje);
+        var resultados = historial.Select(c => new ResultadoVisible(
+            c.NumeroRonda, c.Numero,
+            new()
+            {
+                [c.Elector] = Carta(cartasPorId[c.IdCartaElector!.Value]),
+                [Otro(c.Elector)] = Carta(cartasPorId[c.IdCartaRival!.Value])
+            },
+            c.Atributo!,
+            new()
+            {
+                [c.Elector] = c.PuntajeElector!.Value,
+                [Otro(c.Elector)] = c.PuntajeRival!.Value
+            },
+            c.Ganador!,
+            ultimos[c.NumeroRonda] == c.Numero ? ganadores.GetValueOrDefault(c.NumeroRonda) : null)).ToArray();
+
+        return new(partida.Id, partida.Revision, partida.Fase, pausada, rol,
+            partida.Participantes.ToDictionary(p => p.Rol, p => p.Nombre), partida.NumeroRonda,
+            partida.NumeroCombate, partida.Participantes.ToDictionary(p => p.Rol, p => p.RondasGanadas),
+            mano, visible, resultados, partida.MotivoFin, partida.Ganador);
+    }
+
+    private static string Otro(string rol) => rol == "J1" ? "J2" : "J1";
+
+    private static CartaVisible Carta(CartaPartida carta) => new(carta.IdPersonaje, carta.Nombre,
+        carta.Descripcion, carta.Ascii, new()
+        {
+            ["Fuerza"] = carta.Fuerza, ["Velocidad"] = carta.Velocidad,
+            ["Resistencia"] = carta.Resistencia, ["Inteligencia"] = carta.Inteligencia,
+            ["Energía"] = carta.Energia, ["Habilidad"] = carta.Habilidad
+        });
+}
+```
+
+### Relaciones y verificación
+
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
 
 </details>
 
@@ -3731,7 +4070,7 @@ Consume una carta de cada participante, fija un atributo una sola vez y resuelve
 
 ### Dependencias
 
-[Jugador](archivos/src/servidor/Jugador.md) conserva la mano y permite retirar referencias; [Personaje y TipoAtributo](archivos/src/servidor/Personaje.md) proporcionan los puntajes. `Enum.IsDefined` rechaza valores de enum sin nombre; `ReferenceEquals` distingue participantes por identidad, no por nombre. Véanse [reglas](reglas-del-juego.md) y la coordinación distinta de la [API](archivos/src/servidor/Api/TransicionesPartida.md).
+[Jugador](archivos/src/servidor/Jugador.md) conserva la mano y permite retirar referencias; [Personaje y TipoAtributo](archivos/src/servidor/Personaje.md) proporcionan los puntajes. `Enum.IsDefined` rechaza valores de enum sin nombre; `ReferenceEquals` distingue participantes por identidad, no por nombre. Véanse [reglas](reglas-del-juego.md) y la coordinación del [dominio Partida](archivos/src/servidor/Partida.md).
 
 ### Estructura
 
@@ -3919,6 +4258,121 @@ Las cartas se retiran al registrarlas, no al resolver; un combate abandonado no 
 ### Relaciones y verificación
 
 [Ronda](archivos/src/servidor/Ronda.md) cuenta vencedores; [Partida](archivos/src/servidor/Partida.md) recoge las referencias de cartas por participante. [CombateTests](archivos/test/proyecto-integrador-final-tests/CombateTests.md) define guardas, consulta prematura, una carta por jugador, completitud, identidad, copia del array, comparación y empate; algunas aserciones solo exigen que exista una excepción, no su tipo ni mensaje. El [plan de pruebas](plan-de-pruebas.md) distingue evidencia histórica de ejecución actual. Esta explicación no acredita ejecución concurrente ni de la API a partir de este modelo.
+
+</details>
+
+<details>
+<summary>src/servidor/EstadoPartida.cs</summary>
+
+[Página individual](archivos/src/servidor/EstadoPartida.md)
+
+## src/servidor/EstadoPartida.cs
+
+Fuente: [src/servidor/EstadoPartida.cs](../src/servidor/EstadoPartida.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `Proyecto_Integrador_Final`. Versión: [catálogo común](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Estado reanudable e independiente de persistencia.
+
+### Estado, miembros y ejecución
+
+EstadoPartida contiene ID, revisión, fase, ronda/combate, solicitud actual y cierre, más listas de participantes, cartas, rondas, combates y solicitudes. ParticipantePartida contiene rol/nombre/marcador sin hash. CartaPartida conserva identidad, metadatos, seis atributos, ubicación y orden; Dominio crea un Personaje. RondaPartida conserva mano, victorias y ganador; CombatePartida elecciones y resultado; SolicitudPartida rol, tipo, números y consumida. ExcepcionPartida expresa código y mensaje de negocio sin HTTP.
+
+### Errores, límites y efectos
+
+Los setters permiten reconstrucción explícita desde SQLite; reconstruir no reparte ni resuelve. No contiene sesiones, credenciales o recibos. No es una entidad EF ni un DTO HTTP. La clase Partida gobierna las acciones.
+
+### Implementación contrastada
+
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
+
+```csharp
+namespace Proyecto_Integrador_Final;
+
+// Estado reanudable del dominio. No contiene credenciales, presencia ni recibos de transporte.
+internal sealed class EstadoPartida
+{
+    public Guid Id { get; set; }
+    public int Revision { get; set; }
+    public int? NumeroRonda { get; set; }
+    public int? NumeroCombate { get; set; }
+    public Guid? IdSolicitud { get; set; }
+    public string? MotivoFin { get; set; }
+    public string? Ganador { get; set; }
+    public string? AbandonoDe { get; set; }
+    public string Fase { get; set; } = "esperandoInicio";
+    public List<ParticipantePartida> Participantes { get; set; } = [new() { Rol = "J1" }, new() { Rol = "J2" }];
+    public List<CartaPartida> Cartas { get; set; } = [];
+    public List<RondaPartida> Rondas { get; set; } = [];
+    public List<CombatePartida> Combates { get; set; } = [];
+    public List<SolicitudPartida> Solicitudes { get; set; } = [];
+}
+
+internal sealed class ParticipantePartida
+{
+    public required string Rol { get; set; }
+    public string? Nombre { get; set; }
+    public int RondasGanadas { get; set; }
+}
+
+internal sealed class CartaPartida
+{
+    public int IdPersonaje { get; set; }
+    public required string Nombre { get; set; }
+    public required string Descripcion { get; set; }
+    public required string Ascii { get; set; }
+    public int Fuerza { get; set; }
+    public int Velocidad { get; set; }
+    public int Resistencia { get; set; }
+    public int Inteligencia { get; set; }
+    public int Energia { get; set; }
+    public int Habilidad { get; set; }
+    public string Ubicacion { get; set; } = "mazo";
+    public int Orden { get; set; }
+    internal Personaje Dominio() => new(Nombre, Ascii, Fuerza, Velocidad, Resistencia, Inteligencia, Energia, Habilidad);
+}
+
+internal sealed class RondaPartida
+{
+    public int Numero { get; set; }
+    public required string Mano { get; set; }
+    public int VictoriasJ1 { get; set; }
+    public int VictoriasJ2 { get; set; }
+    public string? Ganador { get; set; }
+}
+
+internal sealed class CombatePartida
+{
+    public int NumeroRonda { get; set; }
+    public int Numero { get; set; }
+    public required string Elector { get; set; }
+    public int? IdCartaElector { get; set; }
+    public int? IdCartaRival { get; set; }
+    public string? Atributo { get; set; }
+    public int? PuntajeElector { get; set; }
+    public int? PuntajeRival { get; set; }
+    public string? Ganador { get; set; }
+}
+
+internal sealed class SolicitudPartida
+{
+    public Guid Id { get; set; }
+    public int NumeroRonda { get; set; }
+    public int NumeroCombate { get; set; }
+    public required string Rol { get; set; }
+    public required string Tipo { get; set; }
+    public bool Consumida { get; set; }
+}
+
+internal sealed class ExcepcionPartida(string codigo, string mensaje) : InvalidOperationException(mensaje)
+{
+    internal string Codigo { get; } = codigo;
+}
+```
+
+### Relaciones y verificación
+
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
 
 </details>
 
@@ -4161,218 +4615,191 @@ Fuente: [src/servidor/Partida.cs](../src/servidor/Partida.cs). Proyecto: `src/se
 
 ### Propósito y responsabilidad
 
-Es el coordinador local del modelo de clases: prevé repartir, jugar rondas, recoger cartas y terminar en quince victorias. En la versión documentada **no puede completar una partida**: JugarRonda crea un combate pero no fija atributo ni cartas y lanza al comprobar completitud. El servidor de red usa [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md) y [TransicionesPartida](archivos/src/servidor/Api/TransicionesPartida.md), no este bucle. Este límite se describe sin cambiar código ni interpretar el comentario de actividad 6 como funcionalidad disponible.
+Dominio reanudable por acciones sucesivas.
 
-### Dependencias
+### Estado, miembros y ejecución
 
-[Jugador](archivos/src/servidor/Jugador.md) mantiene manos y marcador, [Mazo](archivos/src/servidor/Mazo.md) mezcla y reparte, [Ronda](archivos/src/servidor/Ronda.md) alterna electores y cuenta victorias, [Combate](archivos/src/servidor/Combate.md) compara cartas. `List<Personaje>` reúne cartas al recoger. No depende de HttpClient, consola ni SQLite. Véanse [arquitectura](arquitectura.md) y [reglas](reglas-del-juego.md).
+El constructor recibe EstadoPartida y rechaza null. Estado conserva la instancia; RondasParaGanar fija quince. atributos es la correspondencia única entre nombres públicos y TipoAtributo; AtributosPermitidos devuelve una copia de nombres. Iniciar comprueba fase y seis cartas antes de incorporar copias, reparte y aumenta revisión. RegistrarEleccion comprueba revisión, solicitud/rol, carta propia y atributo antes de consumir y avanzar; la primera acción guarda carta y atributo del elector y abre solicitud rival, la segunda resuelve. Abandonar es repetible para el mismo rol; Cancelar exige partida abierta; ambos consumen solicitud y cierran sin ganador. ExigirAbierta rechaza cierre previo. NormalizarAtributo admite Energia y variantes de mayúsculas/espacios. Otro invierte rol. Repartir usa Mazo, conserva IDs, distribuye tres por plaza y el resto al mazo, y abre ronda/combate/solicitud. AbrirCombate y AbrirSolicitud generan el siguiente estado. Resolver reconstruye Jugador/Combate con las dos cartas, aplica desempate, actualiza ubicaciones y contadores, usa las reglas compartidas de Ronda y continúa o termina. Finalizar consume solicitud actual, limpia su ID y fija fase/motivo/ganador.
 
-### Estructura
+### Errores, límites y efectos
 
-`internal class Partida`, sin herencia explícita, interfaces, atributos ni partial. Constructor y Jugar públicos; los seis ayudantes restantes son privados. No declara propiedades, eventos, sobrecargas, funciones locales ni operadores. `internal const int RondasParaGanar = 15` fija el umbral.
+No existe Jugar ni un bucle esperando la partida completa. El elector alterna por combate y la mano por ronda; dos triunfos ganan ronda y quince rondas ganan partida. Repartir devuelve implícitamente todas las cartas al conjunto y vuelve a mezclar sin cambiar identidad. No conoce HTTP, EF, SQLite ni ErrorApi. La atomicidad persistida pertenece al almacenamiento.
 
-### Estado y datos
+### Implementación contrastada
 
-Campos privados readonly `Jugador j1`, `Jugador j2`, `Mazo mazo` se asignan al construir. `Ronda? rondaActual` empieza null; `int numeroRonda` empieza 0. Iniciar fija número 1 y ronda con j1 como mano. El diseño posterior alternaría mano por paridad, pero no se alcanza en el flujo actual con seis o más cartas y jugadores distintos. No resetea los marcadores previos de los jugadores ni sus manos al comenzar.
-
-### Miembros y ejecución
-
-#### `public Partida(Jugador j1, Jugador j2, Mazo mazo)`
-
-Rechaza null en j1, j2 y mazo, en ese orden, con `ArgumentNullException`; después guarda referencias y estado inicial. No rechaza j1 y j2 iguales aquí: con mazo suficiente fallará al construir Ronda en Iniciar. No copia los objetos; pueden ser compartidos externamente.
-
-#### `public Jugador Jugar()`
-
-Llama a Iniciar antes de entrar a `while (true)`. El orden previsto por iteración es JugarRonda, RecogerCartas y EstaTerminada. Si terminó retorna DeterminarGanadorPartida; si no incrementa numeroRonda, elige j1 para número impar o j2 para par, obtiene el otro rival por ReferenceEquals, crea nueva Ronda y reparte otra vez. El bucle no tiene cancelación ni máximo de rondas; terminaría por marcador. En esta versión la primera llamada a JugarRonda lanza, de modo que el retorno exitoso no se produce por la API pública normal.
-
-#### `private void Iniciar()`
-
-Si GetCantidad < 6, lanza `InvalidOperationException` con «No se puede jugar porque no hay suficientes cartas.» **antes** de cambiar número, ronda, mazo o manos. Con cantidad suficiente fija número 1, crea Ronda(j1,j2) y llama RepartirCartas. Si Ronda rechaza referencias iguales, número ya es 1 pero no hay reparto.
-
-#### `private void RepartirCartas()`
-
-Mezcla todo el mazo, retira tres para j1 y después tres para j2; recién entonces agrega ambos arrays a las manos. No limpia cartas previas. La aleatoriedad pertenece al Mazo y no puede configurarse aquí. No hay transacción ni rollback si alguna operación excepcional falla a mitad.
-
-#### `private void JugarRonda()`
-
-Mientras la ronda no esté definida obtiene elector, determina rival como el otro jugador y construye Combate. El comentario anuncia selección futura, pero no existe ninguna llamada a SetAtributo ni SetCarta. Por ello EstaCompleto es false y lanza «El combate no se completó.». Las líneas posteriores Resolver y AgregarCombate, así como obtener ganador y sumar una ronda al final del bucle, expresan el flujo previsto pero no se alcanzan con el estado que crea este método.
-
-Fragmento real de JugarRonda que demuestra el límite:
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
 
 ```csharp
-                Combate combate = new Combate(quienElige, rival);
+namespace Proyecto_Integrador_Final;
 
-                // La selección del atributo y de las cartas se completará
-                // mediante la comunicación con los clientes en la actividad 6.
+internal sealed class Partida(EstadoPartida estado)
+{
+    internal const int RondasParaGanar = 15;
+    internal EstadoPartida Estado { get; } = estado ?? throw new ArgumentNullException(nameof(estado));
+    private static readonly Dictionary<string, TipoAtributo> atributos = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Fuerza"] = TipoAtributo.Fuerza, ["Velocidad"] = TipoAtributo.Velocidad,
+        ["Resistencia"] = TipoAtributo.Resistencia, ["Inteligencia"] = TipoAtributo.Inteligencia,
+        ["Energía"] = TipoAtributo.Energia, ["Habilidad"] = TipoAtributo.Habilidad
+    };
+    internal static string[] AtributosPermitidos => atributos.Keys.ToArray();
 
-                if (!combate.EstaCompleto())
-                    throw new InvalidOperationException(
-                        "El combate no se completó."
-                    );
+    internal void Iniciar(IEnumerable<CartaPartida> cartas)
+    {
+        if (Estado.Fase != "esperandoInicio")
+            throw new ExcepcionPartida("operacionIncompatible", "La partida ya se inició o finalizó.");
+        var copia = cartas.ToArray();
+        if (copia.Length < 6)
+            throw new ExcepcionPartida("operacionIncompatible", "Se necesitan seis personajes activos.");
+        Estado.Cartas.AddRange(copia);
+        Repartir(1, "J1");
+        Estado.Revision++;
+    }
 
-                combate.Resolver();
-                this.rondaActual.AgregarCombate(combate);
-```
-
-#### `private void RecogerCartas()`
-
-Prevé recorrer combates en orden y, para cada uno, sus dos participantes, agregando GetCarta de cada jugador a una lista. Luego EntregarCartas vacía la mano de j1 y agrega sus sobrantes; hace lo mismo con j2; finalmente devuelve todo al Mazo. No mezcla durante recogida. Los bucles terminan por tamaño de las colecciones. Requiere ronda no nula y combates completos; la supresión `!` no evita una excepción si se incumple esa precondición. En el flujo actual no llega a ejecutarse tras el error de JugarRonda.
-
-#### `private bool EstaTerminada()`
-
-Retorna si j1 o j2 tiene al menos quince rondas ganadas. Cortocircuita el OR: con j1 ≥15 no consulta j2. No modifica estado.
-
-#### `private Jugador DeterminarGanadorPartida()`
-
-Devuelve j1 si su contador ≥15; si no, devuelve j2 sin comprobar su contador. Su precondición prevista es haber obtenido true en EstaTerminada. Si ambos tuvieran quince, priorizaría j1. No se expone públicamente.
-
-La guarda previa a repartir de Iniciar es:
-
-```csharp
-            if (this.mazo.GetCantidad() < 6)
-                throw new InvalidOperationException(
-                    "No se puede jugar porque no hay suficientes cartas."
-                );
-```
-
-#### Fragmentos complementarios por miembro
-
-Los bloques siguientes corresponden a los miembros explicados arriba; se omiten los demás miembros del archivo, sin omitir condiciones internas de estos bloques.
-
-Constructor: referencias y estado inicial, sin validar igualdad de jugadores.
-
-```csharp
-        public Partida(Jugador j1, Jugador j2, Mazo mazo)
+    internal void RegistrarEleccion(string rol, Guid idSolicitud, int revision, int idCarta, string? atributo)
+    {
+        if (Estado.Revision != revision)
+            throw new ExcepcionPartida("revisionDesactualizada", "La revisión ya cambió.");
+        var solicitud = Estado.IdSolicitud == idSolicitud ? Estado.Solicitudes.SingleOrDefault(s => s.Id == idSolicitud) : null;
+        if (solicitud is null || solicitud.Consumida || solicitud.Rol != rol)
+            throw new ExcepcionPartida("solicitudNoVigente", "La solicitud no está vigente para esta plaza.");
+        var carta = Estado.Cartas.SingleOrDefault(c => c.IdPersonaje == idCarta);
+        var esElector = solicitud.Tipo == "cartaYAtributo";
+        atributo = NormalizarAtributo(atributo);
+        if (carta is null || carta.Ubicacion != rol ||
+            (esElector ? atributo is null || !atributos.ContainsKey(atributo) : atributo is not null))
+            throw new ExcepcionPartida("eleccionInvalida", "La carta o el atributo no está entre las opciones.");
+        var combate = Estado.Combates.Single(c => c.NumeroRonda == solicitud.NumeroRonda && c.Numero == solicitud.NumeroCombate);
+        solicitud.Consumida = true;
+        Estado.Revision++;
+        if (esElector)
         {
-            ArgumentNullException.ThrowIfNull(j1);
-            ArgumentNullException.ThrowIfNull(j2);
-            ArgumentNullException.ThrowIfNull(mazo);
-
-            this.j1 = j1;
-            this.j2 = j2;
-            this.mazo = mazo;
-            this.rondaActual = null;
-            this.numeroRonda = 0;
+            combate.IdCartaElector = idCarta;
+            combate.Atributo = atributo;
+            AbrirSolicitud(combate, Otro(rol), "carta");
         }
-```
+        else Resolver(combate, carta);
+    }
 
-Jugar: secuencia prevista y punto de salida por marcador; el fallo de JugarRonda impide recorrerla por completo.
+    internal void Abandonar(string rol)
+    {
+        if (Estado.AbandonoDe == rol) return;
+        ExigirAbierta();
+        Estado.AbandonoDe = rol;
+        Estado.Revision++;
+        Finalizar("abandono");
+    }
 
-```csharp
-        public Jugador Jugar()
+    internal void Cancelar()
+    {
+        ExigirAbierta();
+        Estado.Revision++;
+        Finalizar("cancelacion");
+    }
+
+    private void ExigirAbierta()
+    {
+        if (Estado.Fase == "finalizada")
+            throw new ExcepcionPartida("operacionIncompatible", "La partida ya finalizó.");
+    }
+
+    internal static string? NormalizarAtributo(string? atributo)
+    {
+        if (atributo is null) return null;
+        var texto = atributo.Trim().Normalize();
+        if (texto.Equals("Energia", StringComparison.OrdinalIgnoreCase)) return "Energía";
+        return atributos.Keys.FirstOrDefault(a => a.Equals(texto, StringComparison.OrdinalIgnoreCase)) ?? texto;
+    }
+
+    private static string Otro(string rol) => rol == "J1" ? "J2" : "J1";
+
+    private void Repartir(int numero, string mano)
+    {
+        var cartas = Estado.Cartas.ToArray();
+        // Mazo hace la mezcla y el reparto; las cartas conservan su identidad en el estado.
+        var personajes = cartas.Select(c => c.Dominio()).ToList();
+        var correspondencia = personajes.Select((p, i) => (p, carta: cartas[i])).ToDictionary(x => x.p, x => x.carta);
+        var mazo = new Mazo(personajes);
+        mazo.Mezclar();
+        var ordenadas = mazo.Repartir(3).Concat(mazo.Repartir(3)).Concat(mazo.Repartir(mazo.GetCantidad())).ToArray();
+        for (int i = 0; i < ordenadas.Length; i++)
         {
-            this.Iniciar();
-
-            while (true)
-            {
-                this.JugarRonda();
-                this.RecogerCartas();
-
-                if (this.EstaTerminada())
-                    return this.DeterminarGanadorPartida();
-
-                this.numeroRonda++;
-
-                Jugador mano = this.numeroRonda % 2 == 1
-                    ? this.j1
-                    : this.j2;
-
-                Jugador rival = ReferenceEquals(mano, this.j1)
-                    ? this.j2
-                    : this.j1;
-
-                this.rondaActual = new Ronda(mano, rival);
-                this.RepartirCartas();
-            }
+            var carta = correspondencia[ordenadas[i]];
+            carta.Orden = i;
+            carta.Ubicacion = i < 3 ? "J1" : i < 6 ? "J2" : "mazo";
         }
-```
+        Estado.Rondas.Add(new RondaPartida { Numero = numero, Mano = mano });
+        Estado.NumeroRonda = numero;
+        AbrirCombate(1, mano);
+    }
 
-Iniciar: insuficiencia se detecta antes de modificar estado.
+    private void AbrirCombate(int numero, string elector)
+    {
+        var combate = new CombatePartida { NumeroRonda = Estado.NumeroRonda!.Value, Numero = numero, Elector = elector };
+        Estado.Combates.Add(combate);
+        Estado.NumeroCombate = numero;
+        AbrirSolicitud(combate, elector, "cartaYAtributo");
+    }
 
-```csharp
-        private void Iniciar()
+    private void AbrirSolicitud(CombatePartida combate, string rol, string tipo)
+    {
+        var solicitud = new SolicitudPartida { Id = Guid.NewGuid(), NumeroRonda = combate.NumeroRonda,
+            NumeroCombate = combate.Numero, Rol = rol, Tipo = tipo };
+        Estado.Solicitudes.Add(solicitud);
+        Estado.IdSolicitud = solicitud.Id;
+        Estado.Fase = tipo == "carta" ? "esperandoRival" : "esperandoElector";
+    }
+
+    private void Resolver(CombatePartida guardado, CartaPartida cartaRival)
+    {
+        var cartaElector = Estado.Cartas.Single(c => c.IdPersonaje == guardado.IdCartaElector);
+        var elector = new Jugador(guardado.Elector);
+        var rival = new Jugador(Otro(guardado.Elector));
+        var personajeElector = cartaElector.Dominio();
+        var personajeRival = cartaRival.Dominio();
+        elector.RecibirCartas([personajeElector]);
+        rival.RecibirCartas([personajeRival]);
+        var atributo = atributos[guardado.Atributo!];
+        var combate = new Combate(elector, rival);
+        combate.SetAtributo(atributo);
+        combate.SetCarta(elector, personajeElector);
+        combate.SetCarta(rival, personajeRival);
+        var ganador = combate.Resolver().GetNombre();
+        guardado.IdCartaRival = cartaRival.IdPersonaje;
+        guardado.PuntajeElector = personajeElector.GetAtributo(atributo);
+        guardado.PuntajeRival = personajeRival.GetAtributo(atributo);
+        guardado.Ganador = ganador;
+        cartaElector.Ubicacion = cartaRival.Ubicacion = "jugada";
+        var ronda = Estado.Rondas.Single(r => r.Numero == guardado.NumeroRonda);
+        if (ganador == "J1") ronda.VictoriasJ1++;
+        else ronda.VictoriasJ2++;
+        var vencedor = Ronda.GanadorPorVictorias(ronda.VictoriasJ1, ronda.VictoriasJ2);
+        if (vencedor is null)
         {
-            if (this.mazo.GetCantidad() < 6)
-                throw new InvalidOperationException(
-                    "No se puede jugar porque no hay suficientes cartas."
-                );
-
-            this.numeroRonda = 1;
-            this.rondaActual = new Ronda(this.j1, this.j2);
-
-            this.RepartirCartas();
+            AbrirCombate(guardado.Numero + 1, Ronda.EsTurnoMano(guardado.Numero) ? ronda.Mano : Otro(ronda.Mano));
+            return;
         }
+        ganador = vencedor == 1 ? "J1" : "J2";
+        ronda.Ganador = ganador;
+        var jugador = Estado.Participantes.Single(p => p.Rol == ganador);
+        if (++jugador.RondasGanadas >= RondasParaGanar) Finalizar("victoria", ganador);
+        else Repartir(ronda.Numero + 1, Otro(ronda.Mano));
+    }
+
+    private void Finalizar(string motivo, string? ganador = null)
+    {
+        if (Estado.IdSolicitud is Guid id) Estado.Solicitudes.Single(s => s.Id == id).Consumida = true;
+        Estado.IdSolicitud = null;
+        Estado.Fase = "finalizada";
+        Estado.MotivoFin = motivo;
+        Estado.Ganador = ganador;
+    }
+}
 ```
-
-RepartirCartas: extrae ambos grupos antes de entregarlos.
-
-```csharp
-        private void RepartirCartas()
-        {
-            this.mazo.Mezclar();
-
-            Personaje[] cartasJ1 = this.mazo.Repartir(3);
-            Personaje[] cartasJ2 = this.mazo.Repartir(3);
-
-            this.j1.RecibirCartas(cartasJ1);
-            this.j2.RecibirCartas(cartasJ2);
-        }
-```
-
-RecogerCartas: recorrido de jugadas y vaciado de sobrantes, no alcanzado en el flujo público actual.
-
-```csharp
-        private void RecogerCartas()
-        {
-            List<Personaje> cartas = new List<Personaje>();
-
-            foreach (Combate combate in this.rondaActual!.GetCombates())
-            {
-                foreach (Jugador jugador in combate.GetParticipantes())
-                    cartas.Add(combate.GetCarta(jugador));
-            }
-
-            cartas.AddRange(this.j1.EntregarCartas());
-            cartas.AddRange(this.j2.EntregarCartas());
-
-            this.mazo.Devolver(cartas.ToArray());
-        }
-```
-
-EstaTerminada: umbral con OR de cortocircuito.
-
-```csharp
-        private bool EstaTerminada()
-        {
-            return this.j1.GetRondasGanadas() >= RondasParaGanar
-                || this.j2.GetRondasGanadas() >= RondasParaGanar;
-        }
-```
-
-DeterminarGanadorPartida: prioridad de j1 bajo su precondición.
-
-```csharp
-        private Jugador DeterminarGanadorPartida()
-        {
-            return this.j1.GetRondasGanadas() >= RondasParaGanar
-                ? this.j1
-                : this.j2;
-        }
-```
-
-### Recorridos y ejemplos
-
-Recorrido de entrada válida hasta el límite real: jugadores distintos con manos vacías y seis cartas válidas. Jugar establece ronda 1, mezcla, entrega tres a cada jugador y deja mazo vacío; luego lanza «El combate no se completó.». Las manos conservan sus tres cartas porque no se registró ninguna ni se alcanzó RecogerCartas; los marcadores no cambian. No se ofrece un ejemplo de victoria local, porque ese resultado no está implementado en este coordinador.
-
-Error temprano: con cinco cartas, Jugar lanza por insuficiencia antes de repartir; mazo conserva cinco y manos vacías. Con cero cartas sucede lo mismo. Estos dos tamaños están definidos en PartidaTests; el recorrido de seis cartas se contrastó por lectura y no se confunde con ensayo de partida REST.
-
-### Errores, límites y efectos observables
-
-No es seguro reintentar Jugar suponiendo que hubo rollback: el error posterior al reparto deja cartas en manos y reduce el mazo. No valida manos iniciales vacías ni marcadores cero. No hay persistencia, sesiones, revisión idempotente, entrada de usuario ni cancelación; esas responsabilidades corresponden a la implementación de red separada.
 
 ### Relaciones y verificación
 
-[PartidaTests](archivos/test/proyecto-integrador-final-tests/PartidaTests.md) prueba exclusivamente mazos de 0 y 5, texto exacto del error y conservación de mazo/manos. No demuestra victoria de este coordinador ni ejecución de sus ayudantes posteriores al fallo. Las pruebas de servidor de red verifican otro coordinador. Véase el [plan de pruebas](plan-de-pruebas.md) para resultados de ejecución, con rama y condiciones.
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
 
 </details>
 
@@ -4559,50 +4986,39 @@ No se admite null en nombre ni ASCII, pero los parámetros no anulables son una 
 
 ## src/servidor/Program.cs
 
-Fuente: [src/servidor/Program.cs](../src/servidor/Program.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `global (sin declaración namespace)`. Versión común: [catálogo](archivos/README.md#versión-documentada).
+Fuente: [src/servidor/Program.cs](../src/servidor/Program.cs). Proyecto: `src/servidor/servidor.csproj` (`net8.0`). Namespace: `(global)`. Versión: [catálogo común](archivos/README.md#versión-documentada).
 
 ### Propósito y responsabilidad
 
-Es el punto de entrada del ejecutable servidor. Lee configuración, crea el host, arranca HTTP y la consola administrativa, y coordina su cierre. Reintenta el inicio ante errores de dirección/archivo sin cambiar código o persistencia para ocultarlos.
+Arranque y ciclo de vida del servidor.
 
-### Dependencias
+### Estado, miembros y ejecución
 
-[ConfiguracionServidor](archivos/src/servidor/Api/ConfiguracionServidor.md) obtiene datos; [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md) construye WebApplication; [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md) se resuelve por DI; [ConsolaServidor](archivos/src/servidor/Api/ConsolaServidor.md) atiende comandos. Microsoft.Data.Sqlite.SqliteException clasifica fallos de base. Task.Run, WhenAny y WaitForShutdownAsync coordinan trabajos. [Instalación y uso](instalacion-y-uso.md) describe ejecución.
+Main obtiene ConfiguracionServidor, ofrece reconfigurar si falla el arranque y crea ServidorHttp. La consola recibe por DI los tres componentes administrativos: CoordinadorPartidas, AdministradorSesiones y CatalogoPersonajes. Conserva el control de cancelación, parada del host y liberación de recursos.
 
-### Estructura y estado
+### Errores, límites y efectos
 
-`internal static class Program` en namespace global (no declara namespace). Contiene solo `private static async Task<int> Main()`, sin argumentos de aplicación ni campos, propiedades, eventos, partial o constructores de instancia. Los datos de inicio, app, repositorio y tareas son variables locales de cada intento. `await using` libera host al salir del bloque incluso ante excepción.
+Es el Program de src/servidor, independiente de cliente y cargador. No ejecuta reglas de partida ni administra conexiones directamente; los errores y opciones de reconfiguración conservan el flujo previo.
 
-### Miembros y ejecución
+### Implementación contrastada
 
-Main retorna código de proceso. Dentro de `while(true)`:
-
-1. Lee configuración desde Console.In/Out. EndOfStreamException imprime «Fin de la entrada. Inicio cancelado.» y retorna 0; IOException retorna 1 sin diagnóstico adicional. Otros fallos de esa primera lectura no se capturan aquí.
-2. Crea app mediante ServidorHttp.Crear con array de args vacío e inicio interactivo. Resuelve RepositorioJuego (que abre/crea SQLite) antes de StartAsync.
-3. Espera StartAsync; después lanza ConsolaServidor.Ejecutar en Task.Run con token ApplicationStopping. Espera la primera tarea terminada entre consola y espera de cierre del host; luego hace await de esa tarea para propagar su error, llama StopAsync y retorna 0.
-4. En el bloque de host captura IOException, UnauthorizedAccessException, SqliteException o InvalidOperationException. Imprime mensaje genérico de revisar dirección/SQLite y repite toda la configuración; no muestra secreto ni detalles internos. No limita intentos: termina por inicio/parada correctos o EOF/error de lectura.
-
-Fragmento real de coordinación de vida del host:
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
 
 ```csharp
-                await using var app = ServidorHttp.Crear([], inicio: inicio);
-                var juego = app.Services.GetRequiredService<RepositorioJuego>();
-                await app.StartAsync();
-                var consola = Task.Run(() => ConsolaServidor.Ejecutar(juego, Console.In, Console.Out,
-                    app.Lifetime.ApplicationStopping));
-                var terminada = await Task.WhenAny(consola, app.WaitForShutdownAsync());
-                await terminada;
-                await app.StopAsync();
-                return 0;
-```
+using Proyecto_Integrador_Final.Api;
+using Microsoft.Data.Sqlite;
 
-La tarea que no ganó WhenAny no se espera explícitamente aquí; StopAsync notifica parada y la disposición asíncrona libera host. ApplicationStopping no fuerza cancelación de una ReadLine ya bloqueada dentro de consola. La lambda de Task.Run solo llama al ejecutor con los flujos y token capturados.
-
-#### Fragmentos de errores y reintento de inicio
-
-EOF durante configuración termina con éxito local sin crear host; un fallo de lectura de consola retorna 1. Estos catch pertenecen al bloque de lectura, no al host:
-
-```csharp
+internal static class Program
+{
+    private static async Task<int> Main()
+    {
+        while (true)
+        {
+            ConfiguracionServidor inicio;
+            try
+            {
+                inicio = ConfiguracionServidor.Leer(Console.In, Console.Out);
+            }
             catch (EndOfStreamException)
             {
                 Console.WriteLine("Fin de la entrada. Inicio cancelado.");
@@ -4612,28 +5028,32 @@ EOF durante configuración termina con éxito local sin crear host; un fallo de 
             {
                 return 1;
             }
-```
 
-La captura del host escribe diagnóstico genérico y cae al siguiente ciclo de configuración, sin credenciales ni excepción completa:
-
-```csharp
+            try
+            {
+                await using var app = ServidorHttp.Crear([], inicio: inicio);
+                var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+                await app.StartAsync();
+                var consola = Task.Run(() => ConsolaServidor.Ejecutar(juego, app.Services.GetRequiredService<AdministradorSesiones>(),
+                    app.Services.GetRequiredService<CatalogoPersonajes>(), Console.In, Console.Out,
+                    app.Lifetime.ApplicationStopping));
+                var terminada = await Task.WhenAny(consola, app.WaitForShutdownAsync());
+                await terminada;
+                await app.StopAsync();
+                return 0;
+            }
             catch (Exception error) when (error is IOException or UnauthorizedAccessException or SqliteException or InvalidOperationException)
             {
                 Console.WriteLine("No se pudo iniciar el servidor. Revisá la dirección y el archivo SQLite. Volvé a ingresar la configuración.");
             }
+        }
+    }
+}
 ```
-
-### Recorridos y ejemplos
-
-Normal: ingresar URL `http://127.0.0.1:5000`, archivo temporal válido y secreto ficticio; tras iniciar, la consola recibe EOF, su tarea termina, Main para el host y devuelve 0. Alternativo: directorio existente pero sin permiso efectivo de crear SQLite pasa la validación de ruta, falla al abrir base, imprime reintento y vuelve a preguntar. EOF en ese segundo intento devuelve 0 sin arrancar otra aplicación. Son recorridos de lectura, no apertura de una base real desde esta página.
-
-### Errores, límites y efectos observables
-
-El arranque puede crear SQLite y escuchar en red. El código no elimina la base al cerrar ni migra esquemas. La captura de InvalidOperationException cubre también errores de operación durante el bloque de host y los presenta con el mismo diagnóstico genérico. No implementa un parser CLI de opciones: Main no recibe args y llama Crear con `[]`.
 
 ### Relaciones y verificación
 
-[EntradaProcesosContratoTests](archivos/test/proyecto-integrador-final-tests/EntradaProcesosContratoTests.md) define inicio sin argumentos, EOF, parada y corrección tras base inválida; [ServidorContratoTests](archivos/test/proyecto-integrador-final-tests/ServidorContratoTests.md) usa proceso real y SQLite aislada. Véase [verificación de referencia](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) para comandos/resultados reales y límites del entorno.
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
 
 </details>
 
@@ -4648,62 +5068,42 @@ Fuente: [src/servidor/Ronda.cs](../src/servidor/Ronda.cs). Proyecto: `src/servid
 
 ### Propósito y responsabilidad
 
-Agrupa combates locales y declara ganador al alcanzar dos victorias. Alterna quién elige por cantidad de combates, empezando por mano. No consume cartas, no incrementa marcadores de jugadores ni ejecuta por sí misma un combate.
+Reglas compartidas de ronda y alternancia.
 
-### Dependencias
+### Estado, miembros y ejecución
 
-[Jugador](archivos/src/servidor/Jugador.md) aporta identidad de mano y rival; [Combate](archivos/src/servidor/Combate.md) aporta ganadores ya resueltos. `List<Combate>` mantiene el orden y `ToArray` permite consultar una copia del contenedor. Véanse las [reglas](reglas-del-juego.md).
+CombatesParaGanar fija dos. GanadorPorVictorias devuelve 1 o 2 al alcanzar el umbral, o null; EsTurnoMano decide la alternancia por cantidad de combates. Ambas funciones se reutilizan desde Partida y desde la instancia Ronda. El constructor exige participantes distintos y no nulos. AgregarCombate rechaza null, ronda definida y más de tres combates. EstaDefinida cuenta victorias y usa GanadorPorVictorias; GetGanador exige definición y devuelve la referencia participante. GetQuienEligeProximo exige ronda abierta y usa EsTurnoMano; GetCombates devuelve un array de las referencias registradas.
 
-### Estructura
+### Errores, límites y efectos
 
-`internal class Ronda` sin herencia explícita, interfaces, atributos ni partial. Todos los métodos son públicos; no hay propiedades, eventos, funciones locales ni operadores. `internal const int CombatesParaGanar = 2` establece el umbral en compilación.
+No persiste ni decide fin de partida. La comparación de ganadores de los combates usa identidad de Jugador. Las funciones compartidas evitan una segunda implementación de las reglas en REST.
 
-### Estado y datos
+### Implementación contrastada
 
-Campos privados readonly `Jugador mano`, `Jugador rival` y `List<Combate> combates`. El constructor fija los participantes y crea lista vacía. La lista es mutable aunque no pueda reasignarse; sus elementos se comparten con el llamador. No mantiene contador cacheado: cada consulta calcula los triunfos recorriendo los combates.
-
-### Miembros y ejecución
-
-- `public Ronda(Jugador mano, Jugador rival)`: rechaza null de mano y rival en ese orden con `ArgumentNullException`. Si ambas referencias son iguales, `ArgumentException`. Guarda ambas y crea lista; no importa que sus nombres coincidan.
-- `public void AgregarCombate(Combate combate)`: null falla primero. Después llama a EstaDefinida; si ya hay dos victorias de un lado, lanza `InvalidOperationException`. Luego rechaza Count ≥ 3 con otra `InvalidOperationException`; si pasa agrega al final. No inspecciona directamente que el combate nuevo esté resuelto ni que sus participantes sean los de esta ronda. Si los anteriores incluyen uno sin resolver, EstaDefinida ya puede lanzar antes del agregado.
-- `public bool EstaDefinida()`: inicia contadores locales en cero. Recorre todos los elementos; si GetGanador es la referencia mano suma a mano; cualquier otra referencia suma a rival. Retorna true si algún contador ≥ 2. Un combate no resuelto propaga su excepción. Lista vacía retorna false. No retorna anticipadamente al llegar a dos: sigue recorriendo.
-- `public Jugador GetGanador()`: exige EstaDefinida o lanza `InvalidOperationException`. Recuenta victorias de mano; con ≥2 retorna mano y de lo contrario rival. No incrementa rondasGanadas ni cambia la lista.
-- `public Jugador GetQuienEligeProximo()`: si EstaDefinida, `InvalidOperationException`; si no, Count par retorna mano, impar rival. Alterna aunque un mismo participante haya ganado dos combates consecutivos; no usa el ganador anterior para elegir.
-- `public Combate[] GetCombates()`: copia a array conservando orden; cambiar una posición no modifica la lista. Los objetos Combate no se clonan.
-
-El cuerpo de EstaDefinida muestra tanto la ausencia de validación de identidad rival como la terminación por recorrido completo:
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
 
 ```csharp
-            int victoriasMano = 0;
-            int victoriasRival = 0;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-            foreach (Combate combate in this.combates)
-            {
-                if (ReferenceEquals(combate.GetGanador(), this.mano))
-                    victoriasMano++;
-                else
-                    victoriasRival++;
-            }
+namespace Proyecto_Integrador_Final
+{
+    internal class Ronda
+    {
+        internal const int CombatesParaGanar = 2;
 
-            return victoriasMano >= CombatesParaGanar || victoriasRival >= CombatesParaGanar;
-```
+        internal static int? GanadorPorVictorias(int victoriasMano, int victoriasRival) =>
+            victoriasMano >= CombatesParaGanar ? 1 : victoriasRival >= CombatesParaGanar ? 2 : null;
 
-La selección siguiente, después de la guarda de ronda definida, usa la paridad:
+        internal static bool EsTurnoMano(int combatesResueltos) => combatesResueltos % 2 == 0;
 
-```csharp
-            // La elección empieza con el jugador mano y alterna después de cada combate.
-            return this.combates.Count % 2 == 0
-                ? this.mano
-                : this.rival;
-```
+        private readonly Jugador mano;
+        private readonly Jugador rival;
+        private readonly List<Combate> combates;
 
-#### Fragmentos complementarios por miembro
-
-Los bloques siguientes corresponden a los miembros explicados arriba; se omiten los demás miembros del archivo, sin omitir condiciones internas de estos bloques.
-
-Constructor: referencias distintas y lista vacía.
-
-```csharp
         public Ronda(Jugador mano, Jugador rival)
         {
             ArgumentNullException.ThrowIfNull(mano);
@@ -4718,11 +5118,7 @@ Constructor: referencias distintas y lista vacía.
             this.rival = rival;
             this.combates = new List<Combate>();
         }
-```
 
-AgregarCombate: orden de guardas y único efecto de agregado.
-
-```csharp
         public void AgregarCombate(Combate combate)
         {
             ArgumentNullException.ThrowIfNull(combate);
@@ -4739,11 +5135,23 @@ AgregarCombate: orden de guardas y único efecto de agregado.
 
             this.combates.Add(combate);
         }
-```
 
-GetGanador: verifica definición antes de contar triunfos de mano.
+        public bool EstaDefinida()
+        {
+            int victoriasMano = 0;
+            int victoriasRival = 0;
 
-```csharp
+            foreach (Combate combate in this.combates)
+            {
+                if (ReferenceEquals(combate.GetGanador(), this.mano))
+                    victoriasMano++;
+                else
+                    victoriasRival++;
+            }
+
+            return GanadorPorVictorias(victoriasMano, victoriasRival) is not null;
+        }
+
         public Jugador GetGanador()
         {
             if (!this.EstaDefinida())
@@ -4759,25 +5167,32 @@ GetGanador: verifica definición antes de contar triunfos de mano.
                     victoriasMano++;
             }
 
-            return victoriasMano >= CombatesParaGanar
+            return GanadorPorVictorias(victoriasMano, this.combates.Count - victoriasMano) == 1
                 ? this.mano
                 : this.rival;
         }
+
+        public Jugador GetQuienEligeProximo()
+        {
+            if (this.EstaDefinida())
+                throw new InvalidOperationException(
+                    "La ronda ya está definida."
+                );
+
+            // La elección empieza con el jugador mano y alterna después de cada combate.
+            return EsTurnoMano(this.combates.Count)
+                ? this.mano
+                : this.rival;
+        }
+
+        public Combate[] GetCombates() => this.combates.ToArray();
+    }
+}
 ```
-
-### Recorridos y ejemplos
-
-Normal: ronda con mano Ana y rival Bruno. Sin combates abre Ana. Tras un triunfo de Ana abre Bruno. Si Ana gana el segundo, EstaDefinida es true y GetGanador retorna Ana; pedir siguiente elector o agregar un tercero falla porque la ronda terminó.
-
-Alternativo: primero gana Ana y segundo Bruno; Count 2 es par, aún no hay vencedor y abre Ana. El tercer combate da la segunda victoria a alguno y define la ronda. Error adicional: agregar un primer combate incompleto sí puede realizarse porque la lista anterior está vacía; la próxima consulta de definición propaga «El combate todavía no fue resuelto.». Son consecuencias leídas del código; no se presenta ese último caso como prueba ejecutada.
-
-### Errores, límites y efectos observables
-
-El límite tres es defensivo: con dos participantes válidos y tres resultados resueltos, alguno ya tiene dos victorias. El tipo confía en el llamador para participantes y resolución; un ganador ajeno se contabiliza como victoria rival. No hay reversión, persistencia, aleatoriedad, asincronía ni sincronización; solo cambia la lista al agregar.
 
 ### Relaciones y verificación
 
-[Partida](archivos/src/servidor/Partida.md) usa el ganador para sumar una ronda al Jugador. [RondaTests](archivos/test/proyecto-integrador-final-tests/RondaTests.md) prepara combates resueltos, verifica comienzo, alternancia, cierre 2–0 para ambos lados, resolución 2–1 y copia defensiva del array. No acredita validación de participantes de cada combate ni rechazo anticipado de combates sin resolver: esas validaciones no existen aquí. La ejecución global se registra en el [plan de pruebas](plan-de-pruebas.md).
+Véanse [arquitectura](arquitectura.md), [modelos](modelos.md) y [auditoría del spec 006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.
 
 </details>
 
@@ -4969,7 +5384,7 @@ Integración HTTP del host real en loopback: contrato de errores, catálogo, ide
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md).
+Relaciones usadas por este archivo: [CoordinadorPartidas](archivos/src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](archivos/src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](archivos/src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md).
 
 `HttpClient`/`HttpMessageHandler` representan solicitudes y respuestas; `JsonDocument`, `JsonSerializer` o `JsonContent` leen o escriben cuerpos donde aparecen. Los handlers anidados descritos abajo son dobles salvo los intermediarios que delegan a un `HttpClientHandler` real.
 
@@ -4985,7 +5400,7 @@ Las declaraciones anteriores conservan visibilidad, sellado, constructor primari
 
 ### Estado y datos
 
-RelojPruebas privado deriva TimeProvider y guarda ahora=UnixEpoch; GetUtcNow lo retorna, Avanzar agrega segundos. No crea timers ni sincroniza. Cada test crea host/cliente/repositorio aislados; las pruebas de persistencia usan subdirectorio temporal y Pooling=false.
+RelojPruebas privado deriva TimeProvider y guarda ahora=UnixEpoch; GetUtcNow lo retorna, Avanzar agrega segundos. No crea timers ni sincroniza. Cada test crea host/cliente/servicios aislados; las pruebas de persistencia usan subdirectorio temporal y Pooling=false.
 
 Declaraciones reales de estado de `RelojPruebas` (la mutación y el ciclo de vida se explican aquí y en sus miembros):
 
@@ -5027,11 +5442,10 @@ Crea partida, usa Bearer J1 y PUT sesión con UUID/Ada; repite exactamente y des
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task IncorporacionReservaLaPlazaYPermiteRenovarLaMismaSesion()
     {
         await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"]);
-        var creada = app.Services.GetRequiredService<RepositorioJuego>().CrearPartida();
+        var creada = app.Services.GetRequiredService<CoordinadorPartidas>().CrearPartida();
         await app.StartAsync();
         using var cliente = new HttpClient { BaseAddress = new Uri(app.Urls.Single()) };
         cliente.DefaultRequestHeaders.Authorization = new("Bearer", creada.CredencialJ1);
@@ -5094,15 +5508,14 @@ Carga seis cartas iguales, incorpora ambas plazas e inicia. J2 intentando solici
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task CombateMantieneLasEleccionesPrivadasYConfirmaUnaSolaVez()
     {
         await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:",
             "--urls=http://127.0.0.1:0"]);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         for (int i = 0; i < 6; i++)
-            juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+            app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
         await app.StartAsync();
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
         using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -5176,7 +5589,6 @@ Usa archivo en directorio temporal, Pooling=false. Primer host crea seis cartas/
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task ReinicioRecuperaSolicitudYRecibosYExigeSesionesNuevas()
     {
         var directorio = Directory.CreateTempSubdirectory();
@@ -5190,10 +5602,10 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             Uri recibo;
             await using (var app = ServidorHttp.Crear(args))
             {
-                var juego = app.Services.GetRequiredService<RepositorioJuego>();
+                var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
                 partida = juego.CrearPartida();
                 for (int i = 0; i < 6; i++)
-                    juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+                    app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
                 await app.StartAsync();
                 using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
                 using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -5204,7 +5616,7 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
                 Assert.Equal(HttpStatusCode.Created, elegida.StatusCode);
                 recibo = elegida.Headers.Location!;
                 antes = await Vista(j2);
-                juego.Desactivar(antes.GetProperty("mano")[0].GetProperty("idPersonaje").GetInt32());
+                app.Services.GetRequiredService<CatalogoPersonajes>().Desactivar(antes.GetProperty("mano")[0].GetProperty("idPersonaje").GetInt32());
                 await app.StopAsync();
             }
 
@@ -5258,7 +5670,6 @@ Host y archivo temporal; acepta apertura J1 y prepara respuesta J2. Crea trigger
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task UnaEleccionConFalloDeEscrituraNoDejaCambiosParciales()
     {
         var directorio = Directory.CreateTempSubdirectory();
@@ -5267,10 +5678,10 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
         {
             await using var app = ServidorHttp.Crear([
                 $"--ConnectionStrings:Juego={conexion}", "--urls=http://127.0.0.1:0"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
             var partida = juego.CrearPartida();
             for (int i = 0; i < 6; i++)
-                juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+                app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
             await app.StartAsync();
             using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
             using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -5323,13 +5734,12 @@ Usa RelojPruebas y memoria. Incorpora J1, guarda vista, avanza10s y PUT presenci
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task PresenciaRenuevaElPlazoSinCambiarLaRevision()
     {
         var reloj = new RelojPruebas();
         await using var app = ServidorHttp.Crear([
             "--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"], reloj);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         await app.StartAsync();
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
@@ -5347,26 +5757,25 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
 
 #### `ApiHttpTests.ReemplazarCredencialRevocaAccesoYCancelarConservaLaPlaza`
 
-Incorpora J1, cambia credencial por repositorio; consulta con vieja da401 credencialInvalida. Nueva credencial permite incorporar, pero CerrarSesion produce409 sesionVencida. Cancela partida y reincorpora con nueva credencial; vista conserva rolJ1, motivo cancelacion y revisión1. El test demuestra conservación del rol, motivo y revisión; no comprueba explícitamente la ausencia de un ganador.
+Incorpora J1, cambia credencial por AdministradorSesiones; consulta con vieja da401 credencialInvalida. Nueva credencial permite incorporar, pero CerrarSesion produce409 sesionVencida. Cancela partida y reincorpora con nueva credencial; vista conserva rolJ1, motivo cancelacion y revisión1. El test demuestra conservación del rol, motivo y revisión; no comprueba explícitamente la ausencia de un ganador.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task ReemplazarCredencialRevocaAccesoYCancelarConservaLaPlaza()
     {
         await using var app = ServidorHttp.Crear([
             "--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"]);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         await app.StartAsync();
         using var original = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
-        var nueva = juego.ReemplazarCredencial(partida.Id, "J1");
+        var nueva = app.Services.GetRequiredService<AdministradorSesiones>().ReemplazarCredencial(partida.Id, "J1");
 
         using var revocada = await original.GetAsync("presentacion");
         await Error(revocada, HttpStatusCode.Unauthorized, "credencialInvalida");
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, nueva, "Ada");
-        juego.CerrarSesion(partida.Id, "J1");
+        app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
         using var cerrada = await j1.GetAsync("presentacion");
         await Error(cerrada, HttpStatusCode.Conflict, "sesionVencida");
 
@@ -5386,16 +5795,15 @@ Host memoria con reloj detenido y logs Warning; seis cartas idénticas y ambas p
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task PartidaTerminaConQuinceRondasGanadasYSinRepartirOtra()
     {
         await using var app = ServidorHttp.Crear([
             "--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0",
             "--Logging:LogLevel:Default=Warning"], new RelojPruebas());
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         for (int i = 0; i < 6; i++)
-            juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+            app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
         await app.StartAsync();
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
         using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -5566,6 +5974,10 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
 
+### Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
+
 </details>
 
 <details>
@@ -5699,7 +6111,7 @@ Ensaya esquema de lote JSON, reglas de dominio, autenticación HTTP y reemplazo 
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [AltaPersonaje](archivos/src/servidor/Api/PersonajeCatalogo.md), [ErrorApi](archivos/src/servidor/Api/ServidorHttp.md), [LotePersonajes](archivos/src/servidor/Api/LotePersonajes.md), [Personaje](archivos/src/servidor/Personaje.md), [PersonajeCatalogo](archivos/src/servidor/Api/PersonajeCatalogo.md), [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md).
+Relaciones usadas por este archivo: [AltaPersonaje](archivos/src/servidor/Api/PersonajeCatalogo.md), [ErrorApi](archivos/src/servidor/Api/ServidorHttp.md), [LotePersonajes](archivos/src/servidor/Api/LotePersonajes.md), [Personaje](archivos/src/servidor/Personaje.md), [PersonajeCatalogo](archivos/src/servidor/Api/PersonajeCatalogo.md), [CoordinadorPartidas](archivos/src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](archivos/src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](archivos/src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md).
 
 `HttpClient`/`HttpMessageHandler` representan solicitudes y respuestas; `JsonDocument`, `JsonSerializer` o `JsonContent` leen o escriben cuerpos donde aparecen. Los handlers anidados descritos abajo son dobles salvo los intermediarios que delegan a un `HttpClientHandler` real.
 
@@ -5763,28 +6175,27 @@ Repositorio memoria; da alta a Anterior, reemplaza por Uno y repite reemplazo. C
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public void ReemplazoRepiteSinAcumularYValidaAntesDeBorrar()
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var juego = new CatalogoPersonajes(almacen.Infraestructura);
         var lote = LotePersonajes.Leer(JsonDocument.Parse(Uno).RootElement);
-        juego.DarDeAlta(lote[0] with { Nombre = "Anterior" });
-        juego.ReemplazarCatalogo(lote);
-        juego.ReemplazarCatalogo(lote);
-        Assert.Equal(1, juego.CantidadCatalogo());
-        Assert.Throws<ErrorApi>(() => juego.ReemplazarCatalogo([lote[0] with { Fuerza = 0 }]));
-        Assert.Equal(1, juego.CantidadCatalogo());
+        new CatalogoPersonajes(almacen.Infraestructura).DarDeAlta(lote[0] with { Nombre = "Anterior" });
+        new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo(lote);
+        new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo(lote);
+        Assert.Equal(1, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
+        Assert.Throws<ErrorApi>(() => new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo([lote[0] with { Fuerza = 0 }]));
+        Assert.Equal(1, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
     }
 ```
 
 #### `CargaJsonTests.ReemplazoPersisteDatosExactosYRevierteFalloDeInsercion`
 
-Usa archivo temporal y Pooling=False. Da de alta Viejo e Inactivo, desactiva ID2 y exige cuenta2 (incluye inactivos); reemplaza por Uno y cierra repositorio. Consulta SQL y exige única fila [1,Ada,descripción vacía,*,250,350,450,550,650,750,activo1]. Crea trigger BEFORE INSERT para nombre Falla con RAISE(ABORT). Reemplazo de Ada+Falla debe lanzar DbUpdateException; nueva apertura conserva cantidad1 y SQL sigue retornando Ada. finally borra archivo. Demuestra rollback de ese fallo, no todos los errores posibles de disco.
+Usa archivo temporal y Pooling=False. Da de alta Viejo e Inactivo, desactiva ID2 y exige cuenta2 (incluye inactivos); reemplaza por Uno y cierra AlmacenPartidas. Consulta SQL y exige única fila [1,Ada,descripción vacía,*,250,350,450,550,650,750,activo1]. Crea trigger BEFORE INSERT para nombre Falla con RAISE(ABORT). Reemplazo de Ada+Falla debe lanzar DbUpdateException; nueva apertura conserva cantidad1 y SQL sigue retornando Ada. finally borra archivo. Demuestra rollback de ese fallo, no todos los errores posibles de disco.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public void ReemplazoPersisteDatosExactosYRevierteFalloDeInsercion()
     {
         string ruta = Path.Combine(Path.GetTempPath(), $"carga-{Guid.NewGuid()}.db");
@@ -5792,13 +6203,13 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
         try
         {
             var lote = LotePersonajes.Leer(JsonDocument.Parse(Uno).RootElement);
-            using (var juego = new RepositorioJuego(cadena, TimeProvider.System))
+            using (var almacen = new AlmacenPartidas(cadena))
             {
-                juego.DarDeAlta(lote[0] with { Nombre = "Viejo" });
-                juego.DarDeAlta(lote[0] with { Nombre = "Inactivo" });
-                juego.Desactivar(2);
-                Assert.Equal(2, juego.CantidadCatalogo());
-                juego.ReemplazarCatalogo(lote);
+                new CatalogoPersonajes(almacen.Infraestructura).DarDeAlta(lote[0] with { Nombre = "Viejo" });
+                new CatalogoPersonajes(almacen.Infraestructura).DarDeAlta(lote[0] with { Nombre = "Inactivo" });
+                new CatalogoPersonajes(almacen.Infraestructura).Desactivar(2);
+                Assert.Equal(2, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
+                new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo(lote);
             }
             using var conexion = new Microsoft.Data.Sqlite.SqliteConnection(cadena);
             conexion.Open();
@@ -5814,9 +6225,9 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             }
             comando.CommandText = "CREATE TRIGGER fallo BEFORE INSERT ON PersonajeCatalogo WHEN NEW.Nombre = 'Falla' BEGIN SELECT RAISE(ABORT, 'fallo inducido'); END;";
             comando.ExecuteNonQuery();
-            using (var juego = new RepositorioJuego(cadena, TimeProvider.System))
-                Assert.Throws<Microsoft.EntityFrameworkCore.DbUpdateException>(() => juego.ReemplazarCatalogo([lote[0], lote[0] with { Nombre = "Falla" }]));
-            using (var juego = new RepositorioJuego(cadena, TimeProvider.System)) Assert.Equal(1, juego.CantidadCatalogo());
+            using (var almacen = new AlmacenPartidas(cadena))
+                Assert.Throws<Microsoft.EntityFrameworkCore.DbUpdateException>(() => new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo([lote[0], lote[0] with { Nombre = "Falla" }]));
+            using (var almacen = new AlmacenPartidas(cadena)) Assert.Equal(1, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
             comando.CommandText = "SELECT Nombre FROM PersonajeCatalogo";
             Assert.Equal("Ada", comando.ExecuteScalar());
         }
@@ -5862,19 +6273,15 @@ Theory nombre/espacios, ascii/tab, ascii/limite y ascii/lineas. Expande limite a
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Theory]
-    [InlineData("nombre", "   ")]
-    [InlineData("ascii", "\t")]
-    [InlineData("ascii", "limite")]
-    [InlineData("ascii", "lineas")]
     public void RechazaTextoDeDominioConUbicacion(string campo, string valor)
     {
         var datos = LotePersonajes.Leer(JsonDocument.Parse(Uno).RootElement)[0];
         if (valor == "limite") valor = new string('*', 121);
         if (valor == "lineas") valor = string.Join('\r', Enumerable.Repeat("*", 26));
         datos = campo == "nombre" ? datos with { Nombre = valor } : datos with { Ascii = valor };
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
-        var error = Assert.Throws<ErrorApi>(() => juego.ReemplazarCatalogo([datos]));
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var juego = new CatalogoPersonajes(almacen.Infraestructura);
+        var error = Assert.Throws<ErrorApi>(() => new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo([datos]));
         Assert.Contains("Personaje 1", error.Message);
         Assert.Contains(campo, error.Message);
     }
@@ -5959,6 +6366,10 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ### Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+### Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
 
 </details>
 
@@ -6230,7 +6641,7 @@ Arranca dos procesos cliente sucesivos contra un servidor local real para compro
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md).
+Relaciones usadas por este archivo: [CoordinadorPartidas](archivos/src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](archivos/src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](archivos/src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md).
 
 Las pruebas con `ContratoFact` se omiten si la variable DLL indicada falta o está en blanco; una ruta no vacía no garantiza que exista ni que corresponda a esta versión. Véase [ContratoFactAttribute](archivos/test/proyecto-integrador-final-tests/ContratoFactAttribute.md). Los Facts/Theories ordinarios del mismo proyecto no dependen de esa condición.
 
@@ -6276,16 +6687,15 @@ En los casos de prueba, el runner suministra los parámetros de cada `InlineData
 
 #### `ClienteProcesoRestTests.ProcesoSeIncorporaReabreSinArchivosYEsperaPlazaHastaLiberacion`
 
-Crea host loopback puerto0 con SQLite memoria y partida. En directorio temporal lanza primer Proceso, envía URL/UUID/credencialJ1/Ana, espera Esperando inicio, excluye credencial de output, cierra entrada y exige salida local. Segundo proceso con los mismos datos debe indicar sesión ocupada; libera J1 por repositorio, espera inicio, envía esc/s/Enter y termina sin Final confirmado. Exige directorio sin archivos y vista J2 esperandoInicio. Detiene app y finally elimina directorio; await using libera procesos.
+Crea host loopback puerto0 con SQLite memoria y partida. En directorio temporal lanza primer Proceso, envía URL/UUID/credencialJ1/Ana, espera Esperando inicio, excluye credencial de output, cierra entrada y exige salida local. Segundo proceso con los mismos datos debe indicar sesión ocupada; libera J1 por AdministradorSesiones, espera inicio, envía esc/s/Enter y termina sin Final confirmado. Exige directorio sin archivos y vista J2 esperandoInicio. Detiene app y finally elimina directorio; await using libera procesos.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[ContratoFact("GUERRA_CLIENTE_DLL")]
     public async Task ProcesoSeIncorporaReabreSinArchivosYEsperaPlazaHastaLiberacion()
     {
         await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", "--ConnectionStrings:Juego=Data Source=:memory:"]);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         await app.StartAsync();
         string directorio = Path.Combine(Path.GetTempPath(), $"guerra-proceso-{Guid.NewGuid():N}");
@@ -6305,7 +6715,7 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             {
                 await segunda.Enviar($"{app.Urls.Single()}\n{partida.Id}\n{partida.CredencialJ1}\nAna\n");
                 await segunda.Esperar("Sesión ocupada");
-                juego.CerrarSesion(partida.Id, "J1");
+                app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
                 await segunda.Esperar("Esperando inicio");
                 await segunda.Enviar("esc\ns\n\n");
                 await segunda.Terminar();
@@ -6313,7 +6723,7 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             }
             Assert.Empty(Directory.GetFiles(directorio));
             Assert.Equal("esperandoInicio", juego.Presentacion(partida.Id, partida.CredencialJ2,
-                juego.Incorporar(partida.Id, partida.CredencialJ2, new(Guid.NewGuid(), "Ada")).IdSesion).Fase);
+                app.Services.GetRequiredService<AdministradorSesiones>().Incorporar(partida.Id, partida.CredencialJ2, new(Guid.NewGuid(), "Ada")).IdSesion).Fase);
             await app.StopAsync();
         }
         finally { Directory.Delete(directorio, true); }
@@ -6437,6 +6847,10 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
 
+### Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
+
 </details>
 
 <details>
@@ -6456,7 +6870,7 @@ Integración de ClientePartidaHttp contra Kestrel loopback y SQLite temporal, si
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [ClientePartidaHttp](archivos/src/cliente/ClientePartidaHttp.md), [ConfiguracionCliente](archivos/src/cliente/ConfiguracionCliente.md), [EleccionCliente](archivos/src/cliente/ContratosPartida.md), [EstadoCliente](archivos/src/cliente/EstadoCliente.md), [FalloCliente](archivos/src/cliente/ClientePartidaHttp.md), [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md).
+Relaciones usadas por este archivo: [ClientePartidaHttp](archivos/src/cliente/ClientePartidaHttp.md), [ConfiguracionCliente](archivos/src/cliente/ConfiguracionCliente.md), [EleccionCliente](archivos/src/cliente/ContratosPartida.md), [EstadoCliente](archivos/src/cliente/EstadoCliente.md), [FalloCliente](archivos/src/cliente/ClientePartidaHttp.md), [CoordinadorPartidas](archivos/src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](archivos/src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](archivos/src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md).
 
 Guías: [plan de pruebas y ejecución de esta referencia](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004), [instalación](instalacion-y-uso.md), [protocolo HTTP](protocolo-de-partida.md).
 
@@ -6481,14 +6895,13 @@ Crea base temporal y partida en primer host, incorpora cliente con UUID de sesi�
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task ReinicioDelServidorConservaPartidaYRequiereReincorporarLaMismaSesion()
     {
         string archivo = Path.Combine(Path.GetTempPath(), $"guerra-reinicio-cliente-{Guid.NewGuid():N}.db");
         try
         {
             await using var primero = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var creada = primero.Services.GetRequiredService<RepositorioJuego>().CrearPartida();
+            var creada = primero.Services.GetRequiredService<CoordinadorPartidas>().CrearPartida();
             await primero.StartAsync();
             string url = primero.Urls.Single();
             Guid sesion = Guid.NewGuid();
@@ -6517,21 +6930,20 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
 
 #### `ClienteRestIntegracionTests.DosClientesJueganContraServidorLocalRecuperanReciboYSesion`
 
-Da de alta seis cartas idénticas, crea dos configuraciones con credenciales diferentes (ambos nombres Ana), incorpora J1/J2 y renueva J1. Inicia por repositorio y comprueba manos sin intersección y validación de EstadoCliente. J1 elige primera carta/atributo; recibo por GET y reenvío idéntico debe ser igual. Vista J2 aún sin resultados y solicitud carta; al responder resulta un combate único. Cierra J1: Presentacion debe fallar sesionVencida; reincorpora mismo UUID y conserva recibo. Abandona J1; J2 ve motivo abandono y Ganador null. No recorre quince rondas aquí.
+Da de alta seis cartas idénticas, crea dos configuraciones con credenciales diferentes (ambos nombres Ana), incorpora J1/J2 y renueva J1. Inicia por CoordinadorPartidas y comprueba manos sin intersección y validación de EstadoCliente. J1 elige primera carta/atributo; recibo por GET y reenvío idéntico debe ser igual. Vista J2 aún sin resultados y solicitud carta; al responder resulta un combate único. Cierra J1: Presentacion debe fallar sesionVencida; reincorpora mismo UUID y conserva recibo. Abandona J1; J2 ve motivo abandono y Ganador null. No recorre quince rondas aquí.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task DosClientesJueganContraServidorLocalRecuperanReciboYSesion()
     {
         string archivo = Path.Combine(Path.GetTempPath(), $"guerra-cliente-{Guid.NewGuid():N}.db");
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
             var partida = juego.CrearPartida();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción no visible", "ARTE NO VISIBLE", 750, 550, 500, 250, 500, 450));
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción no visible", "ARTE NO VISIBLE", 750, 550, 500, 250, 500, 450));
             await app.StartAsync();
             var config1 = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");
             var config2 = config1 with { Credencial = partida.CredencialJ2, Nombre = "Ana" };
@@ -6558,7 +6970,7 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             var resuelta = await j1.Presentacion(default);
             Assert.Single(resuelta.Resultados);
             new EstadoCliente(partida.Id).Aplicar(resuelta);
-            juego.CerrarSesion(partida.Id, "J1");
+            app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
             var vencida = await Assert.ThrowsAsync<FalloCliente>(() => j1.Presentacion(default));
             Assert.Equal("sesionVencida", vencida.Codigo);
             Assert.Equal(sesion1, (await j1.Incorporar(default)).IdSesion);
@@ -6592,6 +7004,10 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ### Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+### Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
 
 </details>
 
@@ -6806,6 +7222,114 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ### Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+</details>
+
+<details>
+<summary>test/proyecto-integrador-final-tests/CompatibilidadPersistenciaTests.cs</summary>
+
+[Página individual](archivos/test/proyecto-integrador-final-tests/CompatibilidadPersistenciaTests.md)
+
+## test/proyecto-integrador-final-tests/CompatibilidadPersistenciaTests.cs
+
+Fuente: [test/proyecto-integrador-final-tests/CompatibilidadPersistenciaTests.cs](../test/proyecto-integrador-final-tests/CompatibilidadPersistenciaTests.cs). Proyecto: `test/proyecto-integrador-final-tests/proyecto-integrador-final-tests.csproj` (`net8.0`), namespace `Proyecto_Integrador_Final.Tests`. Referencia: [catálogo](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Continuación de una base de la revisión anterior.
+
+### Preparación, miembros, acciones y aserciones
+
+BaseDeE18a050ContinuaSinMigracionYRecuperaReciboAnterior crea SQLite temporal con Fixtures/partida-e18a050.sql y datos de partida/credenciales/operación del JSON hermano. Guarda el esquema, abre servidor final, reincorpora ambas plazas, reintenta la operación anterior y exige el recibo confirmado. Comprueba fase esperandoRival; reemplaza catálogo, exige mano previa intacta y resuelve siguiente elección con revisión incrementada una sola vez. Esquema consulta sqlite_master ordenado para comparar SQL antes/después. finally elimina el archivo.
+
+### Errores, recursos y límites
+
+Los fixtures provienen de ejecución real de e18a050 y se copian al directorio de prueba por csproj. No fabrica una base usando las entidades nuevas, ni ejecuta migración. Cubre ese estado anterior concreto y no todas las bases históricas posibles. xUnit descubre Fact/Theory y crea cada caso con sus datos; una aserción fallida invalida el caso. La suite final tiene 190 aprobadas, cero fallidas/omitidas; no acredita dos Windows físicos.
+
+### Código contrastado
+
+Archivo completo: incluye auxiliares, datos, parámetros y limpieza; no se omiten aserciones.
+
+```csharp
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
+using Proyecto_Integrador_Final.Api;
+
+namespace Proyecto_Integrador_Final.Tests;
+
+public class CompatibilidadPersistenciaTests
+{
+    [Fact]
+    public async Task BaseDeE18a050ContinuaSinMigracionYRecuperaReciboAnterior()
+    {
+        string ruta = Path.Combine(Path.GetTempPath(), $"anterior-{Guid.NewGuid()}.db");
+        string cadena = $"Data Source={ruta};Pooling=False";
+        string fixtures = Path.Combine(AppContext.BaseDirectory, "Fixtures");
+        using var datos = JsonDocument.Parse(File.ReadAllText(Path.Combine(fixtures, "partida-e18a050.json")));
+        var d = datos.RootElement;
+        Guid id = d.GetProperty("id").GetGuid();
+        var eleccion = d.GetProperty("eleccion").Deserialize<Eleccion>(new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
+        try
+        {
+            using (var db = new SqliteConnection(cadena))
+            {
+                db.Open();
+                using var command = db.CreateCommand();
+                command.CommandText = "PRAGMA foreign_keys=OFF;\n" + File.ReadAllText(Path.Combine(fixtures, "partida-e18a050.sql"));
+                command.ExecuteNonQuery();
+            }
+            string esquema = Esquema(cadena);
+            await using var app = ServidorHttp.Crear([$"--ConnectionStrings:Juego={cadena}", "--urls=http://127.0.0.1:0"]);
+            await app.StartAsync();
+            using var j1 = new HttpClient { BaseAddress = new Uri($"{app.Urls.Single()}/api/v1/partidas/{id}/") };
+            using var j2 = new HttpClient { BaseAddress = j1.BaseAddress };
+            foreach (var (cliente, rol, nombre) in new[] { (j1, "J1", "Ada"), (j2, "J2", "Bruno") })
+            {
+                cliente.DefaultRequestHeaders.Authorization = new("Bearer", d.GetProperty($"credencial{rol}").GetString());
+                Guid sesion = Guid.NewGuid();
+                using var respuesta = await cliente.PutAsJsonAsync("participantes/me/sesion", new { idSesion = sesion, nombre });
+                Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+                cliente.DefaultRequestHeaders.Add("X-Sesion", sesion.ToString());
+            }
+            using var duplicada = await j1.PostAsJsonAsync("elecciones", eleccion);
+            Assert.Equal(HttpStatusCode.OK, duplicada.StatusCode);
+            var recibo = await duplicada.Content.ReadFromJsonAsync<Recibo>();
+            Assert.Equal(d.GetProperty("recibo").GetProperty("revisionConfirmada").GetInt32(), recibo!.RevisionConfirmada);
+            var anterior = await j2.GetFromJsonAsync<JsonElement>("presentacion");
+            Assert.Equal("esperandoRival", anterior.GetProperty("fase").GetString());
+            var mano = anterior.GetProperty("mano").ToString();
+            // El catálogo nuevo no sustituye las copias que ya estaban en juego.
+            var catalogo = app.Services.GetRequiredService<CatalogoPersonajes>();
+            catalogo.ReemplazarCatalogo([new("Nueva", "", "*", 750, 550, 500, 250, 500, 450)]);
+            var actual = await j2.GetFromJsonAsync<JsonElement>("presentacion");
+            Assert.Equal(mano, actual.GetProperty("mano").ToString());
+            var solicitud = actual.GetProperty("solicitud");
+            using var respuestaRival = await j2.PostAsJsonAsync("elecciones", new Eleccion(Guid.NewGuid(),
+                solicitud.GetProperty("idSolicitud").GetGuid(), actual.GetProperty("revision").GetInt32(),
+                solicitud.GetProperty("idsPersonajePermitidos")[0].GetInt32(), null));
+            Assert.Equal(HttpStatusCode.Created, respuestaRival.StatusCode);
+            var despues = await j1.GetFromJsonAsync<JsonElement>("presentacion");
+            Assert.Equal(recibo.RevisionConfirmada + 1, despues.GetProperty("revision").GetInt32());
+            Assert.Equal(esquema, Esquema(cadena));
+        }
+        finally { File.Delete(ruta); }
+    }
+
+    private static string Esquema(string cadena)
+    {
+        using var db = new SqliteConnection(cadena);
+        db.Open();
+        using var command = db.CreateCommand();
+        command.CommandText = "SELECT group_concat(sql, char(10)) FROM (SELECT sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY name)";
+        return (string)command.ExecuteScalar()!;
+    }
+}
+```
+
+Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
 
 </details>
 
@@ -7264,13 +7788,13 @@ Fuente: [test/proyecto-integrador-final-tests/ConsolaServidorTests.cs](../test/p
 
 ### Propósito y responsabilidad
 
-Comprueba ayuda y diálogos administrativos con repositorio SQLite en memoria y texto redirigido. No arranca Kestrel.
+Comprueba ayuda y diálogos administrativos con servicios y SQLite en memoria y texto redirigido. No arranca Kestrel.
 
 ### Dependencias
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [ConsolaServidor](archivos/src/servidor/Api/ConsolaServidor.md), [Partida](archivos/src/servidor/Partida.md), [Personaje](archivos/src/servidor/Personaje.md), [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md).
+Relaciones usadas por este archivo: [ConsolaServidor](archivos/src/servidor/Api/ConsolaServidor.md), [Partida](archivos/src/servidor/Partida.md), [Personaje](archivos/src/servidor/Personaje.md), [CoordinadorPartidas](archivos/src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](archivos/src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](archivos/src/servidor/Api/AdministradorSesiones.md).
 
 Guías: [plan de pruebas y ejecución de esta referencia](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004), [instalación](instalacion-y-uso.md), [protocolo HTTP](protocolo-de-partida.md).
 
@@ -7282,7 +7806,7 @@ Las declaraciones anteriores conservan visibilidad, sellado, constructor primari
 
 ### Estado y datos
 
-Sin campos. Cada caso/auxiliar posee su RepositorioJuego y flujos con using, sin base persistida.
+Sin campos. Cada caso/auxiliar posee sus servicios compartiendo AlmacenPartidas y flujos con using, sin base persistida.
 
 ### Miembros y ejecución
 
@@ -7308,19 +7832,21 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
 
 #### `ConsolaServidorTests.Cancelar_PideUuidYReintentaSinPerderLaAccion`
 
-Crea partida en repositorio memoria, alimenta cancelar/incorrecto/UUID real y ejecuta con CancellationToken.None. Exige prompt UUID, aviso válido y confirmación cancelada. No consulta fase final: el alcance de la aserción es salida del operador.
+Crea partida con AlmacenPartidas en memoria, alimenta cancelar/incorrecto/UUID real y ejecuta con CancellationToken.None. Exige prompt UUID, aviso válido y confirmación cancelada. No consulta fase final: el alcance de la aserción es salida del operador.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public void Cancelar_PideUuidYReintentaSinPerderLaAccion()
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var sesiones = new AdministradorSesiones(almacen, TimeProvider.System);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
         var partida = juego.CrearPartida();
         using var entrada = new StringReader($"cancelar\nincorrecto\n{partida.Id}\n");
         using var salida = new StringWriter();
-        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        ConsolaServidor.Ejecutar(juego, sesiones, catalogo, entrada, salida, CancellationToken.None);
         Assert.Contains("UUID", salida.ToString());
         Assert.Contains("válido", salida.ToString());
         Assert.Contains("Partida cancelada.", salida.ToString());
@@ -7354,14 +7880,16 @@ Crea partida y envía cerrar-sesion, UUID, J3 y j2. Exige instrucción J1 o J2 y
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public void CerrarSesion_PidePlazaYPermiteCorregirla()
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var sesiones = new AdministradorSesiones(almacen, TimeProvider.System);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
         var partida = juego.CrearPartida();
         using var entrada = new StringReader($"cerrar-sesion\n{partida.Id}\nJ3\nj2\n");
         using var salida = new StringWriter();
-        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        ConsolaServidor.Ejecutar(juego, sesiones, catalogo, entrada, salida, CancellationToken.None);
         Assert.Contains("J1 o J2", salida.ToString());
         Assert.Contains("Sesión cerrada.", salida.ToString());
     }
@@ -7369,17 +7897,20 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
 
 #### `ConsolaServidorTests.Ejecutar`
 
-private static string: recibe secuencia de comandos, crea repositorio :memory:, StringReader y StringWriter, llama ConsolaServidor.Ejecutar sin cancelación externa y devuelve texto al alcanzar EOF. using libera recursos aunque la ejecución lance.
+private static string: recibe secuencia de comandos, crea AlmacenPartidas :memory: y sus servicios, StringReader y StringWriter, llama ConsolaServidor.Ejecutar sin cancelación externa y devuelve texto al alcanzar EOF. using libera recursos aunque la ejecución lance.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-private static string Ejecutar(string comandos)
+    private static string Ejecutar(string comandos)
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var sesiones = new AdministradorSesiones(almacen, TimeProvider.System);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
         using var entrada = new StringReader(comandos);
         using var salida = new StringWriter();
-        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        ConsolaServidor.Ejecutar(juego, sesiones, catalogo, entrada, salida, CancellationToken.None);
         return salida.ToString();
     }
 ```
@@ -7399,6 +7930,10 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ### Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+### Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
 
 </details>
 
@@ -7464,6 +7999,113 @@ Una variable en blanco omite el caso, pero una DLL inexistente con ruta no vací
 ### Relaciones y verificación
 
 La firma, herencia, condición y fragmento se contrastaron contra la referencia común. Lo consumen [ArranqueRestTests](archivos/test/proyecto-integrador-final-tests/ArranqueRestTests.md), [ClienteProcesoRestTests](archivos/test/proyecto-integrador-final-tests/ClienteProcesoRestTests.md), [EntradaProcesosContratoTests](archivos/test/proyecto-integrador-final-tests/EntradaProcesosContratoTests.md) y [ServidorContratoTests](archivos/test/proyecto-integrador-final-tests/ServidorContratoTests.md). No existe un Fact propio que compruebe todas las ramas de este constructor. La [evidencia de suite](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) ejecutó contratos con las variables DLL definidas; no debe interpretarse como ejecución de la rama Skip ausente.
+
+</details>
+
+<details>
+<summary>test/proyecto-integrador-final-tests/CoordinacionSesionesTests.cs</summary>
+
+[Página individual](archivos/test/proyecto-integrador-final-tests/CoordinacionSesionesTests.md)
+
+## test/proyecto-integrador-final-tests/CoordinacionSesionesTests.cs
+
+Fuente: [test/proyecto-integrador-final-tests/CoordinacionSesionesTests.cs](../test/proyecto-integrador-final-tests/CoordinacionSesionesTests.cs). Proyecto: `test/proyecto-integrador-final-tests/proyecto-integrador-final-tests.csproj` (`net8.0`), namespace `Proyecto_Integrador_Final.Tests`. Referencia: [catálogo](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Exclusión entre acceso, acción e invalidación.
+
+### Preparación, miembros, acciones y aserciones
+
+InvalidarSesionEsperaLaAccionQueYaComproboAcceso usa SQLite :memory:, seis cartas, dos presencias y elección inicial. Un reloj con barrera detiene exactamente la comprobación de vigencia; mientras tanto otra tarea intenta cerrar sesión o rotar credencial (dos InlineData). Exige que la invalidación espere, libera barrera, comprueba una única revisión y luego rechazo del acceso previo y recuperación del recibo con sesión nueva. RelojConBarrera conserva activo, EnAcceso y Continuar; Activar arma la interrupción una vez mediante Interlocked; GetUtcNow publica la barrera y espera como máximo diez segundos antes de devolver hora fija; Dispose libera eventos.
+
+### Errores, recursos y límites
+
+Las esperas de tareas y barreras tienen límites de cinco/diez segundos. No usa retardos arbitrarios para suponer un orden. La hora controlada no prueba sincronización entre procesos independientes. xUnit descubre Fact/Theory y crea cada caso con sus datos; una aserción fallida invalida el caso. La suite final tiene 190 aprobadas, cero fallidas/omitidas; no acredita dos Windows físicos.
+
+### Código contrastado
+
+Archivo completo: incluye auxiliares, datos, parámetros y limpieza; no se omiten aserciones.
+
+```csharp
+using Proyecto_Integrador_Final.Api;
+
+namespace Proyecto_Integrador_Final.Tests;
+
+public class CoordinacionSesionesTests
+{
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InvalidarSesionEsperaLaAccionQueYaComproboAcceso(bool rotarCredencial)
+    {
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        using var reloj = new RelojConBarrera();
+        var sesiones = new AdministradorSesiones(almacen, reloj);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
+        var creada = juego.CrearPartida();
+        var idSesion = Guid.NewGuid();
+        sesiones.Incorporar(creada.Id, creada.CredencialJ1, new(idSesion, "Ada"));
+        sesiones.Incorporar(creada.Id, creada.CredencialJ2, new(Guid.NewGuid(), "Ana"));
+        for (int i = 0; i < 6; i++)
+            catalogo.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+        juego.Iniciar(creada.Id);
+        var inicial = juego.Presentacion(creada.Id, creada.CredencialJ1, idSesion);
+        var solicitud = inicial.Solicitud!;
+        var eleccion = new Eleccion(Guid.NewGuid(), solicitud.IdSolicitud, inicial.Revision,
+            solicitud.IdsPersonajePermitidos[0], "Fuerza");
+
+        // El reloj detiene exactamente la comprobación de vigencia dentro del acceso.
+        reloj.Activar();
+        var accion = Task.Run(() => juego.Elegir(creada.Id, creada.CredencialJ1, idSesion, eleccion));
+        Assert.True(reloj.EnAcceso.Wait(TimeSpan.FromSeconds(5)));
+        using var invalidezIntentada = new ManualResetEventSlim();
+        var invalidar = Task.Run(() =>
+        {
+            invalidezIntentada.Set();
+            if (rotarCredencial) sesiones.ReemplazarCredencial(creada.Id, "J1");
+            else sesiones.CerrarSesion(creada.Id, "J1");
+        });
+        try
+        {
+            Assert.True(invalidezIntentada.Wait(TimeSpan.FromSeconds(5)));
+            Assert.False(invalidar.IsCompleted);
+        }
+        finally { reloj.Continuar.Set(); }
+
+        var confirmacion = await accion.WaitAsync(TimeSpan.FromSeconds(5));
+        await invalidar.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(inicial.Revision + 1, confirmacion.Recibo.RevisionConfirmada);
+        var error = Assert.Throws<ErrorApi>(() => juego.Presentacion(creada.Id, creada.CredencialJ1, idSesion));
+        Assert.Equal(rotarCredencial ? "credencialInvalida" : "sesionVencida", error.Codigo);
+        var nuevaCredencial = rotarCredencial ? sesiones.ReemplazarCredencial(creada.Id, "J1") : creada.CredencialJ1;
+        var nuevaSesion = Guid.NewGuid();
+        sesiones.Incorporar(creada.Id, nuevaCredencial, new(nuevaSesion, "Ada"));
+        Assert.Equal(confirmacion.Recibo, juego.ConsultarRecibo(creada.Id, nuevaCredencial, nuevaSesion, eleccion.IdOperacion));
+    }
+
+    private sealed class RelojConBarrera : TimeProvider, IDisposable
+    {
+        private int activo;
+        internal ManualResetEventSlim EnAcceso { get; } = new();
+        internal ManualResetEventSlim Continuar { get; } = new();
+        internal void Activar() => Interlocked.Exchange(ref activo, 1);
+        public override DateTimeOffset GetUtcNow()
+        {
+            if (Interlocked.Exchange(ref activo, 0) == 1)
+            {
+                EnAcceso.Set();
+                if (!Continuar.Wait(TimeSpan.FromSeconds(10))) throw new TimeoutException("No se liberó la barrera del acceso.");
+            }
+            return new DateTimeOffset(2026, 11, 22, 12, 0, 0, TimeSpan.Zero);
+        }
+        public void Dispose() { EnAcceso.Dispose(); Continuar.Dispose(); }
+    }
+}
+```
+
+Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
 
 </details>
 
@@ -7911,7 +8553,7 @@ Ensaya recuperación del bucle cliente real sobre HTTP loopback y SQLite tempora
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [ClientePartidaHttp](archivos/src/cliente/ClientePartidaHttp.md), [ConfiguracionCliente](archivos/src/cliente/ConfiguracionCliente.md), [EleccionCliente](archivos/src/cliente/ContratosPartida.md), [EntradaCliente](archivos/src/cliente/EntradaCliente.md), [InterfazConsola](archivos/src/cliente/InterfazConsola.md), [PresentacionCliente](archivos/src/cliente/ContratosPartida.md), [RepositorioJuego](archivos/src/servidor/Api/RepositorioJuego.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md), [SesionPartidaCliente](archivos/src/cliente/SesionPartidaCliente.md).
+Relaciones usadas por este archivo: [ClientePartidaHttp](archivos/src/cliente/ClientePartidaHttp.md), [ConfiguracionCliente](archivos/src/cliente/ConfiguracionCliente.md), [EleccionCliente](archivos/src/cliente/ContratosPartida.md), [EntradaCliente](archivos/src/cliente/EntradaCliente.md), [InterfazConsola](archivos/src/cliente/InterfazConsola.md), [PresentacionCliente](archivos/src/cliente/ContratosPartida.md), [CoordinadorPartidas](archivos/src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](archivos/src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](archivos/src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](archivos/src/servidor/Api/ServidorHttp.md), [SesionPartidaCliente](archivos/src/cliente/SesionPartidaCliente.md).
 
 `HttpClient`/`HttpMessageHandler` representan solicitudes y respuestas; `JsonDocument`, `JsonSerializer` o `JsonContent` leen o escriben cuerpos donde aparecen. Los handlers anidados descritos abajo son dobles salvo los intermediarios que delegan a un `HttpClientHandler` real.
 
@@ -7978,9 +8620,6 @@ Theory confirmarAntesDelCorte true/false. Base temporal con seis cartas, host lo
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Theory]
-    [InlineData(true)]
-    [InlineData(false)]
     public async Task ClienteResuelveEleccionInciertaContraSQLiteReal(bool confirmarAntesDelCorte)
     {
         // La base temporal aísla el ensayo y permite comprobar commits reales de SQLite.
@@ -7988,8 +8627,8 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
             var partida = juego.CrearPartida();
             await app.StartAsync();
             // Los transportes conectan a Kestrel por loopback con credenciales separadas.
@@ -8062,16 +8701,14 @@ Base temporal y seis cartas de mismos atributos. Incorpora transportes J1/J2 e i
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
-    // Este recorrido comienza desde cero y conserva la meta normal de quince rondas.
     public async Task DosTransportesCompletanPartidaNormalHastaQuinceSinRepartoPosterior()
     {
         string archivo = Path.Combine(Path.GetTempPath(), $"guerra-completa-{Guid.NewGuid():N}.db");
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
             var partida = juego.CrearPartida();
             await app.StartAsync();
             var config = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");
@@ -8157,10 +8794,6 @@ Theory corte antes/después. Partida distinta, SQLite y host real, intermediario
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    // Ambas variantes recuperan el motivo de abandono sin presentar una victoria de juego.
     public async Task AbandonoInciertoSoloMuestraFinConfirmadoSinSumarVictoria(bool confirmarAntesDelCorte)
     {
         // El abandono usa otra partida porque una partida finalizada no permite continuar jugando.
@@ -8168,8 +8801,8 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
             var partida = juego.CrearPartida();
             await app.StartAsync();
             var config = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");
@@ -8384,6 +9017,10 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ### Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+### Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
 
 </details>
 
@@ -9078,84 +9715,107 @@ La lectura se contrastó por miembro, incluidos auxiliares privados y funciones 
 
 ## test/proyecto-integrador-final-tests/PartidaTests.cs
 
-Fuente: [test/proyecto-integrador-final-tests/PartidaTests.cs](../test/proyecto-integrador-final-tests/PartidaTests.cs). Proyecto: `test/proyecto-integrador-final-tests/proyecto-integrador-final-tests.csproj`, ensamblado `Proyecto-Integrador-Final.Tests`, destino `net8.0`. Namespace: `Proyecto_Integrador_Final.Tests`. Versión común: [catálogo](archivos/README.md#versión-documentada).
+Fuente: [test/proyecto-integrador-final-tests/PartidaTests.cs](../test/proyecto-integrador-final-tests/PartidaTests.cs). Proyecto: `test/proyecto-integrador-final-tests/proyecto-integrador-final-tests.csproj` (`net8.0`), namespace `Proyecto_Integrador_Final.Tests`. Referencia: [catálogo](archivos/README.md#versión-documentada).
 
 ### Propósito y responsabilidad
 
-Protege la precondición de seis cartas antes del reparto en el coordinador local. No prueba una partida completa ni la API.
+Pruebas directas de acciones del dominio.
 
-### Dependencias
+### Preparación, miembros, acciones y aserciones
 
-xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
+Carta fabrica personajes válidos con seis atributos iguales entre cartas; Nueva crea EstadoPartida sin iniciar; Elegir consulta solicitud actual y escoge una carta propia y Fuerza solo para elector. RechazaUnMazoInsuficienteAntesDeRepartir cubre cero/cinco sin cartas ni revisión. AccionesSucesivasReanudanYCompletanQuinceRondasSinCambiarLaMeta inicia con ocho, comprueba tres cartas por plaza, reconstruye entre elecciones, verifica empate favorable al rival y alternancia, y recorre normalmente hasta quince rondas ganadas (29 rondas totales) con límite defensivo de 400 acciones. CierreNoInventaVictoriaYConsumeSolicitud cubre cancelación/abandono y repetición del abandono sin nueva revisión. EleccionInvalidaNoConsumeSolicitudNiModificaRevision verifica código, revisión y solicitud intacta.
 
-Relaciones usadas por este archivo: [CartasDePrueba](archivos/test/proyecto-integrador-final-tests/CartasDePrueba.md), [Jugador](archivos/src/servidor/Jugador.md), [Mazo](archivos/src/servidor/Mazo.md), [Partida](archivos/src/servidor/Partida.md).
+### Errores, recursos y límites
 
-Guías: [plan de pruebas y ejecución de esta referencia](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004), [instalación](instalacion-y-uso.md), [protocolo HTTP](protocolo-de-partida.md).
+No usa HTTP ni SQLite; la reconstrucción conserva el mismo estado de dominio, mientras CompatibilidadPersistenciaTests verifica reconstrucción desde SQLite previo. No reduce la meta ni edita marcador. xUnit descubre Fact/Theory y crea cada caso con sus datos; una aserción fallida invalida el caso. La suite final tiene 190 aprobadas, cero fallidas/omitidas; no acredita dos Windows físicos.
 
-### Estructura
+### Código contrastado
 
-Declaración: `public class PartidaTests`.
-
-Las declaraciones anteriores conservan visibilidad, sellado, constructor primario y herencia/interfaces cuando existen. No hay tipos parciales en este archivo. Los records generan igualdad por valor, propiedades posicionales y soporte de `with`; las clases ordinarias no adquieren esa semántica. No se declaran operadores ni eventos propios.
-
-### Estado y datos
-
-Dos campos privados readonly inicializan jugadores Ana y Bruno para cada instancia de prueba. Los casos de Theory reciben fixtures nuevos.
-
-Declaraciones reales de estado de `PartidaTests` (la mutación y el ciclo de vida se explican aquí y en sus miembros):
+Archivo completo: incluye auxiliares, datos, parámetros y limpieza; no se omiten aserciones.
 
 ```csharp
-private readonly Jugador primero = new("Ana");
-```
+namespace Proyecto_Integrador_Final.Tests;
 
-```csharp
-private readonly Jugador segundo = new("Bruno");
-```
+public class PartidaTests
+{
+    private static CartaPartida Carta(int id) => new() { IdPersonaje = id, Nombre = $"Carta {id}", Descripcion = "", Ascii = "", Fuerza = 700, Velocidad = 300, Resistencia = 500, Inteligencia = 500, Energia = 500, Habilidad = 500 };
+    private static Partida Nueva() => new(new EstadoPartida());
+    private static void Elegir(Partida partida)
+    {
+        var estado = partida.Estado;
+        var solicitud = estado.Solicitudes.Single(s => s.Id == estado.IdSolicitud);
+        var carta = estado.Cartas.First(c => c.Ubicacion == solicitud.Rol);
+        partida.RegistrarEleccion(solicitud.Rol, solicitud.Id, estado.Revision, carta.IdPersonaje,
+            solicitud.Tipo == "cartaYAtributo" ? "Fuerza" : null);
+    }
 
-### Miembros y ejecución
-
-En los casos de prueba, el runner suministra los parámetros de cada `InlineData`; no son entradas de usuario. `void` no devuelve resultado y `Task` solo permite esperar la terminación del caso, no devuelve una jugada. Cualquier aserción fallida o excepción no esperada detiene ese caso. El orden de los bloques de código siguientes es el del archivo; cada bloque es código real del miembro identificado, no pseudocódigo.
-
-#### `PartidaTests.RechazaUnMazoInsuficienteAntesDeRepartir`
-
-Theory con 0 y 5. Crea exactamente cantidad personajes mediante Enumerable.Range y CartasDePrueba, construye Partida con ambos jugadores y captura InvalidOperationException de Jugar. Compara mensaje exacto y luego Count y manos para demostrar que la guarda antecede al reparto. No comprueba el comportamiento con 6 ni ejecuta una ronda.
-
-Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
-
-```csharp
-[Theory]
+    [Theory]
     [InlineData(0)]
     [InlineData(5)]
     public void RechazaUnMazoInsuficienteAntesDeRepartir(int cantidad)
     {
-        var mazo = new Mazo(Enumerable.Range(0, cantidad).Select(_ => CartasDePrueba.Crear()).ToList());
-        var partida = new Partida(primero, segundo, mazo);
-
-        var error = Assert.Throws<InvalidOperationException>(() => partida.Jugar());
-
-        Assert.Equal("No se puede jugar porque no hay suficientes cartas.", error.Message);
-
-        Assert.Equal(cantidad, mazo.GetCantidad());
-        Assert.Empty(primero.GetCartas());
-        Assert.Empty(segundo.GetCartas());
+        var partida = Nueva();
+        Assert.Throws<ExcepcionPartida>(() => partida.Iniciar(Enumerable.Range(1, cantidad).Select(Carta)));
+        Assert.Empty(partida.Estado.Cartas);
+        Assert.Equal(0, partida.Estado.Revision);
     }
+
+    [Fact]
+    public void AccionesSucesivasReanudanYCompletanQuinceRondasSinCambiarLaMeta()
+    {
+        var partida = Nueva();
+        partida.Iniciar(Enumerable.Range(1, 8).Select(Carta));
+        Assert.Equal(3, partida.Estado.Cartas.Count(c => c.Ubicacion == "J1"));
+        Assert.Equal(3, partida.Estado.Cartas.Count(c => c.Ubicacion == "J2"));
+        var primera = partida.Estado.IdSolicitud;
+        Elegir(partida);
+        partida = new Partida(partida.Estado); // reconstruir no repite efectos
+        Assert.Equal(2, partida.Estado.Revision);
+        Assert.NotEqual(primera, partida.Estado.IdSolicitud);
+        Elegir(partida);
+        Assert.Equal("J2", partida.Estado.Combates[0].Ganador); // empate al rival
+        Assert.Equal("J2", partida.Estado.Combates[1].Elector);
+        int acciones = 2;
+        while (partida.Estado.Fase != "finalizada" && acciones++ < 400) Elegir(partida);
+        var estado = partida.Estado;
+        Assert.Equal("victoria", estado.MotivoFin);
+        Assert.Equal(15, estado.Participantes.Max(p => p.RondasGanadas));
+        Assert.Equal(29, estado.Rondas.Count); // empates alternan ganador de ronda
+        Assert.Null(estado.IdSolicitud);
+        Assert.All(estado.Rondas, r => Assert.Equal(2, Math.Max(r.VictoriasJ1, r.VictoriasJ2)));
+        Assert.All(estado.Rondas, r => Assert.Equal(r.Numero % 2 == 1 ? "J1" : "J2", r.Mano));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CierreNoInventaVictoriaYConsumeSolicitud(bool abandono)
+    {
+        var partida = Nueva();
+        partida.Iniciar(Enumerable.Range(1, 6).Select(Carta));
+        if (abandono) { partida.Abandonar("J1"); partida.Abandonar("J1"); }
+        else partida.Cancelar();
+        Assert.Equal(2, partida.Estado.Revision);
+        Assert.Null(partida.Estado.Ganador);
+        Assert.Null(partida.Estado.IdSolicitud);
+        Assert.All(partida.Estado.Solicitudes, s => Assert.True(s.Consumida));
+    }
+
+    [Fact]
+    public void EleccionInvalidaNoConsumeSolicitudNiModificaRevision()
+    {
+        var partida = Nueva();
+        partida.Iniciar(Enumerable.Range(1, 6).Select(Carta));
+        var id = partida.Estado.IdSolicitud!.Value;
+        Assert.Equal("eleccionInvalida", Assert.Throws<ExcepcionPartida>(() =>
+            partida.RegistrarEleccion("J1", id, 1, -1, "Fuerza")).Codigo);
+        Assert.Equal(1, partida.Estado.Revision);
+        Assert.False(partida.Estado.Solicitudes[0].Consumida);
+    }
+}
 ```
 
-### Recorridos y ejemplos
-
-Normal: Con cantidad 5, Jugar lanza el mensaje de mazo insuficiente, conserva cinco cartas y ambas manos vacías.
-
-Alternativo o de error: Cantidad 0 recorre la misma guarda. No hay recorrido exitoso de Jugar en este archivo; el coordinador local no incorpora elecciones de clientes.
-
-Estos recorridos describen los datos y resultados previstos por las aserciones; no son una nueva sesión de juego ni comandos ejecutados para redactar esta página.
-
-### Errores, límites y efectos observables
-
-Cada fallo de aserción invalida el caso completo; no implica por sí solo un defecto en otra rama, otro worktree o el entorno confirmado por el usuario. Las pruebas observan únicamente las propiedades señaladas por sus aserciones: no acreditan Windows, dos equipos físicos, seguridad de transporte ni todos los errores de sistema. Los recursos temporales, cancelaciones, excepciones esperadas y límites de espera de este archivo están descritos por miembro. Donde solo se usan objetos y texto en memoria no corresponde una transacción ni limpieza de archivos; donde hay SQLite/host/proceso, su preparación y liberación están indicadas en los recorridos concretos.
-
-### Relaciones y verificación
-
-La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
 
 </details>
 
@@ -9565,7 +10225,7 @@ Fuente: [test/proyecto-integrador-final-tests/ServidorContratoTests.cs](../test/
 
 ### Propósito y responsabilidad
 
-Contratos externos del ejecutable servidor: consola operativa, Kestrel y SQLite en directorio temporal. Requieren GUERRA_SERVIDOR_DLL; no se sustituyen por llamadas directas al repositorio.
+Contratos externos del ejecutable servidor: consola operativa, Kestrel y SQLite en directorio temporal. Requieren GUERRA_SERVIDOR_DLL; no se sustituyen por llamadas directas a los servicios del servidor.
 
 ### Dependencias
 
@@ -11256,5 +11916,148 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ### Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+</details>
+
+<details>
+<summary>test/proyecto-integrador-final-tests/VistaPartidaTests.cs</summary>
+
+[Página individual](archivos/test/proyecto-integrador-final-tests/VistaPartidaTests.md)
+
+## test/proyecto-integrador-final-tests/VistaPartidaTests.cs
+
+Fuente: [test/proyecto-integrador-final-tests/VistaPartidaTests.cs](../test/proyecto-integrador-final-tests/VistaPartidaTests.cs). Proyecto: `test/proyecto-integrador-final-tests/proyecto-integrador-final-tests.csproj` (`net8.0`), namespace `Proyecto_Integrador_Final.Tests`. Referencia: [catálogo](archivos/README.md#versión-documentada).
+
+### Propósito y responsabilidad
+
+Privacidad, pausa y lectura sin efectos.
+
+### Preparación, miembros, acciones y aserciones
+
+CrearEstado prepara dos plazas/cartas y solicitud del elector. PresenciaSoloCambiaPausaYSolicitudSinModificarElEstado compara la serialización completa antes/después de construir, conserva revisión y UUID al reanudar. CadaPlazaSoloVeSuManoYElTurnoCorrespondiente exige IDs separados, opciones propias y ausencia de solicitud rival. ModificarUnaVistaNoCambiaCartasNiOpcionesDelDominio altera los diccionarios y arrays de respuesta y verifica una vista posterior intacta. HistorialExponeSoloCombatesResueltosYGanadorEnElCierreDeRonda filtra un combate pendiente, comprueba cartas/puntajes y ganador únicamente en el cierre. Resuelto crea los resultados usados por ese último caso.
+
+### Errores, recursos y límites
+
+Pruebas en memoria de VistaPartida, sin autenticar ni renovar sesiones; esas responsabilidades se verifican por integración. Los estados preparados son fixtures de proyección, no partidas ejecutadas. xUnit descubre Fact/Theory y crea cada caso con sus datos; una aserción fallida invalida el caso. La suite final tiene 190 aprobadas, cero fallidas/omitidas; no acredita dos Windows físicos.
+
+### Código contrastado
+
+Archivo completo: incluye auxiliares, datos, parámetros y limpieza; no se omiten aserciones.
+
+```csharp
+using System.Text.Json;
+using Proyecto_Integrador_Final.Api;
+
+namespace Proyecto_Integrador_Final.Tests;
+
+public sealed class VistaPartidaTests
+{
+    [Fact]
+    public void PresenciaSoloCambiaPausaYSolicitudSinModificarElEstado()
+    {
+        var estado = CrearEstado();
+        var vista = new VistaPartida();
+        string antes = JsonSerializer.Serialize(estado);
+
+        var activa = vista.Construir(estado, "J1", true);
+        var pausada = vista.Construir(estado, "J1", false);
+        var reanudada = vista.Construir(estado, "J1", true);
+
+        Assert.False(activa.Pausada);
+        Assert.True(pausada.Pausada);
+        Assert.Null(pausada.Solicitud);
+        Assert.Equal(activa.Revision, pausada.Revision);
+        Assert.Equal(activa.Solicitud!.IdSolicitud, reanudada.Solicitud!.IdSolicitud);
+        Assert.Equal(antes, JsonSerializer.Serialize(estado));
+    }
+
+    [Fact]
+    public void CadaPlazaSoloVeSuManoYElTurnoCorrespondiente()
+    {
+        var estado = CrearEstado();
+        var vista = new VistaPartida();
+
+        var primero = vista.Construir(estado, "J1", true);
+        var segundo = vista.Construir(estado, "J2", true);
+
+        Assert.Equal(1, Assert.Single(primero.Mano).IdPersonaje);
+        Assert.Equal(2, Assert.Single(segundo.Mano).IdPersonaje);
+        Assert.Equal(new[] { 1 }, primero.Solicitud!.IdsPersonajePermitidos);
+        Assert.Equal(6, primero.Solicitud.AtributosPermitidos.Length);
+        Assert.Null(segundo.Solicitud);
+        Assert.Empty(primero.Resultados);
+        Assert.Empty(segundo.Resultados);
+    }
+
+    [Fact]
+    public void ModificarUnaVistaNoCambiaCartasNiOpcionesDelDominio()
+    {
+        var estado = CrearEstado();
+        var vista = new VistaPartida();
+        var salida = vista.Construir(estado, "J1", true);
+        salida.Mano[0].Atributos["Fuerza"] = -1;
+        salida.Solicitud!.IdsPersonajePermitidos[0] = -1;
+        salida.Nombres["J1"] = "otro";
+
+        var siguiente = vista.Construir(estado, "J1", true);
+        Assert.Equal(750, siguiente.Mano[0].Atributos["Fuerza"]);
+        Assert.Equal(1, siguiente.Solicitud!.IdsPersonajePermitidos[0]);
+        Assert.Equal("Ana", siguiente.Nombres["J1"]);
+    }
+
+    [Fact]
+    public void HistorialExponeSoloCombatesResueltosYGanadorEnElCierreDeRonda()
+    {
+        var estado = CrearEstado();
+        estado.Rondas.Add(new RondaPartida { Numero = 1, Mano = "J1", Ganador = "J2" });
+        estado.Combates.AddRange(
+        [
+            Resuelto(1), Resuelto(2),
+            new CombatePartida { NumeroRonda = 2, Numero = 1, Elector = "J2", IdCartaElector = 2, Atributo = "Fuerza" }
+        ]);
+
+        var resultados = new VistaPartida().Construir(estado, "J1", true).Resultados;
+
+        Assert.Equal(2, resultados.Length);
+        Assert.Null(resultados[0].GanadorRonda);
+        Assert.Equal("J2", resultados[1].GanadorRonda);
+        Assert.Equal(1, resultados[0].Cartas["J1"].IdPersonaje);
+        Assert.Equal(2, resultados[0].Cartas["J2"].IdPersonaje);
+        Assert.Equal(750, resultados[0].Puntajes["J1"]);
+
+        static CombatePartida Resuelto(int numero) => new()
+        {
+            NumeroRonda = 1, Numero = numero, Elector = "J1", IdCartaElector = 1,
+            IdCartaRival = 2, Atributo = "Fuerza", PuntajeElector = 750, PuntajeRival = 750, Ganador = "J2"
+        };
+    }
+
+    private static EstadoPartida CrearEstado()
+    {
+        var idSolicitud = Guid.NewGuid();
+        return new EstadoPartida
+        {
+            Id = Guid.NewGuid(), Revision = 3, Fase = "esperandoElector",
+            NumeroRonda = 1, NumeroCombate = 1, IdSolicitud = idSolicitud,
+            Participantes =
+            [
+                new ParticipantePartida { Rol = "J1", Nombre = "Ana" },
+                new ParticipantePartida { Rol = "J2", Nombre = "Bruno" }
+            ],
+            Cartas =
+            [
+                new CartaPartida { IdPersonaje = 1, Nombre = "propia", Descripcion = "", Ascii = "*", Fuerza = 750, Ubicacion = "J1", Orden = 0 },
+                new CartaPartida { IdPersonaje = 2, Nombre = "rival", Descripcion = "", Ascii = "*", Fuerza = 750, Ubicacion = "J2", Orden = 1 }
+            ],
+            Solicitudes =
+            [
+                new SolicitudPartida { Id = idSolicitud, NumeroRonda = 1, NumeroCombate = 1, Rol = "J1", Tipo = "cartaYAtributo" }
+            ]
+        };
+    }
+}
+```
+
+Véase [auditoría006](archivos/verificacion.md#auditoría-del-spec-006--2026-11-22).
 
 </details>

@@ -10,7 +10,7 @@ Integración HTTP del host real en loopback: contrato de errores, catálogo, ide
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [RepositorioJuego](../../src/servidor/Api/RepositorioJuego.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md).
+Relaciones usadas por este archivo: [CoordinadorPartidas](../../src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](../../src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](../../src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md).
 
 `HttpClient`/`HttpMessageHandler` representan solicitudes y respuestas; `JsonDocument`, `JsonSerializer` o `JsonContent` leen o escriben cuerpos donde aparecen. Los handlers anidados descritos abajo son dobles salvo los intermediarios que delegan a un `HttpClientHandler` real.
 
@@ -26,7 +26,7 @@ Las declaraciones anteriores conservan visibilidad, sellado, constructor primari
 
 ## Estado y datos
 
-RelojPruebas privado deriva TimeProvider y guarda ahora=UnixEpoch; GetUtcNow lo retorna, Avanzar agrega segundos. No crea timers ni sincroniza. Cada test crea host/cliente/repositorio aislados; las pruebas de persistencia usan subdirectorio temporal y Pooling=false.
+RelojPruebas privado deriva TimeProvider y guarda ahora=UnixEpoch; GetUtcNow lo retorna, Avanzar agrega segundos. No crea timers ni sincroniza. Cada test crea host/cliente/servicios aislados; las pruebas de persistencia usan subdirectorio temporal y Pooling=false.
 
 Declaraciones reales de estado de `RelojPruebas` (la mutación y el ciclo de vida se explican aquí y en sus miembros):
 
@@ -68,11 +68,10 @@ Crea partida, usa Bearer J1 y PUT sesión con UUID/Ada; repite exactamente y des
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task IncorporacionReservaLaPlazaYPermiteRenovarLaMismaSesion()
     {
         await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"]);
-        var creada = app.Services.GetRequiredService<RepositorioJuego>().CrearPartida();
+        var creada = app.Services.GetRequiredService<CoordinadorPartidas>().CrearPartida();
         await app.StartAsync();
         using var cliente = new HttpClient { BaseAddress = new Uri(app.Urls.Single()) };
         cliente.DefaultRequestHeaders.Authorization = new("Bearer", creada.CredencialJ1);
@@ -135,15 +134,14 @@ Carga seis cartas iguales, incorpora ambas plazas e inicia. J2 intentando solici
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task CombateMantieneLasEleccionesPrivadasYConfirmaUnaSolaVez()
     {
         await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:",
             "--urls=http://127.0.0.1:0"]);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         for (int i = 0; i < 6; i++)
-            juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+            app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
         await app.StartAsync();
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
         using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -217,7 +215,6 @@ Usa archivo en directorio temporal, Pooling=false. Primer host crea seis cartas/
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task ReinicioRecuperaSolicitudYRecibosYExigeSesionesNuevas()
     {
         var directorio = Directory.CreateTempSubdirectory();
@@ -231,10 +228,10 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             Uri recibo;
             await using (var app = ServidorHttp.Crear(args))
             {
-                var juego = app.Services.GetRequiredService<RepositorioJuego>();
+                var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
                 partida = juego.CrearPartida();
                 for (int i = 0; i < 6; i++)
-                    juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+                    app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
                 await app.StartAsync();
                 using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
                 using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -245,7 +242,7 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
                 Assert.Equal(HttpStatusCode.Created, elegida.StatusCode);
                 recibo = elegida.Headers.Location!;
                 antes = await Vista(j2);
-                juego.Desactivar(antes.GetProperty("mano")[0].GetProperty("idPersonaje").GetInt32());
+                app.Services.GetRequiredService<CatalogoPersonajes>().Desactivar(antes.GetProperty("mano")[0].GetProperty("idPersonaje").GetInt32());
                 await app.StopAsync();
             }
 
@@ -299,7 +296,6 @@ Host y archivo temporal; acepta apertura J1 y prepara respuesta J2. Crea trigger
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task UnaEleccionConFalloDeEscrituraNoDejaCambiosParciales()
     {
         var directorio = Directory.CreateTempSubdirectory();
@@ -308,10 +304,10 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
         {
             await using var app = ServidorHttp.Crear([
                 $"--ConnectionStrings:Juego={conexion}", "--urls=http://127.0.0.1:0"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
             var partida = juego.CrearPartida();
             for (int i = 0; i < 6; i++)
-                juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+                app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
             await app.StartAsync();
             using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
             using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -364,13 +360,12 @@ Usa RelojPruebas y memoria. Incorpora J1, guarda vista, avanza10s y PUT presenci
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task PresenciaRenuevaElPlazoSinCambiarLaRevision()
     {
         var reloj = new RelojPruebas();
         await using var app = ServidorHttp.Crear([
             "--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"], reloj);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         await app.StartAsync();
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
@@ -388,26 +383,25 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
 
 ### `ApiHttpTests.ReemplazarCredencialRevocaAccesoYCancelarConservaLaPlaza`
 
-Incorpora J1, cambia credencial por repositorio; consulta con vieja da401 credencialInvalida. Nueva credencial permite incorporar, pero CerrarSesion produce409 sesionVencida. Cancela partida y reincorpora con nueva credencial; vista conserva rolJ1, motivo cancelacion y revisión1. El test demuestra conservación del rol, motivo y revisión; no comprueba explícitamente la ausencia de un ganador.
+Incorpora J1, cambia credencial por AdministradorSesiones; consulta con vieja da401 credencialInvalida. Nueva credencial permite incorporar, pero CerrarSesion produce409 sesionVencida. Cancela partida y reincorpora con nueva credencial; vista conserva rolJ1, motivo cancelacion y revisión1. El test demuestra conservación del rol, motivo y revisión; no comprueba explícitamente la ausencia de un ganador.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task ReemplazarCredencialRevocaAccesoYCancelarConservaLaPlaza()
     {
         await using var app = ServidorHttp.Crear([
             "--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"]);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         await app.StartAsync();
         using var original = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
-        var nueva = juego.ReemplazarCredencial(partida.Id, "J1");
+        var nueva = app.Services.GetRequiredService<AdministradorSesiones>().ReemplazarCredencial(partida.Id, "J1");
 
         using var revocada = await original.GetAsync("presentacion");
         await Error(revocada, HttpStatusCode.Unauthorized, "credencialInvalida");
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, nueva, "Ada");
-        juego.CerrarSesion(partida.Id, "J1");
+        app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
         using var cerrada = await j1.GetAsync("presentacion");
         await Error(cerrada, HttpStatusCode.Conflict, "sesionVencida");
 
@@ -427,16 +421,15 @@ Host memoria con reloj detenido y logs Warning; seis cartas idénticas y ambas p
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task PartidaTerminaConQuinceRondasGanadasYSinRepartirOtra()
     {
         await using var app = ServidorHttp.Crear([
             "--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0",
             "--Logging:LogLevel:Default=Warning"], new RelojPruebas());
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         for (int i = 0; i < 6; i++)
-            juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+            app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
         await app.StartAsync();
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
         using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -606,3 +599,7 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ## Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+## Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](../../verificacion.md#auditoría-del-spec-006--2026-11-22).

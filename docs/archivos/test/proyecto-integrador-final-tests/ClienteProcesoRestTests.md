@@ -10,7 +10,7 @@ Arranca dos procesos cliente sucesivos contra un servidor local real para compro
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [RepositorioJuego](../../src/servidor/Api/RepositorioJuego.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md).
+Relaciones usadas por este archivo: [CoordinadorPartidas](../../src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](../../src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](../../src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md).
 
 Las pruebas con `ContratoFact` se omiten si la variable DLL indicada falta o está en blanco; una ruta no vacía no garantiza que exista ni que corresponda a esta versión. Véase [ContratoFactAttribute](ContratoFactAttribute.md). Los Facts/Theories ordinarios del mismo proyecto no dependen de esa condición.
 
@@ -56,16 +56,15 @@ En los casos de prueba, el runner suministra los parámetros de cada `InlineData
 
 ### `ClienteProcesoRestTests.ProcesoSeIncorporaReabreSinArchivosYEsperaPlazaHastaLiberacion`
 
-Crea host loopback puerto0 con SQLite memoria y partida. En directorio temporal lanza primer Proceso, envía URL/UUID/credencialJ1/Ana, espera Esperando inicio, excluye credencial de output, cierra entrada y exige salida local. Segundo proceso con los mismos datos debe indicar sesión ocupada; libera J1 por repositorio, espera inicio, envía esc/s/Enter y termina sin Final confirmado. Exige directorio sin archivos y vista J2 esperandoInicio. Detiene app y finally elimina directorio; await using libera procesos.
+Crea host loopback puerto0 con SQLite memoria y partida. En directorio temporal lanza primer Proceso, envía URL/UUID/credencialJ1/Ana, espera Esperando inicio, excluye credencial de output, cierra entrada y exige salida local. Segundo proceso con los mismos datos debe indicar sesión ocupada; libera J1 por AdministradorSesiones, espera inicio, envía esc/s/Enter y termina sin Final confirmado. Exige directorio sin archivos y vista J2 esperandoInicio. Detiene app y finally elimina directorio; await using libera procesos.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[ContratoFact("GUERRA_CLIENTE_DLL")]
     public async Task ProcesoSeIncorporaReabreSinArchivosYEsperaPlazaHastaLiberacion()
     {
         await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", "--ConnectionStrings:Juego=Data Source=:memory:"]);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         await app.StartAsync();
         string directorio = Path.Combine(Path.GetTempPath(), $"guerra-proceso-{Guid.NewGuid():N}");
@@ -85,7 +84,7 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             {
                 await segunda.Enviar($"{app.Urls.Single()}\n{partida.Id}\n{partida.CredencialJ1}\nAna\n");
                 await segunda.Esperar("Sesión ocupada");
-                juego.CerrarSesion(partida.Id, "J1");
+                app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
                 await segunda.Esperar("Esperando inicio");
                 await segunda.Enviar("esc\ns\n\n");
                 await segunda.Terminar();
@@ -93,7 +92,7 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             }
             Assert.Empty(Directory.GetFiles(directorio));
             Assert.Equal("esperandoInicio", juego.Presentacion(partida.Id, partida.CredencialJ2,
-                juego.Incorporar(partida.Id, partida.CredencialJ2, new(Guid.NewGuid(), "Ada")).IdSesion).Fase);
+                app.Services.GetRequiredService<AdministradorSesiones>().Incorporar(partida.Id, partida.CredencialJ2, new(Guid.NewGuid(), "Ada")).IdSesion).Fase);
             await app.StopAsync();
         }
         finally { Directory.Delete(directorio, true); }
@@ -216,3 +215,7 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ## Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+## Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](../../verificacion.md#auditoría-del-spec-006--2026-11-22).

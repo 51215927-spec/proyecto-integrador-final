@@ -24,3 +24,9 @@ Las pruebas del spec 001 cubren configuración, transporte con HttpMessageHandle
 ## Carga JSON
 
 `CargaJsonTests` verifica formato y dominio, endpoints autenticados, reemplazo exacto al reabrir y rollback real de SQLite mediante un trigger. `ConsolaAltaTests` cubre rutas, confirmación/cancelación y errores sin reintentos. El recorrido de `EntradaProcesosContratoTests` carga el JSON de seis ejemplos desde el ejecutable, reemplaza, repite, cancela y rechaza datos inválidos. Requiere `GUERRA_CARGA_DLL` del mismo worktree para localizar tanto el binario como su archivo de ejemplos. [Resultados del spec 005](../../docs/plan-de-pruebas.md#sistema-de-carga-json-spec-005).
+
+## Separación del servidor
+
+`PartidaTests` verifica acciones sucesivas, reconstrucción, reglas y partida completa hasta quince rondas; `VistaPartidaTests` comprueba privacidad y lectura sin efectos. `CoordinacionSesionesTests` usa una barrera en el reloj para comprobar elección frente a cierre o rotación de sesión. `CompatibilidadPersistenciaTests` carga la fixture SQL de una base creada con el servidor anterior, recupera el recibo, continúa el combate y compara el esquema sin migración. La fixture se copia a la salida de pruebas por el proyecto.
+
+La suite del spec 006 aprobó **190 pruebas, 0 fallidas y 0 omitidas**, con las tres DLL del mismo worktree. Los contratos HTTP/procesos, rollback con trigger y respuesta perdida siguen incluidos. [Referencia y límites](../../docs/plan-de-pruebas.md#separación-de-responsabilidades-spec-006).

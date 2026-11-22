@@ -4,13 +4,13 @@ Fuente: [test/proyecto-integrador-final-tests/ConsolaServidorTests.cs](../../../
 
 ## Propósito y responsabilidad
 
-Comprueba ayuda y diálogos administrativos con repositorio SQLite en memoria y texto redirigido. No arranca Kestrel.
+Comprueba ayuda y diálogos administrativos con servicios y SQLite en memoria y texto redirigido. No arranca Kestrel.
 
 ## Dependencias
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [ConsolaServidor](../../src/servidor/Api/ConsolaServidor.md), [Partida](../../src/servidor/Partida.md), [Personaje](../../src/servidor/Personaje.md), [RepositorioJuego](../../src/servidor/Api/RepositorioJuego.md).
+Relaciones usadas por este archivo: [ConsolaServidor](../../src/servidor/Api/ConsolaServidor.md), [Partida](../../src/servidor/Partida.md), [Personaje](../../src/servidor/Personaje.md), [CoordinadorPartidas](../../src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](../../src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](../../src/servidor/Api/AdministradorSesiones.md).
 
 Guías: [plan de pruebas y ejecución de esta referencia](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004), [instalación](../../../instalacion-y-uso.md), [protocolo HTTP](../../../protocolo-de-partida.md).
 
@@ -22,7 +22,7 @@ Las declaraciones anteriores conservan visibilidad, sellado, constructor primari
 
 ## Estado y datos
 
-Sin campos. Cada caso/auxiliar posee su RepositorioJuego y flujos con using, sin base persistida.
+Sin campos. Cada caso/auxiliar posee sus servicios compartiendo AlmacenPartidas y flujos con using, sin base persistida.
 
 ## Miembros y ejecución
 
@@ -48,19 +48,21 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
 
 ### `ConsolaServidorTests.Cancelar_PideUuidYReintentaSinPerderLaAccion`
 
-Crea partida en repositorio memoria, alimenta cancelar/incorrecto/UUID real y ejecuta con CancellationToken.None. Exige prompt UUID, aviso válido y confirmación cancelada. No consulta fase final: el alcance de la aserción es salida del operador.
+Crea partida con AlmacenPartidas en memoria, alimenta cancelar/incorrecto/UUID real y ejecuta con CancellationToken.None. Exige prompt UUID, aviso válido y confirmación cancelada. No consulta fase final: el alcance de la aserción es salida del operador.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public void Cancelar_PideUuidYReintentaSinPerderLaAccion()
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var sesiones = new AdministradorSesiones(almacen, TimeProvider.System);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
         var partida = juego.CrearPartida();
         using var entrada = new StringReader($"cancelar\nincorrecto\n{partida.Id}\n");
         using var salida = new StringWriter();
-        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        ConsolaServidor.Ejecutar(juego, sesiones, catalogo, entrada, salida, CancellationToken.None);
         Assert.Contains("UUID", salida.ToString());
         Assert.Contains("válido", salida.ToString());
         Assert.Contains("Partida cancelada.", salida.ToString());
@@ -94,14 +96,16 @@ Crea partida y envía cerrar-sesion, UUID, J3 y j2. Exige instrucción J1 o J2 y
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public void CerrarSesion_PidePlazaYPermiteCorregirla()
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var sesiones = new AdministradorSesiones(almacen, TimeProvider.System);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
         var partida = juego.CrearPartida();
         using var entrada = new StringReader($"cerrar-sesion\n{partida.Id}\nJ3\nj2\n");
         using var salida = new StringWriter();
-        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        ConsolaServidor.Ejecutar(juego, sesiones, catalogo, entrada, salida, CancellationToken.None);
         Assert.Contains("J1 o J2", salida.ToString());
         Assert.Contains("Sesión cerrada.", salida.ToString());
     }
@@ -109,17 +113,20 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
 
 ### `ConsolaServidorTests.Ejecutar`
 
-private static string: recibe secuencia de comandos, crea repositorio :memory:, StringReader y StringWriter, llama ConsolaServidor.Ejecutar sin cancelación externa y devuelve texto al alcanzar EOF. using libera recursos aunque la ejecución lance.
+private static string: recibe secuencia de comandos, crea AlmacenPartidas :memory: y sus servicios, StringReader y StringWriter, llama ConsolaServidor.Ejecutar sin cancelación externa y devuelve texto al alcanzar EOF. using libera recursos aunque la ejecución lance.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-private static string Ejecutar(string comandos)
+    private static string Ejecutar(string comandos)
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var sesiones = new AdministradorSesiones(almacen, TimeProvider.System);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
         using var entrada = new StringReader(comandos);
         using var salida = new StringWriter();
-        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        ConsolaServidor.Ejecutar(juego, sesiones, catalogo, entrada, salida, CancellationToken.None);
         return salida.ToString();
     }
 ```
@@ -139,3 +146,7 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ## Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+## Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](../../verificacion.md#auditoría-del-spec-006--2026-11-22).

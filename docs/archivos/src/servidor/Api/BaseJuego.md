@@ -4,7 +4,7 @@ Fuente: [src/servidor/Api/BaseJuego.cs](../../../../../src/servidor/Api/BaseJueg
 
 ## Propósito y responsabilidad
 
-Define el contexto de Entity Framework Core y las entidades principales de partida/plaza. Centraliza nombres de tablas, claves y relaciones para que [RepositorioJuego](RepositorioJuego.md) abra unidades de trabajo sobre SQLite. No autentica ni ejecuta turnos por sí mismo.
+Define el contexto de Entity Framework Core y las entidades principales de partida/plaza. Centraliza nombres de tablas, claves y relaciones para que [SqliteJuego](SqliteJuego.md) abra unidades de trabajo sobre SQLite. No autentica ni ejecuta turnos por sí mismo.
 
 ## Dependencias
 
@@ -27,7 +27,7 @@ Define el contexto de Entity Framework Core y las entidades principales de parti
 | Solicitudes | internal DbSet<SolicitudGuardada>, getter `Set<T>()` |
 | Operaciones | internal DbSet<OperacionGuardada>, getter `Set<T>()` |
 
-Estos accesores no ejecutan consultas ni guardan cambios; exponen conjuntos del contexto. El contexto se desecha por operación en el repositorio, que gobierna conexión y transacción.
+Estos accesores no ejecutan consultas ni guardan cambios; exponen conjuntos del contexto. El contexto se desecha por operación en SqliteJuego, que gobierna conexión y transacción.
 
 `PartidaGuardada` tiene propiedades públicas get/set: `Guid Id` (clave por convención), `int Revision` (cero inicial); `int? NumeroRonda`, `NumeroCombate`; `Guid? IdSolicitud`; `string? MotivoFin`, `Ganador`, `AbandonoDe`, todos inicialmente null; `string Fase = "esperandoInicio"`. Los anulables distinguen preparación o ausencia de final de una partida activa; no hay guardas en sus setters.
 
@@ -35,7 +35,7 @@ Estos accesores no ejecutan consultas ni guardan cambios; exponen conjuntos del 
 
 ## Miembros y ejecución
 
-El constructor de BaseJuego no abre ni crea SQLite: lo hace el repositorio después. `OnModelCreating` se invoca por EF al construir el modelo. No retorna datos ni recorre partidas; declara este mapa:
+El constructor de BaseJuego no abre ni crea SQLite: lo hace SqliteJuego después. `OnModelCreating` se invoca por EF al construir el modelo. No retorna datos ni recorre partidas; declara este mapa:
 
 | Entidad → tabla | Clave y restricciones declaradas aquí |
 |---|---|
@@ -74,7 +74,7 @@ Normal: crear partida P y participantes `(P,J1)` y `(P,J2)` permite dos plazas c
 
 ## Errores, límites y efectos observables
 
-Este archivo no convierte excepciones de base ni verifica umbrales académicos, roles o fases. Los setters admiten asignaciones que luego pueden fallar al guardar. EnsureCreated del repositorio crea esquema si falta; este archivo no contiene migraciones ni actualiza por sí solo un esquema antiguo. La configuración exacta de proveedor se recibe en opciones.
+Este archivo no convierte excepciones de base ni verifica umbrales académicos, roles o fases. Los setters admiten asignaciones que luego pueden fallar al guardar. EnsureCreated de SqliteJuego crea esquema si falta; este archivo no contiene migraciones ni actualiza por sí solo un esquema antiguo. La configuración exacta de proveedor se recibe en opciones.
 
 ## Relaciones y verificación
 

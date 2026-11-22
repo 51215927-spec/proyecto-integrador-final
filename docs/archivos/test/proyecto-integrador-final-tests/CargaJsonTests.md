@@ -10,7 +10,7 @@ Ensaya esquema de lote JSON, reglas de dominio, autenticación HTTP y reemplazo 
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [AltaPersonaje](../../src/servidor/Api/PersonajeCatalogo.md), [ErrorApi](../../src/servidor/Api/ServidorHttp.md), [LotePersonajes](../../src/servidor/Api/LotePersonajes.md), [Personaje](../../src/servidor/Personaje.md), [PersonajeCatalogo](../../src/servidor/Api/PersonajeCatalogo.md), [RepositorioJuego](../../src/servidor/Api/RepositorioJuego.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md).
+Relaciones usadas por este archivo: [AltaPersonaje](../../src/servidor/Api/PersonajeCatalogo.md), [ErrorApi](../../src/servidor/Api/ServidorHttp.md), [LotePersonajes](../../src/servidor/Api/LotePersonajes.md), [Personaje](../../src/servidor/Personaje.md), [PersonajeCatalogo](../../src/servidor/Api/PersonajeCatalogo.md), [CoordinadorPartidas](../../src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](../../src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](../../src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md).
 
 `HttpClient`/`HttpMessageHandler` representan solicitudes y respuestas; `JsonDocument`, `JsonSerializer` o `JsonContent` leen o escriben cuerpos donde aparecen. Los handlers anidados descritos abajo son dobles salvo los intermediarios que delegan a un `HttpClientHandler` real.
 
@@ -74,28 +74,27 @@ Repositorio memoria; da alta a Anterior, reemplaza por Uno y repite reemplazo. C
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public void ReemplazoRepiteSinAcumularYValidaAntesDeBorrar()
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var juego = new CatalogoPersonajes(almacen.Infraestructura);
         var lote = LotePersonajes.Leer(JsonDocument.Parse(Uno).RootElement);
-        juego.DarDeAlta(lote[0] with { Nombre = "Anterior" });
-        juego.ReemplazarCatalogo(lote);
-        juego.ReemplazarCatalogo(lote);
-        Assert.Equal(1, juego.CantidadCatalogo());
-        Assert.Throws<ErrorApi>(() => juego.ReemplazarCatalogo([lote[0] with { Fuerza = 0 }]));
-        Assert.Equal(1, juego.CantidadCatalogo());
+        new CatalogoPersonajes(almacen.Infraestructura).DarDeAlta(lote[0] with { Nombre = "Anterior" });
+        new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo(lote);
+        new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo(lote);
+        Assert.Equal(1, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
+        Assert.Throws<ErrorApi>(() => new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo([lote[0] with { Fuerza = 0 }]));
+        Assert.Equal(1, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
     }
 ```
 
 ### `CargaJsonTests.ReemplazoPersisteDatosExactosYRevierteFalloDeInsercion`
 
-Usa archivo temporal y Pooling=False. Da de alta Viejo e Inactivo, desactiva ID2 y exige cuenta2 (incluye inactivos); reemplaza por Uno y cierra repositorio. Consulta SQL y exige única fila [1,Ada,descripción vacía,*,250,350,450,550,650,750,activo1]. Crea trigger BEFORE INSERT para nombre Falla con RAISE(ABORT). Reemplazo de Ada+Falla debe lanzar DbUpdateException; nueva apertura conserva cantidad1 y SQL sigue retornando Ada. finally borra archivo. Demuestra rollback de ese fallo, no todos los errores posibles de disco.
+Usa archivo temporal y Pooling=False. Da de alta Viejo e Inactivo, desactiva ID2 y exige cuenta2 (incluye inactivos); reemplaza por Uno y cierra AlmacenPartidas. Consulta SQL y exige única fila [1,Ada,descripción vacía,*,250,350,450,550,650,750,activo1]. Crea trigger BEFORE INSERT para nombre Falla con RAISE(ABORT). Reemplazo de Ada+Falla debe lanzar DbUpdateException; nueva apertura conserva cantidad1 y SQL sigue retornando Ada. finally borra archivo. Demuestra rollback de ese fallo, no todos los errores posibles de disco.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public void ReemplazoPersisteDatosExactosYRevierteFalloDeInsercion()
     {
         string ruta = Path.Combine(Path.GetTempPath(), $"carga-{Guid.NewGuid()}.db");
@@ -103,13 +102,13 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
         try
         {
             var lote = LotePersonajes.Leer(JsonDocument.Parse(Uno).RootElement);
-            using (var juego = new RepositorioJuego(cadena, TimeProvider.System))
+            using (var almacen = new AlmacenPartidas(cadena))
             {
-                juego.DarDeAlta(lote[0] with { Nombre = "Viejo" });
-                juego.DarDeAlta(lote[0] with { Nombre = "Inactivo" });
-                juego.Desactivar(2);
-                Assert.Equal(2, juego.CantidadCatalogo());
-                juego.ReemplazarCatalogo(lote);
+                new CatalogoPersonajes(almacen.Infraestructura).DarDeAlta(lote[0] with { Nombre = "Viejo" });
+                new CatalogoPersonajes(almacen.Infraestructura).DarDeAlta(lote[0] with { Nombre = "Inactivo" });
+                new CatalogoPersonajes(almacen.Infraestructura).Desactivar(2);
+                Assert.Equal(2, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
+                new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo(lote);
             }
             using var conexion = new Microsoft.Data.Sqlite.SqliteConnection(cadena);
             conexion.Open();
@@ -125,9 +124,9 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             }
             comando.CommandText = "CREATE TRIGGER fallo BEFORE INSERT ON PersonajeCatalogo WHEN NEW.Nombre = 'Falla' BEGIN SELECT RAISE(ABORT, 'fallo inducido'); END;";
             comando.ExecuteNonQuery();
-            using (var juego = new RepositorioJuego(cadena, TimeProvider.System))
-                Assert.Throws<Microsoft.EntityFrameworkCore.DbUpdateException>(() => juego.ReemplazarCatalogo([lote[0], lote[0] with { Nombre = "Falla" }]));
-            using (var juego = new RepositorioJuego(cadena, TimeProvider.System)) Assert.Equal(1, juego.CantidadCatalogo());
+            using (var almacen = new AlmacenPartidas(cadena))
+                Assert.Throws<Microsoft.EntityFrameworkCore.DbUpdateException>(() => new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo([lote[0], lote[0] with { Nombre = "Falla" }]));
+            using (var almacen = new AlmacenPartidas(cadena)) Assert.Equal(1, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
             comando.CommandText = "SELECT Nombre FROM PersonajeCatalogo";
             Assert.Equal("Ada", comando.ExecuteScalar());
         }
@@ -173,19 +172,15 @@ Theory nombre/espacios, ascii/tab, ascii/limite y ascii/lineas. Expande limite a
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Theory]
-    [InlineData("nombre", "   ")]
-    [InlineData("ascii", "\t")]
-    [InlineData("ascii", "limite")]
-    [InlineData("ascii", "lineas")]
     public void RechazaTextoDeDominioConUbicacion(string campo, string valor)
     {
         var datos = LotePersonajes.Leer(JsonDocument.Parse(Uno).RootElement)[0];
         if (valor == "limite") valor = new string('*', 121);
         if (valor == "lineas") valor = string.Join('\r', Enumerable.Repeat("*", 26));
         datos = campo == "nombre" ? datos with { Nombre = valor } : datos with { Ascii = valor };
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
-        var error = Assert.Throws<ErrorApi>(() => juego.ReemplazarCatalogo([datos]));
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var juego = new CatalogoPersonajes(almacen.Infraestructura);
+        var error = Assert.Throws<ErrorApi>(() => new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo([datos]));
         Assert.Contains("Personaje 1", error.Message);
         Assert.Contains(campo, error.Message);
     }
@@ -270,3 +265,7 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ## Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+## Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](../../verificacion.md#auditoría-del-spec-006--2026-11-22).

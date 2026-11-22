@@ -50,6 +50,41 @@ Cuando falta presencia durante una elección, el servidor informa la pausa sin c
 
 [Modelos](modelos.md) · [API y operación](protocolo-de-partida.md) · [Bases de datos](bases-de-datos.md) · [Tecnologías](tecnologias.md) · [Instalación](instalacion-y-uso.md) · [UML académico](diagramas/uml.uxf)
 
-## Modelo local y coordinación persistida
+## Responsabilidades del servidor
 
-Los seis archivos del modelo académico describen cartas y reglas locales. `Combate` se reutiliza para comparar en el servidor; `Partida.Jugar()` conserva un coordinador incompleto: reparte pero no solicita elecciones y lanza «El combate no se completó.». El flujo REST se ejecuta mediante `RepositorioJuego` y sus porciones `TransicionesPartida` y `PresentacionPartida`, con estado persistido. La existencia de `Partida` no acredita una segunda modalidad de juego local funcional. Véanse [Partida](archivos/src/servidor/Partida.md), [transiciones](archivos/src/servidor/Api/TransicionesPartida.md) y el [catálogo completo](archivos/README.md).
+| Componente | Responsabilidad |
+|---|---|
+| `Partida` | Inicio, elección, combate, ronda y cierre por acciones sucesivas sobre `EstadoPartida`. Reutiliza `Combate`, `Ronda`, `Jugador` y `Mazo`; no conoce HTTP, EF Core ni SQLite. |
+| `CoordinadorPartidas` | Acceso, presencia, recuperación de operaciones previas, invocación del dominio y confirmación del recibo. No calcula ganadores ni construye la vista. |
+| `AlmacenPartidas` | Carga y mapeo explícito entre entidades SQLite y dominio; persistencia de estado y operaciones dentro de la transacción. |
+| `AdministradorSesiones` | Incorporación, renovación, exclusión de plaza, vencimiento, cierre y rotación de credencial. La presencia permanece en memoria. |
+| `CatalogoPersonajes` | Alta, validación, conteo, desactivación, reemplazo atómico y copia del catálogo activo al iniciar. |
+| `VistaPartida` | Proyección de mano propia, solicitud de la plaza e historial resuelto; calcula pausa desde presencia sin modificar el dominio. |
+
+`ServidorHttp` conserva rutas, cabeceras y respuestas. `ConsolaServidor` recibe por separado coordinador, sesiones y catálogo. `BaseJuego` mantiene el mapeo EF Core del esquema existente. `SqliteJuego` es infraestructura de conexión, transacción y sincronización compartida; `UnidadPartida` ofrece el dominio y las operaciones cargadas sin exponer DbContext al coordinador.
+
+```mermaid
+flowchart TD
+    HTTP[ServidorHttp] --> CoordinadorPartidas
+    HTTP --> AdministradorSesiones
+    HTTP --> CatalogoPersonajes
+    ConsolaServidor --> CoordinadorPartidas
+    ConsolaServidor --> AdministradorSesiones
+    ConsolaServidor --> CatalogoPersonajes
+    CoordinadorPartidas --> Partida
+    CoordinadorPartidas --> AdministradorSesiones
+    CoordinadorPartidas --> AlmacenPartidas
+    CoordinadorPartidas --> VistaPartida
+    AlmacenPartidas --> EstadoPartida
+    Partida --> EstadoPartida
+    AlmacenPartidas --> SqliteJuego
+    CatalogoPersonajes --> SqliteJuego
+    SqliteJuego --> BaseJuego
+    BaseJuego --> SQLite
+```
+
+Una elección mantiene la coordinación compartida desde la autenticación y vigencia hasta la confirmación. La transacción adquiere el bloqueo SQLite antes de cargar el estado modificable. Un reintento idéntico recupera el recibo antes de validar el turno actual. Para una acción nueva, `Partida` valida revisión, solicitud y opciones y aplica las reglas. `AlmacenPartidas` guarda estado, solicitud consumida y recibo juntos. El cierre o cambio de credencial usa la misma coordinación; una rotación fallida no invalida anticipadamente la presencia.
+
+La reconstrucción restaura el estado sin repartir ni repetir resultados. El catálogo iniciado se conserva como copia propia de la partida. La vista recibe un estado consistente y la presencia actual; oculta decisiones pendientes y no produce escrituras. Las clases `RepositorioJuego` y su archivo `TransicionesPartida` fueron retirados en el spec 006; `PresentacionPartida.cs` conserva los DTO públicos. La antigua entrada `Partida.Jugar()` fue sustituida por `Iniciar`, `RegistrarEleccion`, `Abandonar` y `Cancelar`; el flujo REST utiliza ahora ese mismo dominio.
+
+[Partida](archivos/src/servidor/Partida.md) · [Coordinador](archivos/src/servidor/Api/CoordinadorPartidas.md) · [Catálogo completo](archivos/README.md) · [Verificación del spec 006](plan-de-pruebas.md#separación-de-responsabilidades-spec-006).

@@ -4,7 +4,7 @@ Fuente: [src/servidor/Api/PersonajeCatalogo.cs](../../../../../src/servidor/Api/
 
 ## Propósito y responsabilidad
 
-Declara el contrato de alta y la entidad persistida del catálogo. `AltaPersonaje.Validar` transforma un pedido en una entidad válida, combinando reglas del arte y del modelo [Personaje](../Personaje.md). El ID lo asigna [RepositorioJuego](RepositorioJuego.md).
+Declara el contrato de alta y la entidad persistida del catálogo. `AltaPersonaje.Validar` transforma un pedido en una entidad válida, combinando reglas del arte y del modelo [Personaje](../Personaje.md). El ID lo asigna [CatalogoPersonajes](CatalogoPersonajes.md).
 
 ## Dependencias
 
@@ -53,7 +53,7 @@ No hay setters con lógica: el bloque final de inicialización simplemente copia
 
 ### Fragmento de entidad aceptada
 
-Solo después de las validaciones se devuelve esta entidad. La inicialización no asigna ID ni Activo: quedan en cero y true por sus declaraciones hasta que el repositorio les asigne identidad:
+Solo después de las validaciones se devuelve esta entidad. La inicialización no asigna ID ni Activo: quedan en cero y true por sus declaraciones hasta que el catálogo les asigne identidad:
 
 ```csharp
         return new()

@@ -4,7 +4,7 @@ Fuente: [test/proyecto-integrador-final-tests/ServidorContratoTests.cs](../../..
 
 ## Propósito y responsabilidad
 
-Contratos externos del ejecutable servidor: consola operativa, Kestrel y SQLite en directorio temporal. Requieren GUERRA_SERVIDOR_DLL; no se sustituyen por llamadas directas al repositorio.
+Contratos externos del ejecutable servidor: consola operativa, Kestrel y SQLite en directorio temporal. Requieren GUERRA_SERVIDOR_DLL; no se sustituyen por llamadas directas a los servicios del servidor.
 
 ## Dependencias
 

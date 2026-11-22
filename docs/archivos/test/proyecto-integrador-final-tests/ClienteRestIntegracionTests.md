@@ -10,7 +10,7 @@ Integración de ClientePartidaHttp contra Kestrel loopback y SQLite temporal, si
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [ClientePartidaHttp](../../src/cliente/ClientePartidaHttp.md), [ConfiguracionCliente](../../src/cliente/ConfiguracionCliente.md), [EleccionCliente](../../src/cliente/ContratosPartida.md), [EstadoCliente](../../src/cliente/EstadoCliente.md), [FalloCliente](../../src/cliente/ClientePartidaHttp.md), [RepositorioJuego](../../src/servidor/Api/RepositorioJuego.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md).
+Relaciones usadas por este archivo: [ClientePartidaHttp](../../src/cliente/ClientePartidaHttp.md), [ConfiguracionCliente](../../src/cliente/ConfiguracionCliente.md), [EleccionCliente](../../src/cliente/ContratosPartida.md), [EstadoCliente](../../src/cliente/EstadoCliente.md), [FalloCliente](../../src/cliente/ClientePartidaHttp.md), [CoordinadorPartidas](../../src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](../../src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](../../src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md).
 
 Guías: [plan de pruebas y ejecución de esta referencia](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004), [instalación](../../../instalacion-y-uso.md), [protocolo HTTP](../../../protocolo-de-partida.md).
 
@@ -35,14 +35,13 @@ Crea base temporal y partida en primer host, incorpora cliente con UUID de sesi�
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task ReinicioDelServidorConservaPartidaYRequiereReincorporarLaMismaSesion()
     {
         string archivo = Path.Combine(Path.GetTempPath(), $"guerra-reinicio-cliente-{Guid.NewGuid():N}.db");
         try
         {
             await using var primero = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var creada = primero.Services.GetRequiredService<RepositorioJuego>().CrearPartida();
+            var creada = primero.Services.GetRequiredService<CoordinadorPartidas>().CrearPartida();
             await primero.StartAsync();
             string url = primero.Urls.Single();
             Guid sesion = Guid.NewGuid();
@@ -71,21 +70,20 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
 
 ### `ClienteRestIntegracionTests.DosClientesJueganContraServidorLocalRecuperanReciboYSesion`
 
-Da de alta seis cartas idénticas, crea dos configuraciones con credenciales diferentes (ambos nombres Ana), incorpora J1/J2 y renueva J1. Inicia por repositorio y comprueba manos sin intersección y validación de EstadoCliente. J1 elige primera carta/atributo; recibo por GET y reenvío idéntico debe ser igual. Vista J2 aún sin resultados y solicitud carta; al responder resulta un combate único. Cierra J1: Presentacion debe fallar sesionVencida; reincorpora mismo UUID y conserva recibo. Abandona J1; J2 ve motivo abandono y Ganador null. No recorre quince rondas aquí.
+Da de alta seis cartas idénticas, crea dos configuraciones con credenciales diferentes (ambos nombres Ana), incorpora J1/J2 y renueva J1. Inicia por CoordinadorPartidas y comprueba manos sin intersección y validación de EstadoCliente. J1 elige primera carta/atributo; recibo por GET y reenvío idéntico debe ser igual. Vista J2 aún sin resultados y solicitud carta; al responder resulta un combate único. Cierra J1: Presentacion debe fallar sesionVencida; reincorpora mismo UUID y conserva recibo. Abandona J1; J2 ve motivo abandono y Ganador null. No recorre quince rondas aquí.
 
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
     public async Task DosClientesJueganContraServidorLocalRecuperanReciboYSesion()
     {
         string archivo = Path.Combine(Path.GetTempPath(), $"guerra-cliente-{Guid.NewGuid():N}.db");
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
             var partida = juego.CrearPartida();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción no visible", "ARTE NO VISIBLE", 750, 550, 500, 250, 500, 450));
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción no visible", "ARTE NO VISIBLE", 750, 550, 500, 250, 500, 450));
             await app.StartAsync();
             var config1 = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");
             var config2 = config1 with { Credencial = partida.CredencialJ2, Nombre = "Ana" };
@@ -112,7 +110,7 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
             var resuelta = await j1.Presentacion(default);
             Assert.Single(resuelta.Resultados);
             new EstadoCliente(partida.Id).Aplicar(resuelta);
-            juego.CerrarSesion(partida.Id, "J1");
+            app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
             var vencida = await Assert.ThrowsAsync<FalloCliente>(() => j1.Presentacion(default));
             Assert.Equal("sesionVencida", vencida.Codigo);
             Assert.Equal(sesion1, (await j1.Incorporar(default)).IdSesion);
@@ -146,3 +144,7 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ## Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+## Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](../../verificacion.md#auditoría-del-spec-006--2026-11-22).

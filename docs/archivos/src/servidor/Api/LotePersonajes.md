@@ -4,7 +4,7 @@ Fuente: [src/servidor/Api/LotePersonajes.cs](../../../../../src/servidor/Api/Lot
 
 ## Propósito y responsabilidad
 
-Convierte el JSON de reemplazo de catálogo en un array tipado, comprobando forma, tipos, IDs prohibidos y nombres duplicados antes de persistir. [ServidorHttp](ServidorHttp.md) lo llama para PUT del catálogo; [RepositorioJuego](RepositorioJuego.md) vuelve a validar reglas de dominio y realiza el reemplazo atómico.
+Convierte el JSON de reemplazo de catálogo en un array tipado, comprobando forma, tipos, IDs prohibidos y nombres duplicados antes de persistir. [ServidorHttp](ServidorHttp.md) lo llama para PUT del catálogo; [CatalogoPersonajes](CatalogoPersonajes.md) vuelve a validar reglas de dominio y realiza el reemplazo atómico.
 
 ## Dependencias
 
@@ -75,7 +75,7 @@ Al construir AltaPersonaje, cada llamada local exige tipo exacto. El conjunto co
 
 ## Recorridos y ejemplos
 
-Normal: un objeto con nombre Ada, descripcion vacía, ascii `*` y seis enteros `(250,350,450,550,650,750)` produce un alta; RepositorioJuego decidirá el ID. Alternativo: nombres `Ada` y ` ada ` provocan `Personaje 2 ( ada ): nombre duplicado.`; una propiedad `ID` se rechaza aunque los demás datos sean correctos. Un array `[7]` falla como objeto antes de leer campos. Recorridos de lectura, no peticiones ejecutadas aquí.
+Normal: un objeto con nombre Ada, descripcion vacía, ascii `*` y seis enteros `(250,350,450,550,650,750)` produce un alta; CatalogoPersonajes decidirá el ID. Alternativo: nombres `Ada` y ` ada ` provocan `Personaje 2 ( ada ): nombre duplicado.`; una propiedad `ID` se rechaza aunque los demás datos sean correctos. Un array `[7]` falla como objeto antes de leer campos. Recorridos de lectura, no peticiones ejecutadas aquí.
 
 ## Errores, límites y efectos observables
 
@@ -83,4 +83,4 @@ No impone tamaño máximo de lote propio, ni verifica nombre en blanco, límites
 
 ## Relaciones y verificación
 
-[CargaJsonTests](../../../test/proyecto-integrador-final-tests/CargaJsonTests.md) define rechazo de formato incompleto, duplicados normalizados, obligatoriedad y tipos estrictos. La atomicidad pertenece al repositorio y se prueba allí mediante reemplazo y fallo de inserción. Véase [plan de pruebas](../../../../plan-de-pruebas.md) para ejecución real y [carga](../../subir-personajes/Program.md) para la comprobación previa del cliente.
+[CargaJsonTests](../../../test/proyecto-integrador-final-tests/CargaJsonTests.md) define rechazo de formato incompleto, duplicados normalizados, obligatoriedad y tipos estrictos. La atomicidad pertenece al catálogo y se prueba allí mediante reemplazo y fallo de inserción. Véase [plan de pruebas](../../../../plan-de-pruebas.md) para ejecución real y [carga](../../subir-personajes/Program.md) para la comprobación previa del cliente.

@@ -1,12 +1,25 @@
-# Revisión de la documentación final
+# Verificación documental e historia
 
-## Referencia y alcance
+## Auditoría del spec 006 — 2026-11-22
+
+Referencia de código `f0f292b`; documentación separada en `docs/006-separacion-responsabilidades`. Inventario actual: **66 fuentes C# y 66 páginas**, incluyendo ocho nuevos archivos de servidor y tres nuevos archivos de pruebas, con retirada de las páginas de RepositorioJuego y TransicionesPartida. Las fuentes sin cambios conservan desarrollo contrastado; se actualizaron sus relaciones cuando cambió el componente responsable.
+
+Las páginas de componentes nuevos/modificados describen sus miembros y el flujo real. Los bloques nuevos reproducen fragmentos o archivos completos del commit final; los de pruebas de integración se actualizaron sin retirar aserciones. El catálogo distingue EstadoPartida de dominio y Api/EstadoPartida de persistencia/contratos.
+
+Evidencia funcional informada por la validación de implementación: build correcto y **190 pruebas aprobadas, cero fallidas/omitidas**, con tres DLL del mismo worktree; baseline histórico 179. CompatibilidadPersistenciaTests usa SQL/JSON generado por e18a050, reabre sin migración, recupera recibo y continúa sin alterar esquema. CoordinacionSesionesTests comprueba invalidación concurrente; VistaPartidaTests lectura/privacidad/pausa.
+
+Controles documentales: comparación uno a uno de fuentes/páginas, revisión de miembros contra fuente, comprobación literal de bloques C# y enlaces relativos/anclas; el cierre global registra los resultados en el spec canónico. La auditoría histórica que sigue corresponde exclusivamente al spec 004 y sus cifras/restricciones antiguas no son estado vigente. La integración física de dos Windows del spec 002 sigue pendiente. No se acredita render visual del UML ni instalación WinGet.
+
+## Auditoría histórica del spec 004 — 2026-11-22
+
+
+### Referencia y alcance
 
 Revisión del 2026-11-22 para [main en 135daa7eb196b9bca4e40a1aef76e1131a9b24e8](https://github.com/51215927-spec/proyecto-integrador-final/tree/135daa7eb196b9bca4e40a1aef76e1131a9b24e8). Se trabaja en `docs/spec-004-documetacion-final`, en `/home/julian/.herdr/worktrees/proyecto-integrador-final/docs-spec-004-documetacion-final`. Los specs canónicos son locales, excluidos por Git y permanecen en `/home/julian/proyectos/escolares/proyecto-integrador-final/specs/`, rama main; no se copiaron a este worktree.
 
 La auditoría abarca todos los archivos, no una muestra. Primero se leyó cada fuente, después se contrastaron sus tipos, datos y miembros con la explicación y se hizo una segunda lectura por miembro de las pruebas. Cliente y API tuvieron revisión cruzada entre responsables; la revisión de las pruebas detectó y corrigió atribuciones de cobertura excesivas (fase antes de opciones inválidas, ganador no asertado y EOF distinto de Enter). No se cambió código para ajustar la documentación.
 
-## Inventario y cobertura por archivo
+### Inventario y cobertura por archivo
 
 57 fuentes versionados → 57 páginas, sin faltantes, duplicados ni páginas obsoletas. Exclusiones: artefactos no versionados de bin/obj, resultados y dependencias externas. No hay fuentes generados deliberadamente versionados en esta referencia. Los tres Program conservan sus rutas y nombres. Catálogo y evidencia son guías, no páginas que representen otro fuente.
 
@@ -33,9 +46,9 @@ La tabla cuenta declaraciones explícitas obtenidas con el parser Roslyn del SDK
 | [src/servidor/Api/LotePersonajes.cs](src/servidor/Api/LotePersonajes.md) | 1 | 4 | 0 | Aprobada: autor y revisión cruzada cliente/api. |
 | [src/servidor/Api/PersonajeCatalogo.cs](src/servidor/Api/PersonajeCatalogo.md) | 2 | 1 | 11 | Aprobada: autor y revisión cruzada cliente/api. |
 | [src/servidor/Api/PresentacionPartida.cs](src/servidor/Api/PresentacionPartida.md) | 4 | 1 | 0 | Aprobada: autor y revisión cruzada cliente/api. |
-| [src/servidor/Api/RepositorioJuego.cs](src/servidor/Api/RepositorioJuego.md) | 4 | 21 | 5 | Aprobada: autor y revisión cruzada cliente/api. |
+| `src/servidor/Api/RepositorioJuego.cs` (referencia histórica) | 4 | 21 | 5 | Aprobada: autor y revisión cruzada cliente/api. |
 | [src/servidor/Api/ServidorHttp.cs](src/servidor/Api/ServidorHttp.md) | 2 | 8 | 2 | Aprobada: autor y revisión cruzada cliente/api. |
-| [src/servidor/Api/TransicionesPartida.cs](src/servidor/Api/TransicionesPartida.md) | 1 | 14 | 1 | Aprobada: autor y revisión cruzada cliente/api. |
+| `src/servidor/Api/TransicionesPartida.cs` (referencia histórica) | 1 | 14 | 1 | Aprobada: autor y revisión cruzada cliente/api. |
 | [src/servidor/Combate.cs](src/servidor/Combate.md) | 1 | 12 | 6 | Aprobada: lectura completa y contraste de fuente. |
 | [src/servidor/Jugador.cs](src/servidor/Jugador.md) | 1 | 9 | 3 | Aprobada: lectura completa y contraste de fuente. |
 | [src/servidor/Mazo.cs](src/servidor/Mazo.md) | 1 | 5 | 1 | Aprobada: lectura completa y contraste de fuente. |
@@ -72,7 +85,7 @@ La tabla cuenta declaraciones explícitas obtenidas con el parser Roslyn del SDK
 | [test/proyecto-integrador-final-tests/SesionClienteTests.cs](test/proyecto-integrador-final-tests/SesionClienteTests.md) | 5 | 30 | 24 | Aprobada: autor y segunda lectura por miembro. |
 | [test/proyecto-integrador-final-tests/TransporteClienteTests.cs](test/proyecto-integrador-final-tests/TransporteClienteTests.md) | 2 | 3 | 0 | Aprobada: autor y segunda lectura por miembro. |
 
-## Documentos generales y diagramas
+### Documentos generales y diagramas
 
 Se revisaron todos los Markdown versionados de la referencia y sus diagramas. Las páginas nuevas y modelos se contrastaron con las fuentes del inventario anterior; esta tabla cubre los documentos preexistentes.
 
@@ -102,7 +115,7 @@ Se revisaron todos los Markdown versionados de la referencia y sus diagramas. La
 
 También se leyeron todos los documentos locales de specs: índice; spec/plan/tasks de 001, 002, 003 y 005; spec/plan/tasks de 004. Se mantuvieron requisitos e historia; se aclaró la vigencia histórica de 003, se corrigió el orden de ruta/URL/credencial del plan 002 y se enlazó el nuevo seguimiento 004. El estado de red física no se cambió a aprobado. La revisión documental del UML de esta rama no se presenta como integración ya publicada de otro spec.
 
-## Controles y ejecución
+### Controles y ejecución
 
 - `git ls-files '*.cs'`: inventario de 57 fuentes propios; comparación uno a uno con sus páginas.
 - Parser Roslyn del SDK instalado: inventario de declaraciones explícitas y contraste por nombre; revisión manual adicional por miembro, sobrecarga, función local, lambda relevante y flujo.
@@ -112,7 +125,7 @@ También se leyeron todos los documentos locales de specs: índice; spec/plan/ta
 - `git diff --check`: control de formato del diff. No se introducen cambios en src/ ni test/.
 - [Build y suite](../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004): cero errores/advertencias y 179 aprobadas, cero fallidas/omitidas. Linux, DLL del mismo worktree y datos de ensayo aislados; no acredita dos Windows ni instalaciones WinGet. Los ejemplos escritos por lectura no se presentan como ejecuciones adicionales.
 
-## Criterios de aceptación del spec 004
+### Criterios de aceptación del spec 004
 
 | Criterio | Evidencia y resultado |
 |---|---|
@@ -127,6 +140,6 @@ También se leyeron todos los documentos locales de specs: índice; spec/plan/ta
 | CA9 | Aprobado: inventario, revisión individual y controles por criterio, sin discrepancias documentales abiertas. La revisión de compañero del PR sigue el flujo normal del repositorio. |
 | CA10 | Aprobado: modelos contiene los 57 desarrollos completos, tipos/miembros, fragmentos, recorridos y evidencia, con enlaces a páginas individuales y comparación de su contenido. |
 
-## Límites conservados
+### Límites conservados
 
 La documentación explica el estado existente: el bucle local de Partida está incompleto; no lo repara. La prueba física en dos Windows corresponde al spec 002 y permanece pendiente. No se repitieron manualmente todas las pantallas en terminal real ni instalaciones de herramientas. Esas limitaciones están diferenciadas de la suite local y de los recorridos deducidos por lectura; no hay una funcionalidad ausente presentada como implementada.

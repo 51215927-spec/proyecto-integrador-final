@@ -4,62 +4,42 @@ Fuente: [src/servidor/Ronda.cs](../../../../src/servidor/Ronda.cs). Proyecto: `s
 
 ## Propósito y responsabilidad
 
-Agrupa combates locales y declara ganador al alcanzar dos victorias. Alterna quién elige por cantidad de combates, empezando por mano. No consume cartas, no incrementa marcadores de jugadores ni ejecuta por sí misma un combate.
+Reglas compartidas de ronda y alternancia.
 
-## Dependencias
+## Estado, miembros y ejecución
 
-[Jugador](Jugador.md) aporta identidad de mano y rival; [Combate](Combate.md) aporta ganadores ya resueltos. `List<Combate>` mantiene el orden y `ToArray` permite consultar una copia del contenedor. Véanse las [reglas](../../../reglas-del-juego.md).
+CombatesParaGanar fija dos. GanadorPorVictorias devuelve 1 o 2 al alcanzar el umbral, o null; EsTurnoMano decide la alternancia por cantidad de combates. Ambas funciones se reutilizan desde Partida y desde la instancia Ronda. El constructor exige participantes distintos y no nulos. AgregarCombate rechaza null, ronda definida y más de tres combates. EstaDefinida cuenta victorias y usa GanadorPorVictorias; GetGanador exige definición y devuelve la referencia participante. GetQuienEligeProximo exige ronda abierta y usa EsTurnoMano; GetCombates devuelve un array de las referencias registradas.
 
-## Estructura
+## Errores, límites y efectos
 
-`internal class Ronda` sin herencia explícita, interfaces, atributos ni partial. Todos los métodos son públicos; no hay propiedades, eventos, funciones locales ni operadores. `internal const int CombatesParaGanar = 2` establece el umbral en compilación.
+No persiste ni decide fin de partida. La comparación de ganadores de los combates usa identidad de Jugador. Las funciones compartidas evitan una segunda implementación de las reglas en REST.
 
-## Estado y datos
+## Implementación contrastada
 
-Campos privados readonly `Jugador mano`, `Jugador rival` y `List<Combate> combates`. El constructor fija los participantes y crea lista vacía. La lista es mutable aunque no pueda reasignarse; sus elementos se comparten con el llamador. No mantiene contador cacheado: cada consulta calcula los triunfos recorriendo los combates.
-
-## Miembros y ejecución
-
-- `public Ronda(Jugador mano, Jugador rival)`: rechaza null de mano y rival en ese orden con `ArgumentNullException`. Si ambas referencias son iguales, `ArgumentException`. Guarda ambas y crea lista; no importa que sus nombres coincidan.
-- `public void AgregarCombate(Combate combate)`: null falla primero. Después llama a EstaDefinida; si ya hay dos victorias de un lado, lanza `InvalidOperationException`. Luego rechaza Count ≥ 3 con otra `InvalidOperationException`; si pasa agrega al final. No inspecciona directamente que el combate nuevo esté resuelto ni que sus participantes sean los de esta ronda. Si los anteriores incluyen uno sin resolver, EstaDefinida ya puede lanzar antes del agregado.
-- `public bool EstaDefinida()`: inicia contadores locales en cero. Recorre todos los elementos; si GetGanador es la referencia mano suma a mano; cualquier otra referencia suma a rival. Retorna true si algún contador ≥ 2. Un combate no resuelto propaga su excepción. Lista vacía retorna false. No retorna anticipadamente al llegar a dos: sigue recorriendo.
-- `public Jugador GetGanador()`: exige EstaDefinida o lanza `InvalidOperationException`. Recuenta victorias de mano; con ≥2 retorna mano y de lo contrario rival. No incrementa rondasGanadas ni cambia la lista.
-- `public Jugador GetQuienEligeProximo()`: si EstaDefinida, `InvalidOperationException`; si no, Count par retorna mano, impar rival. Alterna aunque un mismo participante haya ganado dos combates consecutivos; no usa el ganador anterior para elegir.
-- `public Combate[] GetCombates()`: copia a array conservando orden; cambiar una posición no modifica la lista. Los objetos Combate no se clonan.
-
-El cuerpo de EstaDefinida muestra tanto la ausencia de validación de identidad rival como la terminación por recorrido completo:
+El bloque reproduce el archivo final completo para conservar las firmas, campos, constructores, auxiliares privados y lambdas descritos arriba; no es pseudocódigo ni una ejecución adicional.
 
 ```csharp
-            int victoriasMano = 0;
-            int victoriasRival = 0;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-            foreach (Combate combate in this.combates)
-            {
-                if (ReferenceEquals(combate.GetGanador(), this.mano))
-                    victoriasMano++;
-                else
-                    victoriasRival++;
-            }
+namespace Proyecto_Integrador_Final
+{
+    internal class Ronda
+    {
+        internal const int CombatesParaGanar = 2;
 
-            return victoriasMano >= CombatesParaGanar || victoriasRival >= CombatesParaGanar;
-```
+        internal static int? GanadorPorVictorias(int victoriasMano, int victoriasRival) =>
+            victoriasMano >= CombatesParaGanar ? 1 : victoriasRival >= CombatesParaGanar ? 2 : null;
 
-La selección siguiente, después de la guarda de ronda definida, usa la paridad:
+        internal static bool EsTurnoMano(int combatesResueltos) => combatesResueltos % 2 == 0;
 
-```csharp
-            // La elección empieza con el jugador mano y alterna después de cada combate.
-            return this.combates.Count % 2 == 0
-                ? this.mano
-                : this.rival;
-```
+        private readonly Jugador mano;
+        private readonly Jugador rival;
+        private readonly List<Combate> combates;
 
-### Fragmentos complementarios por miembro
-
-Los bloques siguientes corresponden a los miembros explicados arriba; se omiten los demás miembros del archivo, sin omitir condiciones internas de estos bloques.
-
-Constructor: referencias distintas y lista vacía.
-
-```csharp
         public Ronda(Jugador mano, Jugador rival)
         {
             ArgumentNullException.ThrowIfNull(mano);
@@ -74,11 +54,7 @@ Constructor: referencias distintas y lista vacía.
             this.rival = rival;
             this.combates = new List<Combate>();
         }
-```
 
-AgregarCombate: orden de guardas y único efecto de agregado.
-
-```csharp
         public void AgregarCombate(Combate combate)
         {
             ArgumentNullException.ThrowIfNull(combate);
@@ -95,11 +71,23 @@ AgregarCombate: orden de guardas y único efecto de agregado.
 
             this.combates.Add(combate);
         }
-```
 
-GetGanador: verifica definición antes de contar triunfos de mano.
+        public bool EstaDefinida()
+        {
+            int victoriasMano = 0;
+            int victoriasRival = 0;
 
-```csharp
+            foreach (Combate combate in this.combates)
+            {
+                if (ReferenceEquals(combate.GetGanador(), this.mano))
+                    victoriasMano++;
+                else
+                    victoriasRival++;
+            }
+
+            return GanadorPorVictorias(victoriasMano, victoriasRival) is not null;
+        }
+
         public Jugador GetGanador()
         {
             if (!this.EstaDefinida())
@@ -115,22 +103,29 @@ GetGanador: verifica definición antes de contar triunfos de mano.
                     victoriasMano++;
             }
 
-            return victoriasMano >= CombatesParaGanar
+            return GanadorPorVictorias(victoriasMano, this.combates.Count - victoriasMano) == 1
                 ? this.mano
                 : this.rival;
         }
+
+        public Jugador GetQuienEligeProximo()
+        {
+            if (this.EstaDefinida())
+                throw new InvalidOperationException(
+                    "La ronda ya está definida."
+                );
+
+            // La elección empieza con el jugador mano y alterna después de cada combate.
+            return EsTurnoMano(this.combates.Count)
+                ? this.mano
+                : this.rival;
+        }
+
+        public Combate[] GetCombates() => this.combates.ToArray();
+    }
+}
 ```
-
-## Recorridos y ejemplos
-
-Normal: ronda con mano Ana y rival Bruno. Sin combates abre Ana. Tras un triunfo de Ana abre Bruno. Si Ana gana el segundo, EstaDefinida es true y GetGanador retorna Ana; pedir siguiente elector o agregar un tercero falla porque la ronda terminó.
-
-Alternativo: primero gana Ana y segundo Bruno; Count 2 es par, aún no hay vencedor y abre Ana. El tercer combate da la segunda victoria a alguno y define la ronda. Error adicional: agregar un primer combate incompleto sí puede realizarse porque la lista anterior está vacía; la próxima consulta de definición propaga «El combate todavía no fue resuelto.». Son consecuencias leídas del código; no se presenta ese último caso como prueba ejecutada.
-
-## Errores, límites y efectos observables
-
-El límite tres es defensivo: con dos participantes válidos y tres resultados resueltos, alguno ya tiene dos victorias. El tipo confía en el llamador para participantes y resolución; un ganador ajeno se contabiliza como victoria rival. No hay reversión, persistencia, aleatoriedad, asincronía ni sincronización; solo cambia la lista al agregar.
 
 ## Relaciones y verificación
 
-[Partida](Partida.md) usa el ganador para sumar una ronda al Jugador. [RondaTests](../../test/proyecto-integrador-final-tests/RondaTests.md) prepara combates resueltos, verifica comienzo, alternancia, cierre 2–0 para ambos lados, resolución 2–1 y copia defensiva del array. No acredita validación de participantes de cada combate ni rechazo anticipado de combates sin resolver: esas validaciones no existen aquí. La ejecución global se registra en el [plan de pruebas](../../../plan-de-pruebas.md).
+Véanse [arquitectura](../../../arquitectura.md), [modelos](../../../modelos.md) y [auditoría del spec 006](../../verificacion.md#auditoría-del-spec-006--2026-11-22). La suite final registra 190 casos aprobados sin fallos ni omisiones; esa evidencia local no acredita la prueba física de dos Windows del spec 002.

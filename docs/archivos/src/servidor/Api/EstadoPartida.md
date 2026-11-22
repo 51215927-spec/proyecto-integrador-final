@@ -4,7 +4,7 @@ Fuente: [src/servidor/Api/EstadoPartida.cs](../../../../../src/servidor/Api/Esta
 
 ## Propósito y responsabilidad
 
-Agrupa los datos persistidos de cartas de una partida, rondas, combates, solicitudes y recibos idempotentes. Proporciona conversiones entre copia persistida, dominio local y JSON visible. [TransicionesPartida](TransicionesPartida.md) modifica estas entidades; [PresentacionPartida](PresentacionPartida.md) compone la vista sin filtrar manos ajenas por accidente.
+Agrupa los datos persistidos de cartas de una partida, rondas, combates, solicitudes y recibos idempotentes. Proporciona conversiones entre copia persistida, dominio local y JSON visible. [AlmacenPartidas](AlmacenPartidas.md) mapea estas entidades al estado del dominio; [VistaPartida](VistaPartida.md) construye la salida desde ese estado. Las conversiones auxiliares originales permanecen disponibles, sin trasladar al dominio las entidades persistidas.
 
 ## Dependencias
 
@@ -76,7 +76,7 @@ Alternativo: Dominio de una fila con seis 500 falla por falta de fortaleza aunqu
 
 ## Errores, límites y efectos observables
 
-No guarda ni hace transacciones. El repositorio asigna IDs, cambia ubicaciones y marca Consumida. Required no equivale a validación de JSON ni SQL de reglas académicas. Las propiedades permiten estados intermedios deliberados (combate sin ambas cartas); las transiciones fijan cuándo pueden publicarse.
+No guarda ni hace transacciones. Partida genera solicitudes y cambia ubicaciones/Consumida en el estado de dominio; AlmacenPartidas mapea esos cambios a estas entidades. Required no equivale a validación de JSON ni SQL de reglas académicas. Las propiedades permiten estados intermedios deliberados (combate sin ambas cartas); las transiciones fijan cuándo pueden publicarse.
 
 ## Relaciones y verificación
 

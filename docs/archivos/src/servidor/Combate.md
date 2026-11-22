@@ -8,7 +8,7 @@ Consume una carta de cada participante, fija un atributo una sola vez y resuelve
 
 ## Dependencias
 
-[Jugador](Jugador.md) conserva la mano y permite retirar referencias; [Personaje y TipoAtributo](Personaje.md) proporcionan los puntajes. `Enum.IsDefined` rechaza valores de enum sin nombre; `ReferenceEquals` distingue participantes por identidad, no por nombre. Véanse [reglas](../../../reglas-del-juego.md) y la coordinación distinta de la [API](Api/TransicionesPartida.md).
+[Jugador](Jugador.md) conserva la mano y permite retirar referencias; [Personaje y TipoAtributo](Personaje.md) proporcionan los puntajes. `Enum.IsDefined` rechaza valores de enum sin nombre; `ReferenceEquals` distingue participantes por identidad, no por nombre. Véanse [reglas](../../../reglas-del-juego.md) y la coordinación del [dominio Partida](Partida.md).
 
 ## Estructura
 
