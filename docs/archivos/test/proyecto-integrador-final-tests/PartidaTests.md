@@ -1,80 +1,103 @@
 # PartidaTests.cs
 
-Fuente: [test/proyecto-integrador-final-tests/PartidaTests.cs](../../../../test/proyecto-integrador-final-tests/PartidaTests.cs). Proyecto: `test/proyecto-integrador-final-tests/proyecto-integrador-final-tests.csproj`, ensamblado `Proyecto-Integrador-Final.Tests`, destino `net8.0`. Namespace: `Proyecto_Integrador_Final.Tests`. Versión común: [catálogo](../../README.md#versión-documentada).
+Fuente: [test/proyecto-integrador-final-tests/PartidaTests.cs](../../../../test/proyecto-integrador-final-tests/PartidaTests.cs). Proyecto: `test/proyecto-integrador-final-tests/proyecto-integrador-final-tests.csproj` (`net8.0`), namespace `Proyecto_Integrador_Final.Tests`. Referencia: [catálogo](../../README.md#versión-documentada).
 
 ## Propósito y responsabilidad
 
-Protege la precondición de seis cartas antes del reparto en el coordinador local. No prueba una partida completa ni la API.
+Pruebas directas de acciones del dominio.
 
-## Dependencias
+## Preparación, miembros, acciones y aserciones
 
-xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
+Carta fabrica personajes válidos con seis atributos iguales entre cartas; Nueva crea EstadoPartida sin iniciar; Elegir consulta solicitud actual y escoge una carta propia y Fuerza solo para elector. RechazaUnMazoInsuficienteAntesDeRepartir cubre cero/cinco sin cartas ni revisión. AccionesSucesivasReanudanYCompletanQuinceRondasSinCambiarLaMeta inicia con ocho, comprueba tres cartas por plaza, reconstruye entre elecciones, verifica empate favorable al rival y alternancia, y recorre normalmente hasta quince rondas ganadas (29 rondas totales) con límite defensivo de 400 acciones. CierreNoInventaVictoriaYConsumeSolicitud cubre cancelación/abandono y repetición del abandono sin nueva revisión. EleccionInvalidaNoConsumeSolicitudNiModificaRevision verifica código, revisión y solicitud intacta.
 
-Relaciones usadas por este archivo: [CartasDePrueba](CartasDePrueba.md), [Jugador](../../src/servidor/Jugador.md), [Mazo](../../src/servidor/Mazo.md), [Partida](../../src/servidor/Partida.md).
+## Errores, recursos y límites
 
-Guías: [plan de pruebas y ejecución de esta referencia](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004), [instalación](../../../instalacion-y-uso.md), [protocolo HTTP](../../../protocolo-de-partida.md).
+No usa HTTP ni SQLite; la reconstrucción conserva el mismo estado de dominio, mientras CompatibilidadPersistenciaTests verifica reconstrucción desde SQLite previo. No reduce la meta ni edita marcador. xUnit descubre Fact/Theory y crea cada caso con sus datos; una aserción fallida invalida el caso. La suite final tiene 190 aprobadas, cero fallidas/omitidas; no acredita dos Windows físicos.
 
-## Estructura
+## Código contrastado
 
-Declaración: `public class PartidaTests`.
-
-Las declaraciones anteriores conservan visibilidad, sellado, constructor primario y herencia/interfaces cuando existen. No hay tipos parciales en este archivo. Los records generan igualdad por valor, propiedades posicionales y soporte de `with`; las clases ordinarias no adquieren esa semántica. No se declaran operadores ni eventos propios.
-
-## Estado y datos
-
-Dos campos privados readonly inicializan jugadores Ana y Bruno para cada instancia de prueba. Los casos de Theory reciben fixtures nuevos.
-
-Declaraciones reales de estado de `PartidaTests` (la mutación y el ciclo de vida se explican aquí y en sus miembros):
+Archivo completo: incluye auxiliares, datos, parámetros y limpieza; no se omiten aserciones.
 
 ```csharp
-private readonly Jugador primero = new("Ana");
-```
+namespace Proyecto_Integrador_Final.Tests;
 
-```csharp
-private readonly Jugador segundo = new("Bruno");
-```
+public class PartidaTests
+{
+    private static CartaPartida Carta(int id) => new() { IdPersonaje = id, Nombre = $"Carta {id}", Descripcion = "", Ascii = "", Fuerza = 700, Velocidad = 300, Resistencia = 500, Inteligencia = 500, Energia = 500, Habilidad = 500 };
+    private static Partida Nueva() => new(new EstadoPartida());
+    private static void Elegir(Partida partida)
+    {
+        var estado = partida.Estado;
+        var solicitud = estado.Solicitudes.Single(s => s.Id == estado.IdSolicitud);
+        var carta = estado.Cartas.First(c => c.Ubicacion == solicitud.Rol);
+        partida.RegistrarEleccion(solicitud.Rol, solicitud.Id, estado.Revision, carta.IdPersonaje,
+            solicitud.Tipo == "cartaYAtributo" ? "Fuerza" : null);
+    }
 
-## Miembros y ejecución
-
-En los casos de prueba, el runner suministra los parámetros de cada `InlineData`; no son entradas de usuario. `void` no devuelve resultado y `Task` solo permite esperar la terminación del caso, no devuelve una jugada. Cualquier aserción fallida o excepción no esperada detiene ese caso. El orden de los bloques de código siguientes es el del archivo; cada bloque es código real del miembro identificado, no pseudocódigo.
-
-### `PartidaTests.RechazaUnMazoInsuficienteAntesDeRepartir`
-
-Theory con 0 y 5. Crea exactamente cantidad personajes mediante Enumerable.Range y CartasDePrueba, construye Partida con ambos jugadores y captura InvalidOperationException de Jugar. Compara mensaje exacto y luego Count y manos para demostrar que la guarda antecede al reparto. No comprueba el comportamiento con 6 ni ejecuta una ronda.
-
-Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
-
-```csharp
-[Theory]
+    [Theory]
     [InlineData(0)]
     [InlineData(5)]
     public void RechazaUnMazoInsuficienteAntesDeRepartir(int cantidad)
     {
-        var mazo = new Mazo(Enumerable.Range(0, cantidad).Select(_ => CartasDePrueba.Crear()).ToList());
-        var partida = new Partida(primero, segundo, mazo);
-
-        var error = Assert.Throws<InvalidOperationException>(() => partida.Jugar());
-
-        Assert.Equal("No se puede jugar porque no hay suficientes cartas.", error.Message);
-
-        Assert.Equal(cantidad, mazo.GetCantidad());
-        Assert.Empty(primero.GetCartas());
-        Assert.Empty(segundo.GetCartas());
+        var partida = Nueva();
+        Assert.Throws<ExcepcionPartida>(() => partida.Iniciar(Enumerable.Range(1, cantidad).Select(Carta)));
+        Assert.Empty(partida.Estado.Cartas);
+        Assert.Equal(0, partida.Estado.Revision);
     }
+
+    [Fact]
+    public void AccionesSucesivasReanudanYCompletanQuinceRondasSinCambiarLaMeta()
+    {
+        var partida = Nueva();
+        partida.Iniciar(Enumerable.Range(1, 8).Select(Carta));
+        Assert.Equal(3, partida.Estado.Cartas.Count(c => c.Ubicacion == "J1"));
+        Assert.Equal(3, partida.Estado.Cartas.Count(c => c.Ubicacion == "J2"));
+        var primera = partida.Estado.IdSolicitud;
+        Elegir(partida);
+        partida = new Partida(partida.Estado); // reconstruir no repite efectos
+        Assert.Equal(2, partida.Estado.Revision);
+        Assert.NotEqual(primera, partida.Estado.IdSolicitud);
+        Elegir(partida);
+        Assert.Equal("J2", partida.Estado.Combates[0].Ganador); // empate al rival
+        Assert.Equal("J2", partida.Estado.Combates[1].Elector);
+        int acciones = 2;
+        while (partida.Estado.Fase != "finalizada" && acciones++ < 400) Elegir(partida);
+        var estado = partida.Estado;
+        Assert.Equal("victoria", estado.MotivoFin);
+        Assert.Equal(15, estado.Participantes.Max(p => p.RondasGanadas));
+        Assert.Equal(29, estado.Rondas.Count); // empates alternan ganador de ronda
+        Assert.Null(estado.IdSolicitud);
+        Assert.All(estado.Rondas, r => Assert.Equal(2, Math.Max(r.VictoriasJ1, r.VictoriasJ2)));
+        Assert.All(estado.Rondas, r => Assert.Equal(r.Numero % 2 == 1 ? "J1" : "J2", r.Mano));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CierreNoInventaVictoriaYConsumeSolicitud(bool abandono)
+    {
+        var partida = Nueva();
+        partida.Iniciar(Enumerable.Range(1, 6).Select(Carta));
+        if (abandono) { partida.Abandonar("J1"); partida.Abandonar("J1"); }
+        else partida.Cancelar();
+        Assert.Equal(2, partida.Estado.Revision);
+        Assert.Null(partida.Estado.Ganador);
+        Assert.Null(partida.Estado.IdSolicitud);
+        Assert.All(partida.Estado.Solicitudes, s => Assert.True(s.Consumida));
+    }
+
+    [Fact]
+    public void EleccionInvalidaNoConsumeSolicitudNiModificaRevision()
+    {
+        var partida = Nueva();
+        partida.Iniciar(Enumerable.Range(1, 6).Select(Carta));
+        var id = partida.Estado.IdSolicitud!.Value;
+        Assert.Equal("eleccionInvalida", Assert.Throws<ExcepcionPartida>(() =>
+            partida.RegistrarEleccion("J1", id, 1, -1, "Fuerza")).Codigo);
+        Assert.Equal(1, partida.Estado.Revision);
+        Assert.False(partida.Estado.Solicitudes[0].Consumida);
+    }
+}
 ```
 
-## Recorridos y ejemplos
-
-Normal: Con cantidad 5, Jugar lanza el mensaje de mazo insuficiente, conserva cinco cartas y ambas manos vacías.
-
-Alternativo o de error: Cantidad 0 recorre la misma guarda. No hay recorrido exitoso de Jugar en este archivo; el coordinador local no incorpora elecciones de clientes.
-
-Estos recorridos describen los datos y resultados previstos por las aserciones; no son una nueva sesión de juego ni comandos ejecutados para redactar esta página.
-
-## Errores, límites y efectos observables
-
-Cada fallo de aserción invalida el caso completo; no implica por sí solo un defecto en otra rama, otro worktree o el entorno confirmado por el usuario. Las pruebas observan únicamente las propiedades señaladas por sus aserciones: no acreditan Windows, dos equipos físicos, seguridad de transporte ni todos los errores de sistema. Los recursos temporales, cancelaciones, excepciones esperadas y límites de espera de este archivo están descritos por miembro. Donde solo se usan objetos y texto en memoria no corresponde una transacción ni limpieza de archivos; donde hay SQLite/host/proceso, su preparación y liberación están indicadas en los recorridos concretos.
-
-## Relaciones y verificación
-
-La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+Véase [auditoría006](../../verificacion.md#auditoría-del-spec-006--2026-11-22).

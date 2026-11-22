@@ -116,3 +116,7 @@ Para retomar tras cerrar, volvé a ejecutar el cliente e ingresá los mismos dat
 - Si el alta devuelve 401, comprobá que la credencial de catálogo coincida con la ingresada al iniciar el servidor.
 - Si la sesión vence, el cliente se reincorpora automáticamente. Si indica sesión ocupada, esperá su vencimiento o pedí al operador que use `cerrar-sesion`.
 - Si rechaza credencial, nombre o partida, Enter permite volver a ingresar los datos. Si cambiaste el destino o plaza, una operación anterior puede haberse aplicado: su recuperación requiere los datos originales.
+
+## Bases existentes tras la separación del servidor
+
+El spec 006 conserva el esquema SQLite: usá el archivo habitual y las credenciales de las plazas existentes. El servidor reconstruye el dominio desde las filas guardadas y conserva recibos, manos y solicitudes. Al reiniciar, las sesiones temporales dejan de estar vigentes y ambos clientes deben reincorporarse. La compatibilidad automatizada se comprobó con una base creada por la versión anterior; no hace falta una migración para este cambio. [Referencia y límites de validación](plan-de-pruebas.md#separación-de-responsabilidades-spec-006).

@@ -124,6 +124,8 @@ Verificado el 2026-11-22 en `feature/005-sistema-de-carga`, usando exclusivament
 
 ## Verificación de la versión documentada (spec 004)
 
+Registro histórico del 2026-11-22, anterior al spec 006. La referencia vigente se indica en la sección siguiente.
+
 Referencia fuente: `main` en `135daa7eb196b9bca4e40a1aef76e1131a9b24e8`, 2026-11-22. Verificación desde `/home/julian/.herdr/worktrees/proyecto-integrador-final/docs-spec-004-documetacion-final`, rama `docs/spec-004-documetacion-final`, Linux, SDK .NET 8.0.133. Se conservó como contexto la confirmación del usuario de que el código funciona en su entorno.
 
 Comandos ejecutados desde esa raíz:
@@ -138,4 +140,32 @@ dotnet test proyecto-integrador-final.sln --no-build --nologo
 
 Build: cero errores y cero advertencias. Suite: **179 aprobadas, 0 fallidas y 0 omitidas**, duración informada 17 segundos. Logs locales: `/tmp/spec004-build.log` y `/tmp/spec004-tests.log`; no se versionan. Incluye contratos de procesos con las DLL de esta misma copia, HTTP loopback, SQLite temporal, pérdida de respuesta y partida completa automatizada. No se ejecutaron instalaciones WinGet, ensayos físicos entre dos Windows ni acciones sobre servicios o bases reales. La interfaz interactiva y sus capacidades de terminal conservan pruebas definidas y evidencia histórica; no se repitió un ensayo visual manual de todas las pantallas.
 
-El modelo local `Partida.Jugar()` sigue incompleto: con seis cartas reparte y luego falla por combate sin elecciones. La partida REST tiene otro coordinador y sí se ejercita en la suite. Las limitaciones se describen en [Partida](archivos/src/servidor/Partida.md); una suite verde no elimina ese límite observado por lectura. El detalle de garantías y casos fuera de alcance de cada prueba está en el [catálogo](archivos/README.md).
+En esa referencia histórica, `Partida.Jugar()` estaba incompleto: con seis cartas repartía y luego fallaba por combate sin elecciones. REST usaba otro coordinador. El spec 006 retiró esa entrada y trasladó el avance al dominio por acciones; el límite anterior ya no describe la implementación vigente. El detalle de garantías y casos fuera de alcance de cada prueba está en el [catálogo](archivos/README.md).
+
+## Separación de responsabilidades (spec 006)
+
+Verificación del 2026-11-22 en Linux con .NET SDK 8.0.133. Referencia de código: `f0f292b`, rama `refactor/006-separacion-responsabilidades`, worktree `006-separacion-responsabilidades`. La documentación se actualiza en la rama separada `docs/006-separacion-responsabilidades`, basada en esa referencia. La base anterior a la refactorización, `e18a050`, aprobó 179 pruebas; ese resultado se conserva como antecedente.
+
+Desde la raíz del worktree de implementación se ejecutaron build y suite con las DLL de esa misma compilación:
+
+```bash
+dotnet build proyecto-integrador-final.sln --no-restore --nologo
+GUERRA_CLIENTE_DLL="$PWD/src/cliente/bin/Debug/net8.0/cliente.dll" \
+GUERRA_SERVIDOR_DLL="$PWD/src/servidor/bin/Debug/net8.0/servidor.dll" \
+GUERRA_CARGA_DLL="$PWD/src/subir-personajes/bin/Debug/net8.0/subir-personajes.dll" \
+dotnet test proyecto-integrador-final.sln --no-build --nologo --logger 'console;verbosity=minimal'
+```
+
+Resultado: build con **0 errores y 0 advertencias** y **190 aprobadas, 0 fallidas y 0 omitidas**. Las variables pertenecen exclusivamente al arnés de pruebas. No se mezclaron DLL de otras copias. Logs locales: `/tmp/spec006-build.log` y `/tmp/spec006-tests-final.log`; no se versionan.
+
+| Área | Evidencia y alcance |
+|---|---|
+| Dominio y reglas | `PartidaTests` ejecuta inicio, elecciones sucesivas, empate, alternancias, reconstrucción, partida completa de 29 rondas hasta quince victorias de un jugador y cierres. `Partida` ya no contiene `Jugar()` ni depende de entidades EF, HTTP o `ErrorApi`. |
+| Persistencia e idempotencia | Contratos de servidor, `ApiHttpTests` e `IntegracionRespuestaPerdidaTests` mantienen revisión/solicitud/recibo únicos, reintentos idénticos, conflictos, reinicio y respuesta perdida. El fallo de inserción inducido mediante trigger real de SQLite comprueba rollback conjunto, no solo una respuesta de error. |
+| Sesiones y vista | Pruebas HTTP con reloj controlado conservan exclusión, vencimiento y renovación. `CoordinacionSesionesTests` detiene la comprobación de vigencia con una barrera y enfrenta la acción a cierre o rotación; comprueba el recibo tras la invalidación. `VistaPartidaTests` comprueba privacidad, solicitudes por plaza, pausa sin revisión y construcción sin efectos. |
+| Catálogo y base previa | `CargaJsonTests` conserva reemplazo, validación y rollback. `CompatibilidadPersistenciaTests` comprueba copias de partidas y restaura la fixture producida por el servidor `e18a050`, recupera su recibo y continúa el combate; compara el esquema antes/después sin migración. |
+| Contratos de los ejecutables | Las tres variables DLL habilitaron todos los casos de proceso de cliente, servidor y carga. Se conservaron rutas, JSON, códigos y flujos de consola. |
+
+El cambio de comportamiento del dominio siguió rojo, verde y refactorización: el rojo inicial falló con `CS0246` por ausencia de `CartaPartida` (`/tmp/006-domain-red.log`); el verde de dominio, ronda y vista en el repositorio aprobó 15 pruebas (`/tmp/006-domain-green.log`) antes de la suite completa de 190. Las pruebas adicionales de vista y coordinación se añadieron como caracterización y no se presentan como TDD completo. El registro por criterio se mantiene en los specs canónicos de la copia principal de `main`, excluidos de Git.
+
+Estas comprobaciones locales no acreditan la integración física entre dos equipos Windows del spec 002. No se ejecutaron instalaciones ni acciones sobre bases de producción, y no se repitió una revisión visual manual de todas las pantallas. El detalle por fuente está en el [catálogo](archivos/README.md).

@@ -5,35 +5,40 @@
     <id>UMLClass</id>
     <coordinates>
       <x>40</x>
-      <y>80</y>
-      <w>650</w>
-      <h>460</h>
+      <y>60</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
-    <panel_attributes>Partida
+    <panel_attributes>Partida {internal sealed}
 --
-- j1, j2: Jugador {readOnly}
-- mazo: Mazo {readOnly}
-- rondaActual: Ronda?
-- numeroRonda: int
+~ Estado: EstadoPartida {readOnly}
 ~ RondasParaGanar: int = 15 {const}
+~ AtributosPermitidos: string[] {static, readOnly}
+- atributos: Dictionary&lt;string, TipoAtributo&gt; {static, readOnly}
 --
-+ Partida(j1: Jugador, j2: Jugador, mazo: Mazo)
-+ Jugar(): Jugador
-- Iniciar(): void
-- RepartirCartas(): void
-- JugarRonda(): void
-- RecogerCartas(): void
-- EstaTerminada(): bool
-- DeterminarGanadorPartida(): Jugador</panel_attributes>
+~ Partida(estado: EstadoPartida)
+~ Iniciar(cartas: IEnumerable&lt;CartaPartida&gt;): void
+~ RegistrarEleccion(rol: string, idSolicitud: Guid,
+    revision: int, idCarta: int, atributo: string?): void
+~ Abandonar(rol: string): void
+~ Cancelar(): void
+~ NormalizarAtributo(atributo: string?): string? {static}
+- ExigirAbierta(): void
+- Otro(rol: string): string {static}
+- Repartir(numero: int, mano: string): void
+- AbrirCombate(numero: int, elector: string): void
+- AbrirSolicitud(combate: CombatePartida, rol: string, tipo: string): void
+- Resolver(guardado: CombatePartida, cartaRival: CartaPartida): void
+- Finalizar(motivo: string, ganador: string? = null): void</panel_attributes>
     <additional_attributes />
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>740</x>
-      <y>80</y>
-      <w>650</w>
-      <h>460</h>
+      <x>860</x>
+      <y>60</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>Jugador
 --
@@ -55,10 +60,10 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1440</x>
-      <y>80</y>
-      <w>650</w>
-      <h>460</h>
+      <x>1680</x>
+      <y>60</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>Mazo
 --
@@ -74,10 +79,10 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>40</x>
-      <y>600</y>
-      <w>650</w>
-      <h>460</h>
+      <x>2500</x>
+      <y>60</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>Ronda
 --
@@ -90,16 +95,18 @@
 + EstaDefinida(): bool
 + GetGanador(): Jugador
 + GetQuienEligeProximo(): Jugador
-+ GetCombates(): Combate[]</panel_attributes>
++ GetCombates(): Combate[]
+~ GanadorPorVictorias(victoriasMano: int, victoriasRival: int): int? {static}
+~ EsTurnoMano(combatesResueltos: int): bool {static}</panel_attributes>
     <additional_attributes />
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>740</x>
-      <y>600</y>
-      <w>650</w>
-      <h>460</h>
+      <x>40</x>
+      <y>710</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>Combate
 --
@@ -125,10 +132,10 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1440</x>
-      <y>600</y>
-      <w>650</w>
-      <h>460</h>
+      <x>860</x>
+      <y>710</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>Personaje
 --
@@ -148,10 +155,10 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>40</x>
-      <y>1120</y>
-      <w>650</w>
-      <h>460</h>
+      <x>1680</x>
+      <y>710</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>&lt;&lt;enumeration&gt;&gt;
 TipoAtributo
@@ -167,10 +174,235 @@ Habilidad</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>740</x>
-      <y>1120</y>
-      <w>650</w>
-      <h>460</h>
+      <x>2500</x>
+      <y>710</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>EstadoPartida {internal sealed}
+--
++ Id: Guid
++ Revision: int
++ Fase: string
++ NumeroRonda, NumeroCombate: int?
++ IdSolicitud: Guid?
++ MotivoFin, Ganador, AbandonoDe: string?
++ Participantes: List&lt;ParticipantePartida&gt;
++ Cartas: List&lt;CartaPartida&gt;
++ Rondas: List&lt;RondaPartida&gt;
++ Combates: List&lt;CombatePartida&gt;
++ Solicitudes: List&lt;SolicitudPartida&gt;
+--
+Estado de dominio reanudable, sin entidades EF ni DTO HTTP.
+Sin hashes, presencia temporal ni recibos.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>1360</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>CoordinadorPartidas {internal sealed}
+--
+~ CoordinadorPartidas(almacen: AlmacenPartidas,
+    sesiones: AdministradorSesiones, catalogo: CatalogoPersonajes)
+--
+~ CrearPartida(): PartidaCreada
+~ Iniciar(id: Guid): void
+~ Cancelar(id: Guid): void
+~ Elegir(id: Guid, credencial: string?, idSesion: Guid, datos: Eleccion): Confirmacion
+~ ConsultarRecibo(id: Guid, credencial: string?, idSesion: Guid, idOperacion: Guid): Recibo
+~ Abandonar(id: Guid, credencial: string?, idSesion: Guid): void
+~ Presentacion(id: Guid, credencial: string?, idSesion: Guid): PresentacionVisible
+--
+Coordina acceso, presencia, recuperacion de recibos y dominio.
+No expone DbContext ni implementa reglas o proyeccion.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>860</x>
+      <y>1360</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>AlmacenPartidas {internal sealed, IDisposable}
+--
+~ Infraestructura: SqliteJuego {readOnly}
+--
+~ AlmacenPartidas(cadena: string)
+~ AlmacenPartidas(infraestructura: SqliteJuego)
+~ CrearPartida(): PartidaCreada
+~ Ejecutar&lt;T&gt;(id: Guid, escritura: bool, accion: Func&lt;UnidadPartida, T&gt;): T
+~ Autenticar(id: Guid, credencial: string?): string
+~ RegistrarNombre(id: Guid, credencial: string?, nombre: string, comprobar: Action&lt;string&gt;): string
+~ ExigirParticipante(id: Guid, rol: string): void
+~ ReemplazarCredencial(id: Guid, rol: string): string
++ Dispose(): void
+--
+Mapea entidades al EstadoPartida y guarda estado/operaciones.
+UnidadPartida ofrece Partida, autenticacion, recibos y copia del catalogo.
+No decide ganadores ni turnos.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1680</x>
+      <y>1360</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>AdministradorSesiones {internal sealed}
+--
+- sesiones: Dictionary&lt;(Guid, string), Sesion&gt; {readOnly}
+~ Sincronizacion: object {readOnly}
+--
+~ AdministradorSesiones(almacen: AlmacenPartidas, reloj: TimeProvider)
+~ Incorporar(id: Guid, credencial: string?, datos: Incorporacion): Sesion
+~ Renovar(id: Guid, credencial: string?, idSesion: Guid): void
+~ CerrarSesion(id: Guid, rol: string): void
+~ ReemplazarCredencial(id: Guid, rol: string): string
+~ AmbosPresentes(id: Guid): bool
+~ ExigirSesion(id: Guid, rol: string, idSesion: Guid): Sesion
+--
+Presencia temporal en memoria, vencimiento de 15 segundos.
+Comparte coordinacion con acceso y escritura; invalida tras guardar hash.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2500</x>
+      <y>1360</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>CatalogoPersonajes {internal sealed}
+--
+~ CatalogoPersonajes(infraestructura: SqliteJuego)
+--
+~ DarDeAlta(datos: AltaPersonaje): int
+~ CantidadCatalogo(): int
+~ ReemplazarCatalogo(datos: AltaPersonaje[]): int
+~ Desactivar(id: int): void
+~ CopiarActivos(db: BaseJuego): CartaPartida[]
+--
+Valida altas y reemplazo completo antes de persistir.
+Reemplazo atomico, IDs y conteo conservados.
+CopiarActivos usa el contexto de la transaccion de inicio.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>2010</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>VistaPartida {internal sealed}
+--
+~ Construir(partida: EstadoPartida, rol: string,
+    ambosPresentes: bool): PresentacionVisible
+- Otro(rol: string): string {static}
+- Carta(carta: CartaPartida): CartaVisible {static}
+--
+Solo mano propia, resultados resueltos y solicitud por rol.
+Calcula pausa sin modificar revision ni renovar presencia.
+No accede a SQLite ni decide turnos.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>860</x>
+      <y>2010</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>SqliteJuego {internal sealed, IDisposable}
+--
+~ Sincronizacion: object {readOnly}
+~ SqliteJuego(cadena: string)
+~ Ejecutar&lt;T&gt;(escritura: bool, operacion: Func&lt;BaseJuego, T&gt;): T
++ Dispose(): void
+--
+Abre contexto y transaccion SQLite antes de operar.
+Escritura adquiere bloqueo antes de leer; commit unico.
+Conserva conexion viva para :memory:.
+Infraestructura compartida, sin reglas funcionales.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1680</x>
+      <y>2010</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
+BaseJuego
+--
+DbContext de EF Core con proveedor SQLite.
+Configura catalogo, participantes, partidas,
+cartas copiadas, rondas, combates, solicitudes y operaciones.
+Las sesiones temporales no son entidades persistidas.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2500</x>
+      <y>2010</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;datos de dominio: vista resumida&gt;&gt;
+ParticipantePartida, CartaPartida, RondaPartida,
+CombatePartida, SolicitudPartida, ExcepcionPartida
+--
+ParticipantePartida: Rol, Nombre, RondasGanadas.
+CartaPartida: IdPersonaje, textos, seis atributos, Ubicacion, Orden.
+CartaPartida.Dominio(): Personaje
+RondaPartida: Numero, Mano, VictoriasJ1/J2, Ganador.
+CombatePartida: numero ronda/combate, elector, cartas,
+atributo, puntajes y ganador.
+SolicitudPartida: Id, ronda/combate, Rol, Tipo, Consumida.
+ExcepcionPartida.Codigo: string; hereda InvalidOperationException.
+Todas las clases son internal sealed; los datos son mutables.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>2660</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
+ServidorHttp
+--
+Publica rutas REST con Kestrel.
+Autentica catalogo y traduce errores.
+Depende de CoordinadorPartidas, AdministradorSesiones
+y CatalogoPersonajes.
+ConsolaServidor ofrece administracion local.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>860</x>
+      <y>2660</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
 SesionPartidaCliente
@@ -184,28 +416,10 @@ No referencia tipos del servidor.</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1440</x>
-      <y>1120</y>
-      <w>650</w>
-      <h>460</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
-RepositorioJuego {partial}
---
-RepositorioJuego.cs: catalogo, identidad, sesiones y escritura.
-TransicionesPartida.cs: reglas y recibos persistidos.
-PresentacionPartida.cs: proyeccion privada por plaza.
-Depende de BaseJuego y entidades de EstadoPartida.cs.
-Reutiliza Combate, Jugador y Personaje al comparar.</panel_attributes>
-    <additional_attributes />
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>40</x>
-      <y>1640</y>
-      <w>650</w>
-      <h>460</h>
+      <x>1680</x>
+      <y>2660</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
 ConsolaAlta
@@ -221,62 +435,10 @@ No escribe SQLite directamente.</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>740</x>
-      <y>1640</y>
-      <w>650</w>
-      <h>460</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
-ServidorHttp
---
-Publica rutas REST con Kestrel.
-Autentica catalogo y traduce errores.
-Depende de RepositorioJuego.
-ConsolaServidor ofrece administracion local.</panel_attributes>
-    <additional_attributes />
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>1440</x>
-      <y>1640</y>
-      <w>650</w>
-      <h>460</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
-BaseJuego
---
-DbContext de EF Core con proveedor SQLite.
-Configura catalogo, participantes, partidas,
-cartas copiadas, rondas, combates, solicitudes y operaciones.
-Las sesiones temporales no son entidades persistidas.</panel_attributes>
-    <additional_attributes />
-  </element>
-  <element>
-    <id>UMLNote</id>
-    <coordinates>
-      <x>40</x>
-      <y>2730</y>
-      <w>1350</w>
-      <h>200</h>
-    </coordinates>
-    <panel_attributes>Version fuente: main @ 135daa7eb196b9bca4e40a1aef76e1131a9b24e8 (2026-11-22).
-Primeras siete cajas: modelo local interno, firmas y estado. Resto: vista de responsabilidades, no inventario completo de miembros.
-Partida conserva un coordinador incompleto: Jugar reparte y falla porque el combate no recibe elecciones.
-El juego REST usa RepositorioJuego y sus porciones partial; persiste en SQLite y no invoca Partida.Jugar.
-Ronda tiene referencias a mano/rival y 0..3 combates en uso valido. Jugador tiene 0..* Personaje; el tipo no limita la mano a tres.
-Partida refiere j1/j2, un Mazo y 0..1 Ronda. Combate refiere dos Jugador, 0..1 ganador y dos cartas opcionales.
-Mazo contiene 0..* Personaje. Personaje no tiene ID ni descripcion: esos datos pertenecen al catalogo/copia de partida.
-Detalle exhaustivo, relaciones y pruebas: docs/modelos.md y docs/archivos/README.md. Red fisica Windows pendiente.</panel_attributes>
-    <additional_attributes />
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>40</x>
-      <y>2160</y>
-      <w>650</w>
-      <h>460</h>
+      <x>2500</x>
+      <y>2660</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
 LotePersonajes
@@ -290,10 +452,10 @@ No persiste ni evalua todas las reglas de dominio.</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>740</x>
-      <y>2160</y>
-      <w>650</w>
-      <h>460</h>
+      <x>40</x>
+      <y>3310</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
 AltaPersonaje
@@ -302,16 +464,16 @@ Record: tres textos anulables y seis enteros.
 Validar(): PersonajeCatalogo
 Comprueba nombre, descripcion, arte y seis atributos.
 Reutiliza Personaje para reglas numericas.
-ServidorHttp y RepositorioJuego consumen el alta.</panel_attributes>
+CatalogoPersonajes consume el alta validada.</panel_attributes>
     <additional_attributes />
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1440</x>
-      <y>2160</y>
-      <w>650</w>
-      <h>460</h>
+      <x>860</x>
+      <y>3310</y>
+      <w>770</w>
+      <h>590</h>
     </coordinates>
     <panel_attributes>&lt;&lt;vista de responsabilidades&gt;&gt;
 PersonajeCatalogo
@@ -320,121 +482,419 @@ Entidad persistida con Id, Nombre, Descripcion, Ascii,
 seis atributos y Activo.
 Dominio(): Personaje
 BaseJuego mapea la tabla PersonajeCatalogo.
-RepositorioJuego asigna IDs y reemplaza filas.
-PersonajePartida copia datos al iniciar una partida.</panel_attributes>
+CatalogoPersonajes asigna IDs y reemplaza filas.
+CartaPartida recibe copias al iniciar; Almacen las persiste.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1680</x>
+      <y>3310</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>ConsolaServidor {internal static}
+--
+~ Ejecutar(juego: CoordinadorPartidas, sesiones: AdministradorSesiones,
+    catalogo: CatalogoPersonajes, entrada: TextReader,
+    salida: TextWriter, detener: CancellationToken): void {static}
+--
+Comandos crear/iniciar/cancelar hacia CoordinadorPartidas.
+Cerrar sesion/reemplazar credencial hacia AdministradorSesiones.
+Desactivar personaje hacia CatalogoPersonajes.</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2500</x>
+      <y>3310</y>
+      <w>770</w>
+      <h>590</h>
+    </coordinates>
+    <panel_attributes>UnidadPartida {internal sealed}
+--
+~ Partida: Partida {readOnly}
+~ NuevasOperaciones: List&lt;OperacionGuardada&gt; {readOnly}
+--
+~ Autenticar(credencial: string?): string
+~ CopiarCatalogoActivo(origen: CatalogoPersonajes): CartaPartida[]
+~ Recuperar(rol: string, datos: Eleccion): Confirmacion?
+~ Confirmar(rol: string, datos: Eleccion): Confirmacion
+~ ConsultarRecibo(rol: string, idOperacion: Guid): Recibo
+--
+Unidad de trabajo cargada por AlmacenPartidas.
+El coordinador no recibe DbContext ni IQueryable.
+Recuperar compara cuerpo antes de validar turno actual.
+Confirmar prepara recibo para el commit del almacen.</panel_attributes>
     <additional_attributes />
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>680</x>
-      <y>190</y>
-      <w>70</w>
-      <h>80</h>
+      <x>405</x>
+      <y>1340</y>
+      <w>1680</w>
+      <h>2580</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-m2=1
-r2=j1, j2</panel_attributes>
-    <additional_attributes>10;10;60;10</additional_attributes>
+r2=partidas</panel_attributes>
+    <additional_attributes>1660;2560;20;20</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>140</x>
-      <y>530</y>
-      <w>80</w>
-      <h>80</h>
+      <x>2045</x>
+      <y>1340</y>
+      <w>40</w>
+      <h>2580</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-m2=0..1
-r2=rondaActual</panel_attributes>
-    <additional_attributes>10;10;10;70</additional_attributes>
+r2=sesiones</panel_attributes>
+    <additional_attributes>20;2560;20;20</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>850</x>
-      <y>530</y>
-      <w>80</w>
-      <h>80</h>
+      <x>2045</x>
+      <y>1340</y>
+      <w>860</w>
+      <h>2580</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-
-m2=1
-r2=participantes</panel_attributes>
-    <additional_attributes>10;10;10;70</additional_attributes>
+    <panel_attributes>lt=-&gt;
+r2=catalogo</panel_attributes>
+    <additional_attributes>20;2560;840;20</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1550</x>
-      <y>530</y>
-      <w>80</w>
-      <h>80</h>
+      <x>1225</x>
+      <y>1930</y>
+      <w>1680</w>
+      <h>1400</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-m2=0..*
-r2=personajes</panel_attributes>
-    <additional_attributes>10;10;10;70</additional_attributes>
+r2=carga en transaccion</panel_attributes>
+    <additional_attributes>20;20;1660;1380</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1380</x>
-      <y>790</y>
-      <w>70</w>
-      <h>80</h>
+      <x>405</x>
+      <y>40</y>
+      <w>2500</w>
+      <h>3880</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-m2=0..1
+r2=dominio</panel_attributes>
+    <additional_attributes>2480;3860;20;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>630</y>
+      <w>2500</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=estado reanudable</panel_attributes>
+    <additional_attributes>20;20;2480;80</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>630</y>
+      <w>40</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=compara</panel_attributes>
+    <additional_attributes>20;20;20;80</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>40</y>
+      <w>2500</w>
+      <h>630</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=reglas compartidas</panel_attributes>
+    <additional_attributes>20;610;2480;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>40</y>
+      <w>1680</w>
+      <h>630</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=reparte</panel_attributes>
+    <additional_attributes>20;610;1660;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>40</y>
+      <w>860</w>
+      <h>1280</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=dos participantes</panel_attributes>
+    <additional_attributes>20;1260;840;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>690</y>
+      <w>860</w>
+      <h>630</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
 r2=cartas</panel_attributes>
-    <additional_attributes>10;10;60;10</additional_attributes>
+    <additional_attributes>20;610;840;20</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1550</x>
-      <y>1570</y>
-      <w>80</w>
-      <h>80</h>
+      <x>1225</x>
+      <y>630</y>
+      <w>40</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=mano 0..*</panel_attributes>
+    <additional_attributes>20;20;20;80</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1225</x>
+      <y>630</y>
+      <w>860</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=0..*</panel_attributes>
+    <additional_attributes>840;20;20;80</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>1340</y>
+      <w>860</w>
+      <h>630</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=carga y guarda</panel_attributes>
+    <additional_attributes>20;610;840;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>1340</y>
+      <w>1680</w>
+      <h>630</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=acceso y presencia</panel_attributes>
+    <additional_attributes>20;610;1660;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>1930</y>
+      <w>40</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=proyecta</panel_attributes>
+    <additional_attributes>20;20;20;80</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>40</y>
+      <w>40</w>
+      <h>1930</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=acciones</panel_attributes>
+    <additional_attributes>20;1910;20;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>1340</y>
+      <w>2500</w>
+      <h>630</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=copia al iniciar</panel_attributes>
+    <additional_attributes>20;610;2480;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1225</x>
+      <y>690</y>
+      <w>1680</w>
+      <h>1280</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=mapea</panel_attributes>
+    <additional_attributes>20;1260;1660;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1225</x>
+      <y>1930</y>
+      <w>40</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=transaccion</panel_attributes>
+    <additional_attributes>20;20;20;80</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1225</x>
+      <y>1930</y>
+      <w>1680</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=transaccion</panel_attributes>
+    <additional_attributes>1660;20;20;80</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1225</x>
+      <y>1990</y>
+      <w>860</w>
+      <h>630</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 r2=contexto</panel_attributes>
-    <additional_attributes>10;10;10;70</additional_attributes>
+    <additional_attributes>20;610;840;20</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>680</x>
-      <y>1780</y>
-      <w>70</w>
-      <h>80</h>
+      <x>405</x>
+      <y>690</y>
+      <w>2500</w>
+      <h>1930</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-r2=HTTP</panel_attributes>
-    <additional_attributes>10;10;60;10</additional_attributes>
+r2=lee sin efectos</panel_attributes>
+    <additional_attributes>20;1910;2480;20</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>680</x>
-      <y>2300</y>
-      <w>70</w>
-      <h>80</h>
+      <x>405</x>
+      <y>1340</y>
+      <w>40</w>
+      <h>1930</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-r2=crea</panel_attributes>
-    <additional_attributes>10;10;60;10</additional_attributes>
+r2=REST</panel_attributes>
+    <additional_attributes>20;1910;20;20</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1380</x>
-      <y>2300</y>
-      <w>70</w>
-      <h>80</h>
+      <x>405</x>
+      <y>1340</y>
+      <w>1680</w>
+      <h>1930</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=presencia</panel_attributes>
+    <additional_attributes>20;1910;1660;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>1340</y>
+      <w>2500</w>
+      <h>1930</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=altas</panel_attributes>
+    <additional_attributes>20;1910;2480;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2045</x>
+      <y>2640</y>
+      <w>860</w>
+      <h>630</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 r2=valida</panel_attributes>
-    <additional_attributes>10;10;60;10</additional_attributes>
+    <additional_attributes>20;610;840;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>405</x>
+      <y>690</y>
+      <w>860</w>
+      <h>3230</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=valida atributos</panel_attributes>
+    <additional_attributes>20;3210;840;20</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1225</x>
+      <y>1930</y>
+      <w>1680</w>
+      <h>1400</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r2=persiste</panel_attributes>
+    <additional_attributes>1660;20;20;1380</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>40</x>
+      <y>4000</y>
+      <w>3200</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>Referencia de codigo: f0f292b (2026-11-22), spec 006.
+Firmas de dominio y servicios principales; cajas marcadas como vista resumida no inventarian todos los miembros.
+Partida avanza por acciones; el constructor reconstruye sin repartir ni resolver otra vez.
+Ronda comparte ganador por victorias y alternancia con Partida; Combate decide empate a favor del rival.
+Coordinador, sesiones, catalogo y almacen comparten sincronizacion de SqliteJuego.
+Almacen confirma estado, revision, solicitud consumida y recibo en una transaccion; esquema anterior conservado.
+DTO HTTP permanecen en Api/EstadoPartida.cs y PresentacionPartida.cs, separados del estado del dominio.
+Ver docs/modelos.md y docs/archivos/README.md para inventario completo. Red fisica Windows sigue pendiente.
+Validacion documental: XML y referencias contrastados con fuentes; no se acredita render visual en UMLet.</panel_attributes>
+    <additional_attributes />
   </element>
 </diagram>

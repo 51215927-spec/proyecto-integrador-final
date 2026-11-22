@@ -10,7 +10,7 @@ Ensaya recuperación del bucle cliente real sobre HTTP loopback y SQLite tempora
 
 xUnit (`Fact`, `Theory`, `InlineData`, `Assert`) descubre casos y transforma una aserción incumplida en fallo. El proyecto referencia cliente, servidor y carga; `InternalsVisibleTo` de los proyectos permite probar tipos internos. Los miembros auxiliares sin atributo de prueba no se descubren como casos independientes. `Assert.Same` compara identidad; `Assert.Equal` compara los valores o secuencias; `Assert.Throws`/`ThrowsAsync` exigen excepción en la acción indicada. Una lambda pasada a Assert no captura silenciosamente otros fallos de preparación.
 
-Relaciones usadas por este archivo: [ClientePartidaHttp](../../src/cliente/ClientePartidaHttp.md), [ConfiguracionCliente](../../src/cliente/ConfiguracionCliente.md), [EleccionCliente](../../src/cliente/ContratosPartida.md), [EntradaCliente](../../src/cliente/EntradaCliente.md), [InterfazConsola](../../src/cliente/InterfazConsola.md), [PresentacionCliente](../../src/cliente/ContratosPartida.md), [RepositorioJuego](../../src/servidor/Api/RepositorioJuego.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md), [SesionPartidaCliente](../../src/cliente/SesionPartidaCliente.md).
+Relaciones usadas por este archivo: [ClientePartidaHttp](../../src/cliente/ClientePartidaHttp.md), [ConfiguracionCliente](../../src/cliente/ConfiguracionCliente.md), [EleccionCliente](../../src/cliente/ContratosPartida.md), [EntradaCliente](../../src/cliente/EntradaCliente.md), [InterfazConsola](../../src/cliente/InterfazConsola.md), [PresentacionCliente](../../src/cliente/ContratosPartida.md), [CoordinadorPartidas](../../src/servidor/Api/CoordinadorPartidas.md), [CatalogoPersonajes](../../src/servidor/Api/CatalogoPersonajes.md), [AdministradorSesiones](../../src/servidor/Api/AdministradorSesiones.md), [ServidorHttp](../../src/servidor/Api/ServidorHttp.md), [SesionPartidaCliente](../../src/cliente/SesionPartidaCliente.md).
 
 `HttpClient`/`HttpMessageHandler` representan solicitudes y respuestas; `JsonDocument`, `JsonSerializer` o `JsonContent` leen o escriben cuerpos donde aparecen. Los handlers anidados descritos abajo son dobles salvo los intermediarios que delegan a un `HttpClientHandler` real.
 
@@ -77,9 +77,6 @@ Theory confirmarAntesDelCorte true/false. Base temporal con seis cartas, host lo
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Theory]
-    [InlineData(true)]
-    [InlineData(false)]
     public async Task ClienteResuelveEleccionInciertaContraSQLiteReal(bool confirmarAntesDelCorte)
     {
         // La base temporal aísla el ensayo y permite comprobar commits reales de SQLite.
@@ -87,8 +84,8 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
             var partida = juego.CrearPartida();
             await app.StartAsync();
             // Los transportes conectan a Kestrel por loopback con credenciales separadas.
@@ -161,16 +158,14 @@ Base temporal y seis cartas de mismos atributos. Incorpora transportes J1/J2 e i
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Fact]
-    // Este recorrido comienza desde cero y conserva la meta normal de quince rondas.
     public async Task DosTransportesCompletanPartidaNormalHastaQuinceSinRepartoPosterior()
     {
         string archivo = Path.Combine(Path.GetTempPath(), $"guerra-completa-{Guid.NewGuid():N}.db");
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
             var partida = juego.CrearPartida();
             await app.StartAsync();
             var config = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");
@@ -256,10 +251,6 @@ Theory corte antes/después. Partida distinta, SQLite y host real, intermediario
 Fragmento del miembro completo; incluye preparación, acción y aserciones o las ramas del auxiliar cuando corresponda:
 
 ```csharp
-[Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    // Ambas variantes recuperan el motivo de abandono sin presentar una victoria de juego.
     public async Task AbandonoInciertoSoloMuestraFinConfirmadoSinSumarVictoria(bool confirmarAntesDelCorte)
     {
         // El abandono usa otra partida porque una partida finalizada no permite continuar jugando.
@@ -267,8 +258,8 @@ Fragmento del miembro completo; incluye preparación, acción y aserciones o las
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
             var partida = juego.CrearPartida();
             await app.StartAsync();
             var config = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");
@@ -483,3 +474,7 @@ Cada fallo de aserción invalida el caso completo; no implica por sí solo un de
 ## Relaciones y verificación
 
 La lectura se contrastó por miembro, incluidos auxiliares privados y funciones locales, contra el commit común del catálogo. Todos los bloques `csharp` se cotejan como fragmentos literales del archivo fuente, respetando sus atributos y datos de entrada. La [evidencia de ejecución de la versión documentada](../../../plan-de-pruebas.md#verificación-de-la-versión-documentada-spec-004) registra comando, directorio y resultado de la suite; distinguir esa ejecución de la cobertura definida aquí. No se atribuye a estos tests una ejecución aislada adicional ni cobertura de escenarios que no contienen.
+
+## Actualización del spec 006
+
+Preparación y fragmentos corresponden al código final: el catálogo, las sesiones y las acciones se resuelven por sus servicios separados con un AlmacenPartidas compartido. Las aserciones del contrato se conservan. Véase [auditoría006](../../verificacion.md#auditoría-del-spec-006--2026-11-22).

@@ -118,6 +118,8 @@ El error incluye `codigo`, `mensaje` e `idSeguimiento`; sus campos excluyen elec
 
 ## Persistencia, concurrencia y catálogo
 
+El spec 006 conserva este contrato. `ServidorHttp` entrega la acción a `CoordinadorPartidas`; `AdministradorSesiones` valida presencia y vigencia, `Partida` aplica las reglas y `AlmacenPartidas` confirma el estado con el recibo. `VistaPartida` construye la presentación sin escrituras. El catálogo se administra mediante `CatalogoPersonajes`. Acceso, acción e invalidación de sesión comparten coordinación dentro del servidor. [Responsabilidades](arquitectura.md#responsabilidades-del-servidor) · [Verificación](plan-de-pruebas.md#separación-de-responsabilidades-spec-006).
+
 Para una elección nueva, el servidor autentica la plaza y verifica la sesión vigente. Luego comprueba presencia, revisión, solicitud y opciones, en ese orden. Si acepta la elección, incrementa la revisión y persiste el recibo junto con la transición. El `POST` responde `201` con la ubicación del recibo.
 
 Para un reenvío, el servidor busca primero el `idOperacion` dentro de la partida y la plaza autenticada. Si el cuerpo coincide con la elección guardada tras normalizar el atributo, responde `200` con el recibo original, aunque hayan cambiado la revisión o el turno. Si alguno de los datos difiere, responde `409 operacionIncompatible`. La consulta `GET /elecciones/{idOperacion}` requiere sesión vigente y devuelve `404` si no existe un recibo para esa plaza.

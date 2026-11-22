@@ -8,7 +8,7 @@ El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador
 
 La etapa de **TI (análisis y diseño)** ya fue entregada, con el diseño REST y los casos de prueba documentados.
 
-La solución incluye el dominio del juego, el servidor REST y el cliente de consola conectado por HTTP. Los tres programas solicitan sus datos por consola, sin argumentos de aplicación ni variables de entorno de usuario. El cliente permite incorporarse, jugar y retomar partidas. La validación entre dos computadoras sigue pendiente. La [guía del servidor](docs/protocolo-de-partida.md#operación-del-servidor) describe el inicio y la administración del catálogo y las partidas.
+La solución incluye el dominio del juego, el servidor REST y el cliente de consola conectado por HTTP. Los tres programas solicitan sus datos por consola; la carga también acepta la ruta JSON como argumento opcional. No requieren variables de entorno de usuario. El cliente permite incorporarse, jugar y retomar partidas. La validación entre dos computadoras sigue pendiente. `Partida` concentra las reglas por acciones sucesivas, separadas de coordinación, sesiones, catálogo, persistencia y presentación. La [verificación del spec 006](docs/plan-de-pruebas.md#separación-de-responsabilidades-spec-006) aprobó 190 pruebas locales sin omisiones. La [guía del servidor](docs/protocolo-de-partida.md#operación-del-servidor) describe el inicio y la administración del catálogo y las partidas.
 
 ## Documentación
 
