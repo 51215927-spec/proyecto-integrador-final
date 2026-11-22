@@ -25,14 +25,15 @@ public class CargaJsonTests
     [Fact]
     public void ReemplazoRepiteSinAcumularYValidaAntesDeBorrar()
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var juego = new CatalogoPersonajes(almacen.Infraestructura);
         var lote = LotePersonajes.Leer(JsonDocument.Parse(Uno).RootElement);
-        juego.DarDeAlta(lote[0] with { Nombre = "Anterior" });
-        juego.ReemplazarCatalogo(lote);
-        juego.ReemplazarCatalogo(lote);
-        Assert.Equal(1, juego.CantidadCatalogo());
-        Assert.Throws<ErrorApi>(() => juego.ReemplazarCatalogo([lote[0] with { Fuerza = 0 }]));
-        Assert.Equal(1, juego.CantidadCatalogo());
+        new CatalogoPersonajes(almacen.Infraestructura).DarDeAlta(lote[0] with { Nombre = "Anterior" });
+        new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo(lote);
+        new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo(lote);
+        Assert.Equal(1, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
+        Assert.Throws<ErrorApi>(() => new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo([lote[0] with { Fuerza = 0 }]));
+        Assert.Equal(1, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
     }
 
     [Fact]
@@ -43,13 +44,13 @@ public class CargaJsonTests
         try
         {
             var lote = LotePersonajes.Leer(JsonDocument.Parse(Uno).RootElement);
-            using (var juego = new RepositorioJuego(cadena, TimeProvider.System))
+            using (var almacen = new AlmacenPartidas(cadena))
             {
-                juego.DarDeAlta(lote[0] with { Nombre = "Viejo" });
-                juego.DarDeAlta(lote[0] with { Nombre = "Inactivo" });
-                juego.Desactivar(2);
-                Assert.Equal(2, juego.CantidadCatalogo());
-                juego.ReemplazarCatalogo(lote);
+                new CatalogoPersonajes(almacen.Infraestructura).DarDeAlta(lote[0] with { Nombre = "Viejo" });
+                new CatalogoPersonajes(almacen.Infraestructura).DarDeAlta(lote[0] with { Nombre = "Inactivo" });
+                new CatalogoPersonajes(almacen.Infraestructura).Desactivar(2);
+                Assert.Equal(2, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
+                new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo(lote);
             }
             using var conexion = new Microsoft.Data.Sqlite.SqliteConnection(cadena);
             conexion.Open();
@@ -65,9 +66,9 @@ public class CargaJsonTests
             }
             comando.CommandText = "CREATE TRIGGER fallo BEFORE INSERT ON PersonajeCatalogo WHEN NEW.Nombre = 'Falla' BEGIN SELECT RAISE(ABORT, 'fallo inducido'); END;";
             comando.ExecuteNonQuery();
-            using (var juego = new RepositorioJuego(cadena, TimeProvider.System))
-                Assert.Throws<Microsoft.EntityFrameworkCore.DbUpdateException>(() => juego.ReemplazarCatalogo([lote[0], lote[0] with { Nombre = "Falla" }]));
-            using (var juego = new RepositorioJuego(cadena, TimeProvider.System)) Assert.Equal(1, juego.CantidadCatalogo());
+            using (var almacen = new AlmacenPartidas(cadena))
+                Assert.Throws<Microsoft.EntityFrameworkCore.DbUpdateException>(() => new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo([lote[0], lote[0] with { Nombre = "Falla" }]));
+            using (var almacen = new AlmacenPartidas(cadena)) Assert.Equal(1, new CatalogoPersonajes(almacen.Infraestructura).CantidadCatalogo());
             comando.CommandText = "SELECT Nombre FROM PersonajeCatalogo";
             Assert.Equal("Ada", comando.ExecuteScalar());
         }
@@ -108,8 +109,9 @@ public class CargaJsonTests
         if (valor == "limite") valor = new string('*', 121);
         if (valor == "lineas") valor = string.Join('\r', Enumerable.Repeat("*", 26));
         datos = campo == "nombre" ? datos with { Nombre = valor } : datos with { Ascii = valor };
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
-        var error = Assert.Throws<ErrorApi>(() => juego.ReemplazarCatalogo([datos]));
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var juego = new CatalogoPersonajes(almacen.Infraestructura);
+        var error = Assert.Throws<ErrorApi>(() => new CatalogoPersonajes(almacen.Infraestructura).ReemplazarCatalogo([datos]));
         Assert.Contains("Personaje 1", error.Message);
         Assert.Contains(campo, error.Message);
     }

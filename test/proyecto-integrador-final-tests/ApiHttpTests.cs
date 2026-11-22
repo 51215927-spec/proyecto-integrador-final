@@ -27,7 +27,7 @@ public class ApiHttpTests
     public async Task IncorporacionReservaLaPlazaYPermiteRenovarLaMismaSesion()
     {
         await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"]);
-        var creada = app.Services.GetRequiredService<RepositorioJuego>().CrearPartida();
+        var creada = app.Services.GetRequiredService<CoordinadorPartidas>().CrearPartida();
         await app.StartAsync();
         using var cliente = new HttpClient { BaseAddress = new Uri(app.Urls.Single()) };
         cliente.DefaultRequestHeaders.Authorization = new("Bearer", creada.CredencialJ1);
@@ -79,10 +79,10 @@ public class ApiHttpTests
     {
         await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:",
             "--urls=http://127.0.0.1:0"]);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         for (int i = 0; i < 6; i++)
-            juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+            app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
         await app.StartAsync();
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
         using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -162,10 +162,10 @@ public class ApiHttpTests
             Uri recibo;
             await using (var app = ServidorHttp.Crear(args))
             {
-                var juego = app.Services.GetRequiredService<RepositorioJuego>();
+                var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
                 partida = juego.CrearPartida();
                 for (int i = 0; i < 6; i++)
-                    juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+                    app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
                 await app.StartAsync();
                 using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
                 using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -176,7 +176,7 @@ public class ApiHttpTests
                 Assert.Equal(HttpStatusCode.Created, elegida.StatusCode);
                 recibo = elegida.Headers.Location!;
                 antes = await Vista(j2);
-                juego.Desactivar(antes.GetProperty("mano")[0].GetProperty("idPersonaje").GetInt32());
+                app.Services.GetRequiredService<CatalogoPersonajes>().Desactivar(antes.GetProperty("mano")[0].GetProperty("idPersonaje").GetInt32());
                 await app.StopAsync();
             }
 
@@ -231,10 +231,10 @@ public class ApiHttpTests
         {
             await using var app = ServidorHttp.Crear([
                 $"--ConnectionStrings:Juego={conexion}", "--urls=http://127.0.0.1:0"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
             var partida = juego.CrearPartida();
             for (int i = 0; i < 6; i++)
-                juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+                app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
             await app.StartAsync();
             using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
             using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");
@@ -285,7 +285,7 @@ public class ApiHttpTests
         var reloj = new RelojPruebas();
         await using var app = ServidorHttp.Crear([
             "--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"], reloj);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         await app.StartAsync();
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
@@ -305,16 +305,16 @@ public class ApiHttpTests
     {
         await using var app = ServidorHttp.Crear([
             "--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"]);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         await app.StartAsync();
         using var original = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
-        var nueva = juego.ReemplazarCredencial(partida.Id, "J1");
+        var nueva = app.Services.GetRequiredService<AdministradorSesiones>().ReemplazarCredencial(partida.Id, "J1");
 
         using var revocada = await original.GetAsync("presentacion");
         await Error(revocada, HttpStatusCode.Unauthorized, "credencialInvalida");
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, nueva, "Ada");
-        juego.CerrarSesion(partida.Id, "J1");
+        app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
         using var cerrada = await j1.GetAsync("presentacion");
         await Error(cerrada, HttpStatusCode.Conflict, "sesionVencida");
 
@@ -332,10 +332,10 @@ public class ApiHttpTests
         await using var app = ServidorHttp.Crear([
             "--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0",
             "--Logging:LogLevel:Default=Warning"], new RelojPruebas());
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         for (int i = 0; i < 6; i++)
-            juego.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
+            app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
         await app.StartAsync();
         using var j1 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ1, "Ada");
         using var j2 = await Incorporar(app.Urls.Single(), partida.Id, partida.CredencialJ2, "Ana");

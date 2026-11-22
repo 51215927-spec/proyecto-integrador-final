@@ -19,8 +19,8 @@ public sealed class IntegracionRespuestaPerdidaTests
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
             var partida = juego.CrearPartida();
             await app.StartAsync();
             // Los transportes conectan a Kestrel por loopback con credenciales separadas.
@@ -93,8 +93,8 @@ public sealed class IntegracionRespuestaPerdidaTests
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
             var partida = juego.CrearPartida();
             await app.StartAsync();
             var config = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");
@@ -183,8 +183,8 @@ public sealed class IntegracionRespuestaPerdidaTests
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
             var partida = juego.CrearPartida();
             await app.StartAsync();
             var config = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");

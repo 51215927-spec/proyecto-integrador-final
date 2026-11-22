@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +9,11 @@ namespace Proyecto_Integrador_Final
     internal class Ronda
     {
         internal const int CombatesParaGanar = 2;
+
+        internal static int? GanadorPorVictorias(int victoriasMano, int victoriasRival) =>
+            victoriasMano >= CombatesParaGanar ? 1 : victoriasRival >= CombatesParaGanar ? 2 : null;
+
+        internal static bool EsTurnoMano(int combatesResueltos) => combatesResueltos % 2 == 0;
 
         private readonly Jugador mano;
         private readonly Jugador rival;
@@ -59,7 +64,7 @@ namespace Proyecto_Integrador_Final
                     victoriasRival++;
             }
 
-            return victoriasMano >= CombatesParaGanar || victoriasRival >= CombatesParaGanar;
+            return GanadorPorVictorias(victoriasMano, victoriasRival) is not null;
         }
 
         public Jugador GetGanador()
@@ -77,7 +82,7 @@ namespace Proyecto_Integrador_Final
                     victoriasMano++;
             }
 
-            return victoriasMano >= CombatesParaGanar
+            return GanadorPorVictorias(victoriasMano, this.combates.Count - victoriasMano) == 1
                 ? this.mano
                 : this.rival;
         }
@@ -90,7 +95,7 @@ namespace Proyecto_Integrador_Final
                 );
 
             // La elección empieza con el jugador mano y alterna después de cada combate.
-            return this.combates.Count % 2 == 0
+            return EsTurnoMano(this.combates.Count)
                 ? this.mano
                 : this.rival;
         }
