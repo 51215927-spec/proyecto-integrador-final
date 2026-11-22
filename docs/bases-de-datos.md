@@ -32,3 +32,7 @@ Las claves de la partida, solicitudes y operaciones son UUID. Los números de ro
 [Transiciones y consultas del repositorio](../src/servidor/Api/TransicionesPartida.cs) · [Contrato de reintento](protocolo-de-partida.md#persistencia-concurrencia-y-catálogo)
 
 [Configuración de entidades](../src/servidor/Api/BaseJuego.cs) · [Entidades de partida](../src/servidor/Api/EstadoPartida.cs) · [Entidad del catálogo](../src/servidor/Api/PersonajeCatalogo.cs)
+
+## Reemplazo del catálogo
+
+La carga JSON valida el lote completo antes de escribir. `ReemplazarCatalogo` borra y vuelve a insertar únicamente `PersonajeCatalogo` dentro de una transacción; asigna IDs de 1 a N, en orden, y marca todos activos. Un fallo al guardar revierte el borrado y las inserciones. Las tablas de partidas conservan sus copias; el GET de resumen cuenta activos e inactivos. El POST individual permanece disponible, pero la herramienta JSON no lo utiliza. [Repositorio](archivos/src/servidor/Api/RepositorioJuego.md) · [Validación del lote](archivos/src/servidor/Api/LotePersonajes.md).

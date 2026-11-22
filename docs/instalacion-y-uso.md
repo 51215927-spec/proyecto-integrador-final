@@ -69,7 +69,7 @@ dotnet test proyecto-integrador-final.sln
 dotnet run --project src/cliente
 ```
 
-El cliente solicita URL base, UUID de partida, credencial de plaza y nombre. Necesitás una partida creada en el servidor para jugar. Las pruebas incluyen transporte HTTP, coordinación de consola y servidor local con SQLite temporal.
+El cliente solicita URL base, UUID de partida, credencial de plaza y nombre. Necesitás una partida creada en el servidor para jugar. Las pruebas incluyen transporte HTTP, coordinación de consola y servidor local con SQLite temporal. Para incluir los contratos que arrancan ejecutables, compilá primero y configurá las tres rutas `GUERRA_*_DLL` como indica el [README de pruebas](../test/proyecto-integrador-final-tests/README.md). Sin esas rutas, los casos condicionales se omiten; un resultado verde no implica que hayan corrido todos.
 
 Las dependencias y los comandos del servidor están en [API y operación del servidor](protocolo-de-partida.md#operación-del-servidor).
 

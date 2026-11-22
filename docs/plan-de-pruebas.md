@@ -121,3 +121,21 @@ Esta evidencia corresponde a una computadora Linux. No acredita Windows ni una p
 Verificado el 2026-11-22 en `feature/005-sistema-de-carga`, usando exclusivamente SQLite temporal. `CargaJsonTests` comprueba formato, tipos, duplicados, validación completa, reemplazo persistente y rollback ante un trigger que falla después del borrado. `ConsolaAltaTests` cubre rutas, cantidades, confirmación/cancelación, errores y resultado incierto sin reintentos. `EntradaProcesosContratoTests.Carga_RecorridoCompletoDesdeProcesoConBaseTemporal` ejecuta la herramienta con servidor HTTP real: catálogo vacío, seis ejemplos, cancelación, reemplazo, repetición y rechazo.
 
 `dotnet restore` y `dotnet build proyecto-integrador-final.sln` aprobaron (0 advertencias y errores). `dotnet test proyecto-integrador-final.sln --no-build --verbosity quiet`, con las tres variables `GUERRA_*_DLL` apuntando a este mismo worktree, terminó con **179 aprobadas, 0 fallidas y 0 omitidas**. Se conserva la regresión de POST individual y juego. La respuesta perdida se simula con un handler HTTP; el rollback se comprueba con un fallo real de inserción en SQLite y reapertura. Esta validación local no acredita las pruebas entre dos equipos Windows del spec 002.
+
+## Verificación de la versión documentada (spec 004)
+
+Referencia fuente: `main` en `135daa7eb196b9bca4e40a1aef76e1131a9b24e8`, 2026-11-22. Verificación desde `/home/julian/.herdr/worktrees/proyecto-integrador-final/docs-spec-004-documetacion-final`, rama `docs/spec-004-documetacion-final`, Linux, SDK .NET 8.0.133. Se conservó como contexto la confirmación del usuario de que el código funciona en su entorno.
+
+Comandos ejecutados desde esa raíz:
+
+```bash
+dotnet build proyecto-integrador-final.sln --nologo
+GUERRA_CLIENTE_DLL="$PWD/src/cliente/bin/Debug/net8.0/cliente.dll" \
+GUERRA_SERVIDOR_DLL="$PWD/src/servidor/bin/Debug/net8.0/servidor.dll" \
+GUERRA_CARGA_DLL="$PWD/src/subir-personajes/bin/Debug/net8.0/subir-personajes.dll" \
+dotnet test proyecto-integrador-final.sln --no-build --nologo
+```
+
+Build: cero errores y cero advertencias. Suite: **179 aprobadas, 0 fallidas y 0 omitidas**, duración informada 17 segundos. Logs locales: `/tmp/spec004-build.log` y `/tmp/spec004-tests.log`; no se versionan. Incluye contratos de procesos con las DLL de esta misma copia, HTTP loopback, SQLite temporal, pérdida de respuesta y partida completa automatizada. No se ejecutaron instalaciones WinGet, ensayos físicos entre dos Windows ni acciones sobre servicios o bases reales. La interfaz interactiva y sus capacidades de terminal conservan pruebas definidas y evidencia histórica; no se repitió un ensayo visual manual de todas las pantallas.
+
+El modelo local `Partida.Jugar()` sigue incompleto: con seis cartas reparte y luego falla por combate sin elecciones. La partida REST tiene otro coordinador y sí se ejercita en la suite. Las limitaciones se describen en [Partida](archivos/src/servidor/Partida.md); una suite verde no elimina ese límite observado por lectura. El detalle de garantías y casos fuera de alcance de cada prueba está en el [catálogo](archivos/README.md).

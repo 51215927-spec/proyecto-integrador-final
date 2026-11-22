@@ -53,7 +53,7 @@ El cliente REST aplica las siguientes respuestas de interacción.
 
 La consola limpia la pantalla al cambiar de vista en una terminal. Para elegir, mové el foco con las flechas, WASD o HJKL y pulsá Enter. La opción activa se marca con `>` y un resaltado si hay color disponible. El foco se detiene en los extremos de la lista. Con entrada redirigida, enviá una letra de movimiento por línea y una línea vacía para confirmar. El fin de entrada termina la solicitud mediante `EndOfStreamException`. La salida redirigida apila las fichas y conserva el historial de pantallas.
 
-El flujo cliente debe comprobar que la solicitud siga vigente antes de enviar una opción. También debe gestionar el cambio de estado durante la escritura, la entrada sobrante entre solicitudes, las confirmaciones, la recuperación y la salida.
+`SesionPartidaCliente` comprueba la vigencia antes del envío y coordina cambios de estado, entrada sobrante, confirmaciones, recuperación y salida. [Detalle del coordinador](archivos/src/cliente/SesionPartidaCliente.md) · [Renderizado y selección](archivos/src/cliente/InterfazConsola.md).
 
 ## Decisiones implementadas para el cliente REST
 
