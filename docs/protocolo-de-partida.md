@@ -26,7 +26,7 @@ El diseño prevé conexiones HTTP en la red local por el puerto TCP 5000. Cada c
 
 Localhost identifica la computadora del propio proceso: sirve para probar clientes y servidor en el mismo equipo. El cliente de otra computadora debe usar la dirección de red del servidor. Este debe aceptar conexiones en una interfaz accesible desde esa red, no limitarse a localhost; El servidor escucha por defecto en `0.0.0.0:5000`. La pregunta inicial permite elegir otra dirección de escucha.
 
-Si el servidor no está disponible, el cliente informa, reintenta automáticamente y permite salir mediante Esc. Conserva una elección pendiente y no la transforma en una operación nueva al reintentar. La confirmación de una elección cuya respuesta se perdió se resolverá mediante los contratos de operaciones e idempotencia de este documento; no se asume que falló por un error de conexión.
+Si el servidor no está disponible, el cliente informa, reintenta automáticamente y permite salir mediante Esc. Conserva una elección pendiente y no la transforma en una operación nueva al reintentar. La confirmación de una elección cuya respuesta se perdió se resuelve mediante los contratos de operaciones e idempotencia de este documento; no se asume que falló por un error de conexión.
 
 HTTP no cifra el intercambio. Su elección se limita al entorno local de prueba acordado; no se define publicación en Internet. Primero se probará la comunicación para determinar si existe un bloqueo, sin asumir que sea necesario abrir el firewall. De requerirse una excepción en un equipo escolar, se coordinará con el responsable y se limitará al servicio, puerto y equipos participantes. No se requiere desactivar el firewall ni abrir puertos del router hacia Internet.
 
@@ -128,7 +128,7 @@ Para un reenvío, el servidor busca primero el `idOperacion` dentro de la partid
 
 `POST /api/v1/personajes` recibe JSON UTF-8 con `nombre`, `descripcion`, `ascii`, `fuerza`, `velocidad`, `resistencia`, `inteligencia`, `energia` y `habilidad`. La descripción admite texto vacío. Los puntajes son enteros y el servidor aplica las [validaciones de Personaje](reglas-del-juego.md#personajes-y-preparación). El ASCII admite hasta 25 líneas, con un máximo de 120 caracteres por línea y sin tabulaciones.
 
-El operador ingresa una credencial de catálogo al iniciar el servidor y la herramienta de carga pide esa misma credencial antes de los datos del personaje. El cliente la envía en `Authorization: Bearer`. El alta devuelve `401 credencialInvalida` si falta la configuración o la credencial recibida no coincide. Las credenciales de las plazas se usan para la partida. El cliente [`subir-personajes`](../src/subir-personajes/README.md) usa esta ruta.
+El operador ingresa una credencial de catálogo al iniciar el servidor y la herramienta de carga pide esa misma credencial después de leer el archivo JSON y elegir la URL. El cliente la envía en `Authorization: Bearer`. El alta devuelve `401 credencialInvalida` si falta la configuración o la credencial recibida no coincide. Las credenciales de las plazas se usan para la partida. La ruta individual se conserva para consumidores HTTP y pruebas; [`subir-personajes`](../src/subir-personajes/README.md) usa GET de resumen y PUT de reemplazo del catálogo completo.
 
 | Respuesta | Significado |
 |---|---|
