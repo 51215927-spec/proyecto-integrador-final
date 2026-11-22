@@ -4,7 +4,7 @@ La etapa de análisis y diseño (TI) ya fue entregada. La solución cuenta con e
 
 ## Entrada interactiva
 
-El servidor, el cliente y la herramienta de carga ya piden sus datos por consola durante la ejecución. El servidor solicita la configuración antes del host y cada identificador al elegir una acción. El cliente solicita la conexión y la identidad de la plaza. La carga solicita URL, credencial y personaje, con corrección de datos inválidos. La evidencia y el estado de revisión están en [la evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003). [Instalación y uso](instalacion-y-uso.md#entrada-de-datos-en-ejecución)
+El servidor, el cliente y la herramienta de carga ya piden sus datos por consola durante la ejecución. El servidor solicita la configuración antes del host y cada identificador al elegir una acción. El cliente solicita la conexión y la identidad de la plaza. La carga recibe una ruta JSON por argumento o pregunta, solicita URL y credencial, muestra cantidades y requiere confirmación para reemplazar todo el catálogo. Un error de archivo o carga finaliza sin reintento automático. La evidencia y el estado de revisión están en [la evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003). [Instalación y uso](instalacion-y-uso.md#entrada-de-datos-en-ejecución)
 
 ## Cliente conectado al servidor
 
