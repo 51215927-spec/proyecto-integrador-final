@@ -13,7 +13,7 @@ public sealed class ClienteRestIntegracionTests
         try
         {
             await using var primero = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var creada = primero.Services.GetRequiredService<RepositorioJuego>().CrearPartida();
+            var creada = primero.Services.GetRequiredService<CoordinadorPartidas>().CrearPartida();
             await primero.StartAsync();
             string url = primero.Urls.Single();
             Guid sesion = Guid.NewGuid();
@@ -46,9 +46,9 @@ public sealed class ClienteRestIntegracionTests
         try
         {
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
-            var juego = app.Services.GetRequiredService<RepositorioJuego>();
+            var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
             var partida = juego.CrearPartida();
-            for (int i = 0; i < 6; i++) juego.DarDeAlta(new($"Carta {i}", "Descripción no visible", "ARTE NO VISIBLE", 750, 550, 500, 250, 500, 450));
+            for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción no visible", "ARTE NO VISIBLE", 750, 550, 500, 250, 500, 450));
             await app.StartAsync();
             var config1 = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");
             var config2 = config1 with { Credencial = partida.CredencialJ2, Nombre = "Ana" };
@@ -75,7 +75,7 @@ public sealed class ClienteRestIntegracionTests
             var resuelta = await j1.Presentacion(default);
             Assert.Single(resuelta.Resultados);
             new EstadoCliente(partida.Id).Aplicar(resuelta);
-            juego.CerrarSesion(partida.Id, "J1");
+            app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
             var vencida = await Assert.ThrowsAsync<FalloCliente>(() => j1.Presentacion(default));
             Assert.Equal("sesionVencida", vencida.Codigo);
             Assert.Equal(sesion1, (await j1.Incorporar(default)).IdSesion);

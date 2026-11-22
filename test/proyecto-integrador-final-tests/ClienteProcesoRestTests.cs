@@ -11,7 +11,7 @@ public sealed class ClienteProcesoRestTests
     public async Task ProcesoSeIncorporaReabreSinArchivosYEsperaPlazaHastaLiberacion()
     {
         await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", "--ConnectionStrings:Juego=Data Source=:memory:"]);
-        var juego = app.Services.GetRequiredService<RepositorioJuego>();
+        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
         var partida = juego.CrearPartida();
         await app.StartAsync();
         string directorio = Path.Combine(Path.GetTempPath(), $"guerra-proceso-{Guid.NewGuid():N}");
@@ -31,7 +31,7 @@ public sealed class ClienteProcesoRestTests
             {
                 await segunda.Enviar($"{app.Urls.Single()}\n{partida.Id}\n{partida.CredencialJ1}\nAna\n");
                 await segunda.Esperar("Sesión ocupada");
-                juego.CerrarSesion(partida.Id, "J1");
+                app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
                 await segunda.Esperar("Esperando inicio");
                 await segunda.Enviar("esc\ns\n\n");
                 await segunda.Terminar();
@@ -39,7 +39,7 @@ public sealed class ClienteProcesoRestTests
             }
             Assert.Empty(Directory.GetFiles(directorio));
             Assert.Equal("esperandoInicio", juego.Presentacion(partida.Id, partida.CredencialJ2,
-                juego.Incorporar(partida.Id, partida.CredencialJ2, new(Guid.NewGuid(), "Ada")).IdSesion).Fase);
+                app.Services.GetRequiredService<AdministradorSesiones>().Incorporar(partida.Id, partida.CredencialJ2, new(Guid.NewGuid(), "Ada")).IdSesion).Fase);
             await app.StopAsync();
         }
         finally { Directory.Delete(directorio, true); }

@@ -1,0 +1,17 @@
+{
+  "id": "f3a7a2b0-54af-43ae-abff-fd768b65aa74",
+  "credencialJ1": "EAFEA7F037B48D0C5FCD6D838EE2D5463AA57DC15A84449EDA3263D7751B5A86",
+  "credencialJ2": "8D31FBF04DD8EE224D411B6AEE6A59D561A1341E10C657B8A98ECC419BBEA17A",
+  "eleccion": {
+    "idOperacion": "917ce62c-050b-4603-bd58-8530acf4dab4",
+    "idSolicitud": "2d9ca837-f037-4c15-b404-c42e95d28a30",
+    "revisionEsperada": 1,
+    "idPersonaje": 6,
+    "atributo": "Fuerza"
+  },
+  "recibo": {
+    "idOperacion": "917ce62c-050b-4603-bd58-8530acf4dab4",
+    "idSolicitud": "2d9ca837-f037-4c15-b404-c42e95d28a30",
+    "revisionConfirmada": 2
+  }
+}

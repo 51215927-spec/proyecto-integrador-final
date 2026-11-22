@@ -17,7 +17,7 @@ internal static class ConsolaServidor
         ["ayuda"] = ("Ayuda", "Vuelve a mostrar esta guía.")
     };
 
-    internal static void Ejecutar(RepositorioJuego juego, TextReader entrada, TextWriter salida,
+    internal static void Ejecutar(CoordinadorPartidas juego, AdministradorSesiones sesiones, CatalogoPersonajes catalogo, TextReader entrada, TextWriter salida,
         CancellationToken detener)
     {
         Ayuda(salida);
@@ -28,7 +28,7 @@ internal static class ConsolaServidor
 
             try
             {
-                Comando(juego, linea.Trim(), entrada, salida);
+                Comando(juego, sesiones, catalogo, linea.Trim(), entrada, salida);
             }
             catch (EndOfStreamException)
             {
@@ -45,7 +45,7 @@ internal static class ConsolaServidor
         }
     }
 
-    private static void Comando(RepositorioJuego juego, string linea, TextReader entrada, TextWriter salida)
+    private static void Comando(CoordinadorPartidas juego, AdministradorSesiones sesiones, CatalogoPersonajes catalogo, string linea, TextReader entrada, TextWriter salida)
     {
         string comando = linea.ToLowerInvariant();
         var lector = new EntradaConsola(entrada, salida);
@@ -82,14 +82,14 @@ internal static class ConsolaServidor
                 salida.WriteLine("Partida cancelada.");
                 break;
             case "cerrar-sesion":
-                juego.CerrarSesion(id, rol!);
+                sesiones.CerrarSesion(id, rol!);
                 salida.WriteLine("Sesión cerrada.");
                 break;
             case "reemplazar-credencial":
-                salida.WriteLine($"{rol} {juego.ReemplazarCredencial(id, rol!)}");
+                salida.WriteLine($"{rol} {sesiones.ReemplazarCredencial(id, rol!)}");
                 break;
             case "desactivar" when int.TryParse(argumento, out int personaje):
-                juego.Desactivar(personaje);
+                catalogo.Desactivar(personaje);
                 salida.WriteLine("Personaje desactivado.");
                 break;
             default:

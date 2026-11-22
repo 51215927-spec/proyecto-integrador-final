@@ -17,11 +17,14 @@ public sealed class ConsolaServidorTests
     [Fact]
     public void Cancelar_PideUuidYReintentaSinPerderLaAccion()
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var sesiones = new AdministradorSesiones(almacen, TimeProvider.System);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
         var partida = juego.CrearPartida();
         using var entrada = new StringReader($"cancelar\nincorrecto\n{partida.Id}\n");
         using var salida = new StringWriter();
-        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        ConsolaServidor.Ejecutar(juego, sesiones, catalogo, entrada, salida, CancellationToken.None);
         Assert.Contains("UUID", salida.ToString());
         Assert.Contains("válido", salida.ToString());
         Assert.Contains("Partida cancelada.", salida.ToString());
@@ -42,21 +45,27 @@ public sealed class ConsolaServidorTests
     [Fact]
     public void CerrarSesion_PidePlazaYPermiteCorregirla()
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var sesiones = new AdministradorSesiones(almacen, TimeProvider.System);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
         var partida = juego.CrearPartida();
         using var entrada = new StringReader($"cerrar-sesion\n{partida.Id}\nJ3\nj2\n");
         using var salida = new StringWriter();
-        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        ConsolaServidor.Ejecutar(juego, sesiones, catalogo, entrada, salida, CancellationToken.None);
         Assert.Contains("J1 o J2", salida.ToString());
         Assert.Contains("Sesión cerrada.", salida.ToString());
     }
 
     private static string Ejecutar(string comandos)
     {
-        using var juego = new RepositorioJuego("Data Source=:memory:", TimeProvider.System);
+        using var almacen = new AlmacenPartidas("Data Source=:memory:");
+        var sesiones = new AdministradorSesiones(almacen, TimeProvider.System);
+        var catalogo = new CatalogoPersonajes(almacen.Infraestructura);
+        var juego = new CoordinadorPartidas(almacen, sesiones, catalogo);
         using var entrada = new StringReader(comandos);
         using var salida = new StringWriter();
-        ConsolaServidor.Ejecutar(juego, entrada, salida, CancellationToken.None);
+        ConsolaServidor.Ejecutar(juego, sesiones, catalogo, entrada, salida, CancellationToken.None);
         return salida.ToString();
     }
 }
