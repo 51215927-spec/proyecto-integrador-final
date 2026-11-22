@@ -20,9 +20,9 @@ El operador crea la partida en consola. Tras incorporar a ambos participantes, e
 
 ## Entrada interactiva
 
-Los tres ejecutables solicitan sus datos por consola. El cliente pide URL, UUID de partida, credencial y nombre. El servidor pide dirección, archivo SQLite y credencial antes de construir el host, y solicita los identificadores después de elegir cada acción administrativa. La carga recibe una ruta JSON por argumento o pregunta, luego pide URL y credencial; consulta cantidades y requiere confirmación para reemplazar el catálogo. Los valores de conexión inválidos pueden corregirse; un error de archivo o carga finaliza sin reintento. El fin de entrada cancela la acción incompleta.
+El cliente y el servidor solicitan su configuración por consola; la carga también admite la ruta JSON por argumento. El cliente pide URL, UUID de partida, credencial y nombre. El servidor pide dirección, archivo SQLite y credencial antes de construir el host, y solicita los identificadores después de elegir cada acción administrativa. La carga recibe una ruta JSON por argumento o pregunta, luego pide URL y credencial; consulta cantidades y requiere confirmación para reemplazar el catálogo. Los valores de conexión inválidos pueden corregirse; un error de archivo o carga finaliza sin reintento. El fin de entrada cancela la acción incompleta.
 
-`src/comun/EntradaConsola.cs` se compila por enlace de código fuente. Servidor y carga lo usan para preguntas y credenciales. El cliente usa `ConfiguracionCliente` para preguntas cancelables y URL con prefijo de ruta. La entrada redirigida conserva el procesamiento por líneas para las pruebas. `ConfiguracionServidor` entrega los valores al host mediante la interfaz interna de `ServidorHttp.Crear`; las pruebas HTTP conservan su configuración aislada. El spec 005 agrega resumen y reemplazo del catálogo, conservando el POST individual. [Evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003)
+`src/comun/EntradaConsola.cs` se compila por enlace de código fuente. Servidor y carga lo usan para preguntas y credenciales. El cliente usa `ConfiguracionCliente` para preguntas cancelables y URL con prefijo de ruta. La entrada redirigida conserva el procesamiento por líneas para las pruebas. `ConfiguracionServidor` entrega los valores al host mediante la interfaz interna de `ServidorHttp.Crear`; las pruebas HTTP conservan su configuración aislada. El spec 005 agrega resumen y reemplazo del catálogo, conservando el POST individual. La herramienta de carga usa GET de resumen y PUT de reemplazo; no captura un personaje campo por campo. [Evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003)
 
 ## Coordinación del cliente
 
@@ -49,3 +49,7 @@ stateDiagram-v2
 Cuando falta presencia durante una elección, el servidor informa la pausa sin cambiar la fase. Al recuperar la presencia se puede continuar desde la solicitud vigente.
 
 [Modelos](modelos.md) · [API y operación](protocolo-de-partida.md) · [Bases de datos](bases-de-datos.md) · [Tecnologías](tecnologias.md) · [Instalación](instalacion-y-uso.md) · [UML académico](diagramas/uml.uxf)
+
+## Modelo local y coordinación persistida
+
+Los seis archivos del modelo académico describen cartas y reglas locales. `Combate` se reutiliza para comparar en el servidor; `Partida.Jugar()` conserva un coordinador incompleto: reparte pero no solicita elecciones y lanza «El combate no se completó.». El flujo REST se ejecuta mediante `RepositorioJuego` y sus porciones `TransicionesPartida` y `PresentacionPartida`, con estado persistido. La existencia de `Partida` no acredita una segunda modalidad de juego local funcional. Véanse [Partida](archivos/src/servidor/Partida.md), [transiciones](archivos/src/servidor/Api/TransicionesPartida.md) y el [catálogo completo](archivos/README.md).
