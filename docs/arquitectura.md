@@ -4,7 +4,7 @@
 
 - [Servidor](../src/servidor/README.md) aloja la API, aplica reglas y es dueño de SQLite.
 - [Cliente](../src/cliente/README.md) presenta la interfaz de los jugadores y se comunica por HTTP con el servidor.
-- [Carga](../src/subir-personajes/README.md) registra personajes por HTTP.
+- [Carga](../src/subir-personajes/README.md) reemplaza el catálogo desde JSON por HTTP.
 - [Pruebas](../test/proyecto-integrador-final-tests/README.md) verifican el dominio, el servidor y la consola.
 
 ```mermaid
@@ -20,9 +20,9 @@ El operador crea la partida en consola. Tras incorporar a ambos participantes, e
 
 ## Entrada interactiva
 
-Los tres ejecutables solicitan sus datos por consola. El cliente pide URL, UUID de partida, credencial y nombre. El servidor pide dirección, archivo SQLite y credencial antes de construir el host, y solicita los identificadores después de elegir cada acción administrativa. La carga pide URL y credencial antes del personaje. Los valores inválidos pueden corregirse y el fin de entrada cancela la acción incompleta.
+Los tres ejecutables solicitan sus datos por consola. El cliente pide URL, UUID de partida, credencial y nombre. El servidor pide dirección, archivo SQLite y credencial antes de construir el host, y solicita los identificadores después de elegir cada acción administrativa. La carga recibe una ruta JSON por argumento o pregunta, luego pide URL y credencial; consulta cantidades y requiere confirmación para reemplazar el catálogo. Los valores de conexión inválidos pueden corregirse; un error de archivo o carga finaliza sin reintento. El fin de entrada cancela la acción incompleta.
 
-`src/comun/EntradaConsola.cs` se compila por enlace de código fuente. Servidor y carga lo usan para preguntas y credenciales. El cliente usa `ConfiguracionCliente` para preguntas cancelables y URL con prefijo de ruta. La entrada redirigida conserva el procesamiento por líneas para las pruebas. `ConfiguracionServidor` entrega los valores al host mediante la interfaz interna de `ServidorHttp.Crear`; las pruebas HTTP conservan su configuración aislada. El contrato HTTP no cambia. [Evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003)
+`src/comun/EntradaConsola.cs` se compila por enlace de código fuente. Servidor y carga lo usan para preguntas y credenciales. El cliente usa `ConfiguracionCliente` para preguntas cancelables y URL con prefijo de ruta. La entrada redirigida conserva el procesamiento por líneas para las pruebas. `ConfiguracionServidor` entrega los valores al host mediante la interfaz interna de `ServidorHttp.Crear`; las pruebas HTTP conservan su configuración aislada. El spec 005 agrega resumen y reemplazo del catálogo, conservando el POST individual. [Evidencia del spec 003](plan-de-pruebas.md#evidencia-del-spec-003)
 
 ## Coordinación del cliente
 

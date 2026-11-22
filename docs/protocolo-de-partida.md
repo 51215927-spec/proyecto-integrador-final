@@ -64,7 +64,7 @@ dotnet run --project src/servidor/servidor.csproj
 
 - Respondé `http://127.0.0.1:5000`, `guerra-prueba.db` y una credencial de catálogo elegida para el ensayo.
 - Esperá el mensaje de escucha en `http://127.0.0.1:5000`. En esa misma terminal, escribí `crear`. La consola imprime el UUID de la partida y una credencial para cada plaza.
-- Mantené abierta esa terminal mientras probás la API desde otra. Para iniciar el juego, cargá primero al menos seis personajes activos con [subir-personajes](instalacion-y-uso.md#cargar-personajes-manualmente).
+- Mantené abierta esa terminal mientras probás la API desde otra. Para iniciar el juego, cargá primero al menos seis personajes activos con [subir-personajes](instalacion-y-uso.md#cargar-personajes-desde-json).
 - Incorporá ambos participantes mediante `PUT /participantes/me/sesion` según el contrato de abajo. Usá un UUID de sesión diferente por jugador y renová la presencia con `PUT /participantes/me/presencia` mientras realizás la prueba. Después, escribí `iniciar` en la consola del servidor y respondé con el UUID. El resultado esperado es `Partida iniciada.`.
 - Consultá `GET /presentacion` con la credencial y sesión de cada plaza. Al inicio, ambas vistas muestran tres cartas propias. La vista de J1 incluye una solicitud `cartaYAtributo` y la de J2 tiene `solicitud: null` hasta que J1 juegue.
 
@@ -181,3 +181,9 @@ Una elección aceptada devuelve `201 Created` y un recibo como el siguiente.
 ```
 
 Si se pierde la respuesta, consultá `GET /elecciones/{idOperacion}` con la misma plaza. Si la operación ya se confirmó y reenviás los datos originales, el servidor devuelve `200` con el mismo recibo.
+
+## Reemplazo del catálogo desde JSON (spec 005)
+
+`GET /api/v1/personajes/resumen` y `PUT /api/v1/personajes` requieren la misma cabecera `Authorization: Bearer <credencial de catálogo>` que el POST individual existente. GET devuelve `{ "cantidad": N }`, contando activos e inactivos. PUT recibe directamente la lista del [formato JSON](../src/subir-personajes/README.md), valida todos sus elementos y reemplaza las filas del catálogo en una transacción. Devuelve HTTP 200 con `{ "cantidad": N }` tras el commit; asigna IDs 1..N y marca todos activos. No modifica tablas de partidas.
+
+Una entrada inválida devuelve 400 con `codigo`, `mensaje` localizable e `idSeguimiento`; credencial ausente o incorrecta devuelve 401 y almacenamiento no disponible, 503. El POST individual conserva su contrato. Un fallo de guardado revierte el reemplazo. Perder la respuesta HTTP puede ocultar un commit exitoso: no implica rollback ni autoriza reintento automático.

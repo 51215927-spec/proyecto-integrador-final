@@ -21,7 +21,7 @@ Participan dos jugadores, J1 y J2. Gana la partida quien alcanza primero 15 rond
 
 Carta y personaje son el mismo elemento. Cada personaje tiene nombre, representación ASCII y seis atributos: Fuerza, Velocidad, Resistencia, Inteligencia, Energía y Habilidad. Los atributos deben sumar exactamente 3000 puntos; cada uno debe estar entre 250 y 750, al menos uno debe ser de 650 o más y al menos uno de 350 o menos. No se permiten seis valores de 500.
 
-El servidor conserva en SQLite el catálogo de personajes dados de alta manualmente con `subir-personajes`.
+El servidor conserva en SQLite el catálogo de personajes cargados desde JSON con `subir-personajes`.
 
 Se reparten tres cartas a cada jugador desde el mazo común. J1 es el jugador mano de la primera ronda. Al terminar cada ronda, ese rol pasa al otro jugador, independientemente del ganador: J1, J2, J1, J2, hasta finalizar la partida.
 
