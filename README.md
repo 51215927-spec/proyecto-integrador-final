@@ -1,6 +1,6 @@
 # Proyecto integrador final
 
-Repositorio de un proyecto académico de juego de cartas para dos jugadores, previsto como aplicación de consola en C# y .NET 8. Reúne los requisitos, el diseño y la base de código para organizar el trabajo del equipo y su futura implementación.
+Proyecto académico de juego de cartas para dos jugadores, con cliente de consola en C# y .NET 8, servidor REST y catálogo cargado desde JSON. Reúne requisitos, diseño, implementación y pruebas.
 
 El juego consiste en enfrentar personajes comparando sus atributos. Cada jugador recibe tres cartas por ronda; gana la ronda quien consigue dos combates y la partida quien alcanza 15 rondas ganadas. Las reglas completas están en [Reglas del juego](docs/reglas-del-juego.md).
 
@@ -16,6 +16,7 @@ La solución incluye el dominio del juego, el servidor REST y el cliente de cons
 - [Reglas del juego](docs/reglas-del-juego.md).
 - [Arquitectura](docs/arquitectura.md).
 - [Modelos](docs/modelos.md).
+- [Catálogo de archivos C#](docs/archivos/README.md).
 - [Tecnologías](docs/tecnologias.md).
 - [Bases de datos](docs/bases-de-datos.md).
 - [API](docs/protocolo-de-partida.md).
