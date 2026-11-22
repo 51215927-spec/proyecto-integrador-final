@@ -1,5 +1,4 @@
 using Proyecto_Integrador_Final.Consola;
-using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -8,146 +7,132 @@ namespace Proyecto_Integrador_Final.CargaPersonajes;
 
 internal static class Program
 {
-    private static Task<int> Main() => ConsolaAlta.Iniciar(Console.In, Console.Out);
+    private static Task<int> Main(string[] args) => ConsolaAlta.Iniciar(Console.In, Console.Out, args);
 }
 
 internal static class ConsolaAlta
 {
-    internal static async Task<int> Iniciar(TextReader entrada, TextWriter salida)
+    internal static async Task<int> Iniciar(TextReader entrada, TextWriter salida, string[]? args = null)
     {
         try
         {
+            var datos = await Leer(args?.FirstOrDefault(), entrada, salida);
             var lector = new EntradaConsola(entrada, salida);
             var servidor = new Uri(lector.Url("http://localhost:5000"));
             string credencial = lector.Secreto("Credencial de catálogo", permiteVacio: false);
-            using var cliente = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
-            {
-                BaseAddress = servidor
-            };
-            return await Ejecutar(cliente, credencial, entrada, salida);
+            using var cliente = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { BaseAddress = servidor };
+            return await Enviar(cliente, credencial, entrada, salida, datos);
         }
-        catch (EndOfStreamException)
+        catch (Exception error) when (EsErrorEntrada(error))
         {
-            salida.WriteLine("La entrada terminó antes de completar la conexión.");
-            return 1;
-        }
-        catch (IOException)
-        {
+            salida.WriteLine($"No se pudo cargar el archivo: {error.Message}");
             return 1;
         }
     }
 
-    internal static async Task<int> Ejecutar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida)
+    internal static async Task<int> Ejecutar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida, string? ruta = null)
     {
-        var lector = new EntradaConsola(entrada, salida);
-        string PedirTexto(string etiqueta) => lector.Texto(etiqueta);
-
-        int PedirEntero(string etiqueta, int minimo, int maximo)
+        try { return await Enviar(cliente, credencial, entrada, salida, await Leer(ruta, entrada, salida)); }
+        catch (Exception error) when (EsErrorEntrada(error))
         {
-            while (true)
-            {
-                if (int.TryParse(PedirTexto($"{etiqueta} ({minimo} a {maximo})"), out int valor) &&
-                    valor >= minimo && valor <= maximo)
-                    return valor;
-                salida.WriteLine("Ingresá un entero dentro del intervalo.");
-            }
+            salida.WriteLine($"No se pudo cargar el archivo: {error.Message}");
+            return 1;
         }
+    }
 
+    private static bool EsErrorEntrada(Exception error) => error is IOException or UnauthorizedAccessException or ArgumentException or JsonException or FormatException;
+
+    private static async Task<JsonElement> Leer(string? ruta, TextReader entrada, TextWriter salida)
+    {
+        if (ruta is null)
+        {
+            salida.WriteLine("Ruta del archivo JSON:");
+            ruta = entrada.ReadLine();
+        }
+        if (string.IsNullOrWhiteSpace(ruta)) throw new FormatException("Falta la ruta del archivo JSON.");
+        using var json = JsonDocument.Parse(await File.ReadAllTextAsync(ruta));
+        ValidarFormato(json.RootElement);
+        return json.RootElement.Clone();
+    }
+
+    private static void ValidarFormato(JsonElement raiz)
+    {
+        if (raiz.ValueKind != JsonValueKind.Array || raiz.GetArrayLength() == 0)
+            throw new FormatException("La raíz debe ser una lista con al menos un personaje.");
+        var nombres = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int indice = 0;
+        foreach (var objeto in raiz.EnumerateArray())
+        {
+            string ubicacion = $"Personaje {++indice}";
+            if (objeto.ValueKind != JsonValueKind.Object) throw new FormatException($"{ubicacion}: se esperaba un objeto.");
+            if (objeto.TryGetProperty("nombre", out var nombre) && nombre.ValueKind == JsonValueKind.String)
+                ubicacion += $" ({nombre.GetString()})";
+            foreach (string campo in new[] { "nombre", "descripcion", "ascii", "fuerza", "velocidad", "resistencia", "inteligencia", "energia", "habilidad" })
+            {
+                bool texto = campo is "nombre" or "descripcion" or "ascii";
+                if (!objeto.TryGetProperty(campo, out var valor) || (texto ? valor.ValueKind != JsonValueKind.String : valor.ValueKind != JsonValueKind.Number || !valor.TryGetInt32(out _)))
+                    throw new FormatException($"{ubicacion}: {campo} es obligatorio y debe ser {(texto ? "texto" : "entero")}.");
+            }
+            if (objeto.EnumerateObject().Any(p => p.Name.Equals("id", StringComparison.OrdinalIgnoreCase) || p.Name.Equals("idPersonaje", StringComparison.OrdinalIgnoreCase)))
+                throw new FormatException($"{ubicacion}: el ID lo asigna el servidor.");
+            if (!nombres.Add(nombre.GetString()!.Trim())) throw new FormatException($"{ubicacion}: nombre duplicado.");
+        }
+    }
+
+    private static async Task<int> Enviar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida, JsonElement datos)
+    {
+        bool enviado = false;
         try
         {
+            using var resumen = new HttpRequestMessage(HttpMethod.Get, "/api/v1/personajes/resumen");
+            resumen.Headers.Authorization = new AuthenticationHeaderValue("Bearer", credencial);
+            using var consulta = await cliente.SendAsync(resumen);
+            if (!consulta.IsSuccessStatusCode) return await Rechazo(consulta, salida);
+            var actual = await consulta.Content.ReadFromJsonAsync<Resumen>();
+            if (actual?.Cantidad is null or < 0) throw new JsonException("Resumen inválido.");
+            salida.WriteLine($"Catálogo actual: {actual.Cantidad}. Personajes del JSON: {datos.GetArrayLength()}.");
             while (true)
             {
-                string nombre = lector.Validar("Nombre", v => !string.IsNullOrWhiteSpace(v), "El nombre no puede estar vacío.");
-                string descripcion = PedirTexto("Descripción (opcional)");
-                var lineas = new string[PedirEntero("Cantidad de líneas de arte ASCII", 0, 25)];
-                for (int i = 0; i < lineas.Length; i++)
+                salida.WriteLine("¿Reemplazar el catálogo? (sí/no)");
+                string? respuesta = entrada.ReadLine()?.Trim();
+                if (respuesta is null || respuesta.Equals("no", StringComparison.OrdinalIgnoreCase))
                 {
-                    while (true)
-                    {
-                        string linea = PedirTexto($"Línea {i + 1} de arte ASCII");
-                        if (linea.Length <= 120 && !linea.Contains('\t'))
-                        {
-                            lineas[i] = linea;
-                            break;
-                        }
-                        salida.WriteLine("Usá hasta 120 caracteres sin tabulaciones.");
-                    }
-                }
-
-                string[] etiquetas = ["Fuerza", "Velocidad", "Resistencia", "Inteligencia", "Energía", "Habilidad"];
-                int[] atributos;
-                while (true)
-                {
-                    atributos = etiquetas.Select(e => PedirEntero(e, 250, 750)).ToArray();
-                    if (atributos.Sum() == 3000 && atributos.Max() >= 650 && atributos.Min() <= 350)
-                        break;
-                    salida.WriteLine("Los seis atributos deben sumar 3000, incluir uno de al menos 650 y uno de hasta 350. Volvé a ingresar los seis valores.");
-                }
-
-                var datos = new
-                {
-                    nombre,
-                    descripcion,
-                    ascii = string.Join('\n', lineas),
-                    fuerza = atributos[0],
-                    velocidad = atributos[1],
-                    resistencia = atributos[2],
-                    inteligencia = atributos[3],
-                    energia = atributos[4],
-                    habilidad = atributos[5]
-                };
-
-                using var solicitud = new HttpRequestMessage(HttpMethod.Post, "/api/v1/personajes");
-                solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", credencial);
-                solicitud.Content = JsonContent.Create(datos);
-                using var respuesta = await cliente.SendAsync(solicitud);
-                if (respuesta.StatusCode != HttpStatusCode.Created)
-                {
-                    salida.WriteLine(respuesta.StatusCode switch
-                    {
-                        HttpStatusCode.BadRequest => "El servidor rechazó los datos del personaje.",
-                        HttpStatusCode.Unauthorized => "La credencial de catálogo no es válida.",
-                        _ => $"El servidor rechazó el alta (HTTP {(int)respuesta.StatusCode})."
-                    });
-                    return 1;
-                }
-
-                // El alta se confirma cuando la respuesta incluye el identificador asignado por el servidor.
-                var alta = await respuesta.Content.ReadFromJsonAsync<AltaConfirmada>();
-                if (alta is null || alta.IdPersonaje <= 0)
-                {
-                    salida.WriteLine("El servidor no devolvió un ID de personaje válido.");
-                    return 1;
-                }
-
-                salida.WriteLine($"Personaje cargado. ID {alta.IdPersonaje}");
-                salida.WriteLine("¿Deseás cargar otro personaje? (sí/no)");
-                string? continuar = entrada.ReadLine()?.Trim();
-                while (continuar is not null && !continuar.Equals("no", StringComparison.OrdinalIgnoreCase) &&
-                    !EsSi(continuar))
-                {
-                    salida.WriteLine("Respondé sí o no.");
-                    continuar = entrada.ReadLine()?.Trim();
-                }
-                if (continuar is null || !EsSi(continuar))
+                    salida.WriteLine("Carga cancelada. Catálogo sin cambios.");
                     return 0;
+                }
+                if (respuesta.Equals("sí", StringComparison.OrdinalIgnoreCase) || respuesta.Equals("si", StringComparison.OrdinalIgnoreCase)) break;
+                salida.WriteLine("Respondé sí o no.");
             }
+            using var solicitud = new HttpRequestMessage(HttpMethod.Put, "/api/v1/personajes");
+            solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", credencial);
+            solicitud.Content = JsonContent.Create(datos);
+            enviado = true;
+            using var respuestaCarga = await cliente.SendAsync(solicitud);
+            if (!respuestaCarga.IsSuccessStatusCode) return await Rechazo(respuestaCarga, salida);
+            var resultado = await respuestaCarga.Content.ReadFromJsonAsync<Resumen>();
+            if (resultado?.Cantidad != datos.GetArrayLength()) throw new JsonException("Confirmación inválida.");
+            salida.WriteLine($"Catálogo reemplazado. Personajes cargados: {resultado.Cantidad}.");
+            return 0;
         }
-        catch (EndOfStreamException)
+        catch (Exception error) when (error is HttpRequestException or OperationCanceledException or JsonException or IOException)
         {
-            salida.WriteLine("La entrada terminó antes de completar el personaje.");
-            return 1;
-        }
-        catch (Exception error) when (error is HttpRequestException or OperationCanceledException or JsonException)
-        {
-            salida.WriteLine("No se pudo confirmar el alta con el servidor.");
+            salida.WriteLine(enviado ? "No se pudo confirmar el resultado de la carga. El catálogo puede haber sido reemplazado. No se reintentará automáticamente." : "No se pudo consultar el catálogo del servidor. No se envió el reemplazo.");
             return 1;
         }
     }
 
-    private static bool EsSi(string respuesta) =>
-        respuesta.Equals("sí", StringComparison.OrdinalIgnoreCase) ||
-        respuesta.Equals("si", StringComparison.OrdinalIgnoreCase);
+    private static async Task<int> Rechazo(HttpResponseMessage respuesta, TextWriter salida)
+    {
+        string causa = respuesta.StatusCode == System.Net.HttpStatusCode.Unauthorized ? "La credencial de catálogo no es válida." : "El servidor rechazó la operación.";
+        try
+        {
+            using var json = JsonDocument.Parse(await respuesta.Content.ReadAsStringAsync());
+            if (json.RootElement.TryGetProperty("mensaje", out var mensaje)) causa = mensaje.GetString() ?? causa;
+        }
+        catch (JsonException) { }
+        salida.WriteLine($"HTTP {(int)respuesta.StatusCode}: {causa}");
+        return 1;
+    }
 
-    private sealed record AltaConfirmada(int IdPersonaje);
+    private sealed record Resumen(int? Cantidad);
 }

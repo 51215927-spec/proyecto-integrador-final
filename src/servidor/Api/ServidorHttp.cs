@@ -83,16 +83,30 @@ internal static class ServidorHttp
         app.MapPost("/api/v1/personajes",
             (AltaPersonaje datos, HttpContext contexto, RepositorioJuego juego) =>
             {
-                var esperada = app.Configuration["Catalogo:Credencial"];
-                var recibida = Credencial(contexto);
-                if (string.IsNullOrWhiteSpace(esperada) || recibida is null ||
-                    !CryptographicOperations.FixedTimeEquals(
-                        SHA256.HashData(Encoding.UTF8.GetBytes(esperada)),
-                        SHA256.HashData(Encoding.UTF8.GetBytes(recibida))))
-                    throw new ErrorApi(401, "credencialInvalida", "La credencial no es válida.");
+                ExigirCatalogo(contexto);
 
                 return Results.Json(new { idPersonaje = juego.DarDeAlta(datos) }, statusCode: 201);
             });
+        void ExigirCatalogo(HttpContext contexto)
+        {
+            var esperada = app.Configuration["Catalogo:Credencial"];
+            var recibida = Credencial(contexto);
+            if (string.IsNullOrWhiteSpace(esperada) || recibida is null ||
+                !CryptographicOperations.FixedTimeEquals(
+                    SHA256.HashData(Encoding.UTF8.GetBytes(esperada)),
+                    SHA256.HashData(Encoding.UTF8.GetBytes(recibida))))
+                throw new ErrorApi(401, "credencialInvalida", "La credencial no es válida.");
+        }
+        app.MapGet("/api/v1/personajes/resumen", (HttpContext contexto, RepositorioJuego juego) =>
+        {
+            ExigirCatalogo(contexto);
+            return Results.Ok(new { cantidad = juego.CantidadCatalogo() });
+        });
+        app.MapPut("/api/v1/personajes", (System.Text.Json.JsonElement datos, HttpContext contexto, RepositorioJuego juego) =>
+        {
+            ExigirCatalogo(contexto);
+            return Results.Ok(new { cantidad = juego.ReemplazarCatalogo(LotePersonajes.Leer(datos)) });
+        });
         var partidas = app.MapGroup("/api/v1/partidas/{id}");
         partidas.MapPut("/participantes/me/sesion",
             (Guid id, Incorporacion datos, HttpContext contexto, RepositorioJuego juego) =>

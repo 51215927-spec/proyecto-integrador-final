@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,10 +39,10 @@ namespace Proyecto_Integrador_Final
             int habilidad)
         {
             if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre no puede estar vacío.");
+                throw new ArgumentException("El nombre no puede estar vacío.", nameof(nombre));
 
             if (ascii == null)
-                throw new ArgumentException("El ASCII no puede ser nulo.");
+                throw new ArgumentException("El ASCII no puede ser nulo.", nameof(ascii));
 
             this.nombre = nombre;
             this.ascii = ascii;
@@ -63,21 +63,21 @@ namespace Proyecto_Integrador_Final
             int suma = fuerza + velocidad + resistencia
                      + inteligencia + energia + habilidad;
 
-            if (fuerza < 250 || fuerza > 750 ||
-                velocidad < 250 || velocidad > 750 ||
-                resistencia < 250 || resistencia > 750 ||
-                inteligencia < 250 || inteligencia > 750 ||
-                energia < 250 || energia > 750 ||
-                habilidad < 250 || habilidad > 750)
+            foreach (var (campo, valor) in new[]
             {
-                throw new ArgumentException(
-                    "Todos los atributos deben estar entre 250 y 750.");
+                (nameof(fuerza), fuerza), (nameof(velocidad), velocidad),
+                (nameof(resistencia), resistencia), (nameof(inteligencia), inteligencia),
+                (nameof(energia), energia), (nameof(habilidad), habilidad)
+            })
+            {
+                if (valor < 250 || valor > 750)
+                    throw new ArgumentException("El atributo debe estar entre 250 y 750.", campo);
             }
 
             if (suma != 3000)
             {
                 throw new ArgumentException(
-                    "La suma de los atributos debe ser exactamente 3000.");
+                    "La suma de los atributos debe ser exactamente 3000.", "atributos");
             }
 
             if (fuerza < 650 && velocidad < 650 &&
@@ -85,7 +85,7 @@ namespace Proyecto_Integrador_Final
                 energia < 650 && habilidad < 650)
             {
                 throw new ArgumentException(
-                    "Al menos un atributo debe ser mayor o igual a 650.");
+                    "Al menos un atributo debe ser mayor o igual a 650.", "atributos");
             }
 
             if (fuerza > 350 && velocidad > 350 &&
@@ -93,7 +93,7 @@ namespace Proyecto_Integrador_Final
                 energia > 350 && habilidad > 350)
             {
                 throw new ArgumentException(
-                    "Al menos un atributo debe ser menor o igual a 350.");
+                    "Al menos un atributo debe ser menor o igual a 350.", "atributos");
             }
         }
 

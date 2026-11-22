@@ -46,6 +46,34 @@ internal sealed partial class RepositorioJuego : IDisposable
         });
     }
 
+    internal int CantidadCatalogo() => Ejecutar(false, db => db.Catalogo.Count());
+
+    internal int ReemplazarCatalogo(AltaPersonaje[] datos)
+    {
+        if (datos.Length == 0) throw LotePersonajes.Invalido("La lista no puede estar vacía.");
+        var nombres = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var personajes = datos.Select((dato, indice) =>
+        {
+            try
+            {
+                var personaje = dato.Validar();
+                if (!nombres.Add(personaje.Nombre.Trim())) throw LotePersonajes.Invalido("nombre duplicado.");
+                personaje.Id = indice + 1;
+                return personaje;
+            }
+            catch (ErrorApi error)
+            {
+                throw LotePersonajes.Invalido($"Personaje {indice + 1} ({dato.Nombre}): {error.Message}");
+            }
+        }).ToArray();
+        return Ejecutar(true, db =>
+        {
+            db.Catalogo.ExecuteDelete();
+            db.Catalogo.AddRange(personajes);
+            return personajes.Length;
+        });
+    }
+
     internal PartidaCreada CrearPartida()
     {
         var id = Guid.NewGuid();

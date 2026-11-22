@@ -6,20 +6,20 @@ internal sealed record AltaPersonaje(
 {
     internal PersonajeCatalogo Validar()
     {
-        if (Descripcion is null || Ascii is null || Ascii.Contains('\t'))
-            throw ErrorApi.Entrada();
-
+        if (Descripcion is null) throw LotePersonajes.Invalido("descripcion: debe ser texto no nulo.");
+        if (Ascii is null) throw LotePersonajes.Invalido("ascii: debe ser texto no nulo.");
+        if (Ascii.Contains('\t')) throw LotePersonajes.Invalido("ascii: no admite tabulaciones.");
         var lineas = Ascii.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         if (lineas.Length > 25 || lineas.Any(linea => linea.Length > 120))
-            throw ErrorApi.Entrada();
+            throw LotePersonajes.Invalido("ascii: admite hasta 25 líneas de 120 caracteres.");
 
         try
         {
             _ = new Personaje(Nombre!, Ascii, Fuerza, Velocidad, Resistencia, Inteligencia, Energia, Habilidad);
         }
-        catch (ArgumentException)
+        catch (ArgumentException error)
         {
-            throw ErrorApi.Entrada();
+            throw LotePersonajes.Invalido($"{error.ParamName}: {error.Message}");
         }
 
         return new()

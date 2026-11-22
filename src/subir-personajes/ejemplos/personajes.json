@@ -1,0 +1,68 @@
+[
+  {
+    "nombre": "Lysander",
+    "descripcion": "Personaje de ejemplo.",
+    "ascii": "  O\n /|\\\n / \\",
+    "fuerza": 750,
+    "velocidad": 550,
+    "resistencia": 450,
+    "inteligencia": 550,
+    "energia": 350,
+    "habilidad": 350
+  },
+  {
+    "nombre": "Reched",
+    "descripcion": "Personaje de ejemplo.",
+    "ascii": "  O\n /|\\\n / \\",
+    "fuerza": 350,
+    "velocidad": 750,
+    "resistencia": 450,
+    "inteligencia": 450,
+    "energia": 600,
+    "habilidad": 400
+  },
+  {
+    "nombre": "Vigía",
+    "descripcion": "Personaje de ejemplo.",
+    "ascii": "  O\n /|\\\n / \\",
+    "fuerza": 500,
+    "velocidad": 350,
+    "resistencia": 700,
+    "inteligencia": 500,
+    "energia": 550,
+    "habilidad": 400
+  },
+  {
+    "nombre": "Centinela",
+    "descripcion": "Personaje de ejemplo.",
+    "ascii": "  O\n /|\\\n / \\",
+    "fuerza": 750,
+    "velocidad": 350,
+    "resistencia": 550,
+    "inteligencia": 400,
+    "energia": 450,
+    "habilidad": 500
+  },
+  {
+    "nombre": "Oráculo",
+    "descripcion": "Personaje de ejemplo.",
+    "ascii": "  O\n /|\\\n / \\",
+    "fuerza": 350,
+    "velocidad": 500,
+    "resistencia": 450,
+    "inteligencia": 750,
+    "energia": 500,
+    "habilidad": 450
+  },
+  {
+    "nombre": "Lancero",
+    "descripcion": "Personaje de ejemplo.",
+    "ascii": "  O\n /|\\\n / \\",
+    "fuerza": 700,
+    "velocidad": 650,
+    "resistencia": 450,
+    "inteligencia": 250,
+    "energia": 450,
+    "habilidad": 500
+  }
+]
