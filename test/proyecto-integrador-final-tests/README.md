@@ -20,3 +20,7 @@ Estas variables son del arnés de pruebas; los programas se operan mediante preg
 ## Cliente REST
 
 Las pruebas del spec 001 cubren configuración, transporte con HttpMessageHandler controlado, coordinación con TimeProvider sustituible, privacidad y recibos contra servidor local con SQLite temporal y contratos del ejecutable. Las demostraciones anteriores se prueban directamente como auxiliar interno; no se ofrecen desde Program. Las tres DLL de contrato deben apuntar al mismo worktree que se compila y prueba. [Evidencia y límites](../../docs/plan-de-pruebas.md#cliente-rest-spec-001)
+
+## Carga JSON
+
+`CargaJsonTests` verifica formato y dominio, endpoints autenticados, reemplazo exacto al reabrir y rollback real de SQLite mediante un trigger. `ConsolaAltaTests` cubre rutas, confirmación/cancelación y errores sin reintentos. El recorrido de `EntradaProcesosContratoTests` carga el JSON de seis ejemplos desde el ejecutable, reemplaza, repite, cancela y rechaza datos inválidos. Requiere `GUERRA_CARGA_DLL` del mismo worktree para localizar tanto el binario como su archivo de ejemplos. [Resultados del spec 005](../../docs/plan-de-pruebas.md#sistema-de-carga-json-spec-005).

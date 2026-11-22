@@ -2,7 +2,7 @@
 
 ## Entrada de datos en ejecución
 
-El servidor, el cliente y la herramienta de carga se inician sin argumentos de aplicación ni variables de entorno de usuario. Cada uno solicita sus datos por consola. Una entrada inválida vuelve a pedir el campo; el fin de entrada cierra el programa sin aplicar una acción incompleta. Las credenciales ingresadas no se muestran en una terminal interactiva ni en los diagnósticos. Con entrada redirigida se leen por líneas.
+El servidor y el cliente solicitan su configuración por consola. La herramienta de carga acepta una ruta JSON como argumento opcional; si falta, la solicita. No se necesitan variables de entorno de usuario. La configuración de conexión permite corregir campos; un error de archivo o carga finaliza sin reintento automático. El fin de entrada cancela las acciones incompletas. Las credenciales ingresadas no se muestran en una terminal interactiva ni en los diagnósticos. Con entrada redirigida se leen por líneas.
 
 ## Instalación de herramientas y dependencias
 
@@ -73,15 +73,15 @@ El cliente solicita URL base, UUID de partida, credencial de plaza y nombre. Nec
 
 Las dependencias y los comandos del servidor están en [API y operación del servidor](protocolo-de-partida.md#operación-del-servidor).
 
-## Cargar personajes manualmente
+## Cargar personajes desde JSON
 
-Con el servidor en ejecución y el alta habilitada mediante una credencial no vacía, iniciá la carga desde otra terminal, en la raíz del repositorio.
+Con el servidor en ejecución y una credencial de catálogo no vacía, ejecutá desde la raíz:
 
 ```sh
-dotnet run --project src/subir-personajes
+dotnet run --project src/subir-personajes -- "src/subir-personajes/ejemplos/personajes.json"
 ```
 
-La consola pide primero la URL: Enter usa `http://localhost:5000`; para otro equipo ingresá su dirección de red. Después pide la misma credencial de catálogo que ingresaste en el servidor. Completá nombre, descripción opcional y cantidad de líneas de arte ASCII (0 a 25, hasta 120 caracteres por línea y sin tabulaciones). Luego ingresá los seis atributos. Si la distribución no suma 3000 o no cumple los umbrales de 650 y 350, se piden nuevamente los seis valores antes de enviar el alta. Tras validar y guardar el personaje, el servidor devuelve su ID. Cargá al menos seis personajes activos antes de iniciar una partida.
+Podés indicar otro archivo de personajes reales u omitir el argumento para que se solicite la ruta. Luego se piden URL y credencial. La herramienta muestra ambas cantidades y pide confirmación antes de **reemplazar todo el catálogo** con el JSON. Cargá al menos seis personajes válidos y distintos para jugar. No se cargan ejemplos automáticamente. Consultá el [formato, validaciones, cancelación y errores](../src/subir-personajes/README.md).
 
 ## Cómo iniciar una partida
 
@@ -92,7 +92,7 @@ dotnet run --project src/servidor/servidor.csproj
 ```
 
 - Respondé las preguntas de inicio: dirección de escucha (Enter: `http://0.0.0.0:5000`), archivo SQLite (Enter: `guerra.db`) y credencial de catálogo. Una credencial vacía deshabilita las altas y se informa en pantalla. La ruta relativa de la base se interpreta desde el directorio de ejecución; su directorio debe existir y permitir escritura.
-- Con el servidor en ejecución, usá otra terminal para [cargar personajes](#cargar-personajes-manualmente) hasta tener al menos seis activos en el catálogo.
+- Con el servidor en ejecución, usá otra terminal para [cargar personajes](#cargar-personajes-desde-json) con un JSON de al menos seis personajes en el catálogo.
 - Escribí `crear` y pulsá Enter en la consola del servidor. Copiá el UUID que aparece junto a `Partida` y entregale a cada jugador la credencial de su plaza (`J1` o `J2`).
 - En otras dos terminales, ejecutá `dotnet run --project src/cliente`. Cada jugador ingresa la URL del servidor, el UUID de partida, su credencial de plaza y su nombre. Ambos esperan el inicio; las sesiones se renuevan automáticamente.
 - En la consola del servidor, escribí `iniciar`, pulsá Enter y respondé con el UUID que mostró `crear`. Si aparece «Partida iniciada.», el servidor repartió tres cartas a cada jugador y J1 puede elegir la primera carta y el atributo.

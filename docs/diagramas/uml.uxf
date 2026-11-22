@@ -192,7 +192,7 @@ TipoAtributo
     <panel_attributes>Distribucion por procesos:
 Servidor: dominio y CoordinadorServidor.
 Clientes: CoordinadorCliente e InterfazConsola.
-Catalogo: alta manual mediante la API.
+Catalogo: reemplazo desde JSON mediante la API.
 Comunicacion HTTP: ver Arquitectura.
 Ampliacion propuesta: Comunicacion.uxf y Protocolo-partida.md.
 Sin implementacion; red Windows pendiente de verificar.</panel_attributes>

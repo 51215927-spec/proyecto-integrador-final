@@ -363,18 +363,15 @@ Identifica fuerza, velocidad, resistencia, inteligencia, energía y habilidad.
 
 ### [src/subir-personajes/Program.cs](../src/subir-personajes/Program.cs)
 
-**`internal static class Program`**
+`Program.Main(string[] args)` pasa los argumentos y la consola a `ConsolaAlta.Iniciar`.
 
-- `private static Task<int> Main()` — Delega en `ConsolaAlta.Iniciar` con la entrada y salida del proceso, sin argumentos de aplicación.
+`ConsolaAlta.Iniciar(TextReader entrada, TextWriter salida, string[]? args = null)` lee el JSON de la ruta indicada o solicitada y configura URL y credencial. `Ejecutar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida, string? ruta = null)` permite comprobar el mismo flujo con un cliente controlado. Se valida formato y duplicados antes de consultar el resumen. Tras confirmar se envía un único PUT; cancelación y éxito devuelven 0, errores devuelven 1. Una respuesta perdida informa resultado incierto sin reintentar.
 
-**`internal static class ConsolaAlta`**
+### [src/servidor/Api/LotePersonajes.cs](../src/servidor/Api/LotePersonajes.cs)
 
-- `internal static async Task<int> Iniciar(TextReader entrada, TextWriter salida)` — Solicita URL (Enter: `http://localhost:5000`) y credencial no vacía antes del personaje. Configura el cliente HTTP sin redirecciones y delega la carga. Fin de entrada incompleta devuelve 1.
+`LotePersonajes.Leer(JsonElement raiz)` exige lista no vacía, objetos con los nueve campos y tipos, sin ID ni nombres duplicados normalizados. Devuelve `AltaPersonaje[]`; los errores identifican índice, nombre disponible y campo. `AltaPersonaje.Validar` conserva la autoridad sobre las reglas de dominio.
 
-- `internal static async Task<int> Ejecutar(HttpClient cliente, string credencial, TextReader entrada, TextWriter salida)` — Lee y permite corregir nombre, ASCII y atributos (rango, suma y especialización) antes de enviar el alta autenticada y confirma únicamente una respuesta `201` con ID positivo. Devuelve 0 al cerrar tras una carga confirmada y 1 ante rechazo, ID inválido, entrada incompleta o fallo de comunicación o deserialización.
-- `private static bool EsSi(string respuesta)` — Devuelve si `respuesta` equivale a `sí` o `si`, sin distinguir mayúsculas.
-
-**`private sealed record AltaConfirmada(int IdPersonaje)`**
+`RepositorioJuego.CantidadCatalogo()` cuenta activos e inactivos. `ReemplazarCatalogo(AltaPersonaje[] datos)` valida todo el lote antes de escribir, elimina el catálogo sin rastrear filas antiguas e inserta IDs 1..N activos en una única transacción. Un fallo revierte borrado e inserciones. Las tablas de partidas se conservan.
 
 ## Entrada de consola compartida
 
@@ -453,8 +450,11 @@ Los casos se agrupan por archivo. Las verificaciones de ejecución están en [Pl
 
 **`public class ConsolaAltaTests`**
 
-- `public async Task CargaDosPersonajesManualmenteYConfirmaSusIds()` — Alimenta dos formularios por texto, envía las dos altas a un servidor local con SQLite en memoria y comprueba los IDs impresos.
-- `public async Task UnAltaRechazadaNoSeAnunciaComoConfirmada()` — Provoca una respuesta no autorizada y comprueba el mensaje y código de salida.
+Las pruebas comprueban lectura desde ruta absoluta o relativa con espacios, cantidades, confirmación explícita, cancelación y EOF sin PUT, errores de archivo/formato y HTTP, y respuesta perdida sin reintento ni falso rollback.
+
+### [test/proyecto-integrador-final-tests/CargaJsonTests.cs](../test/proyecto-integrador-final-tests/CargaJsonTests.cs)
+
+Verifica campos obligatorios y tipos estrictos, duplicados normalizados, reglas de dominio, endpoints autenticados y rechazo sin cambios. Con SQLite temporal comprueba datos exactos al reabrir y un fallo real de inserción mediante trigger después del borrado, conservando el catálogo previo.
 
 ### [test/proyecto-integrador-final-tests/ConsolaServidorTests.cs](../test/proyecto-integrador-final-tests/ConsolaServidorTests.cs)
 
@@ -572,4 +572,4 @@ Las pruebas verifican ayuda sin argumentos, corrección del UUID, elección de p
 
 ### Pruebas de entrada interactiva
 
-[ConfiguracionServidorTests](../test/proyecto-integrador-final-tests/ConfiguracionServidorTests.cs) cubre valores iniciales, configuración personalizada, corrección y fin de entrada. [EntradaProcesosContratoTests](../test/proyecto-integrador-final-tests/EntradaProcesosContratoTests.cs) arranca los tres ejecutables sin argumentos de aplicación y verifica EOF, cierre del host, corrección de una base inválida y alta real por HTTP. Las ampliaciones de `ConsolaAltaTests` verifican el orden de las preguntas y las validaciones. `ClienteConsolaContratoTests` conserva las variantes de demostración mediante el auxiliar interno; el ejecutable REST se verifica con los contratos de arranque y proceso del spec 001. [Evidencia por criterio](plan-de-pruebas.md#evidencia-del-spec-003)
+[ConfiguracionServidorTests](../test/proyecto-integrador-final-tests/ConfiguracionServidorTests.cs) cubre valores iniciales, configuración personalizada, corrección y fin de entrada. [EntradaProcesosContratoTests](../test/proyecto-integrador-final-tests/EntradaProcesosContratoTests.cs) arranca los tres ejecutables y verifica EOF, cierre del host, corrección de una base inválida y carga JSON real por HTTP, con ruta como argumento o pregunta. Las ampliaciones de `ConsolaAltaTests` verifican confirmación, cancelación, formato y transporte incierto. `ClienteConsolaContratoTests` conserva las variantes de demostración mediante el auxiliar interno; el ejecutable REST se verifica con los contratos de arranque y proceso del spec 001. [Evidencia por criterio](plan-de-pruebas.md#evidencia-del-spec-003)
