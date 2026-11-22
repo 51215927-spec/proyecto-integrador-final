@@ -1,108 +1,125 @@
 using System.Net;
 using Proyecto_Integrador_Final.CargaPersonajes;
-using Proyecto_Integrador_Final.Api;
 
 namespace Proyecto_Integrador_Final.Tests;
 
 public class ConsolaAltaTests
 {
-    [Fact]
-    public async Task Inicio_PideUrlYCredencialAntesDelPersonajeYPermiteCorregirlas()
+    [Theory]
+    [InlineData("sí", 1)]
+    [InlineData(" SI ", 1)]
+    [InlineData("no", 0)]
+    [InlineData("", 0)]
+    [InlineData("quizás\nsi", 1)]
+    public async Task ListaPorRutaConfirmaAntesDeUnicoPut(string respuesta, int puts)
     {
-        await using var app = ServidorHttp.Crear([
-            "--urls=http://127.0.0.1:0",
-            "--ConnectionStrings:Juego=Data Source=:memory:",
-            "--Catalogo:Credencial=secreto-003"
-        ]);
-        await app.StartAsync();
+        string ruta = Path.Combine(Path.GetTempPath(), $"carga con espacios {Guid.NewGuid()}.json");
+        await File.WriteAllTextAsync(ruta, CargaJsonTests.Uno);
+        try
+        {
+            using var handler = new Captura();
+            using var cliente = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+            using var salida = new StringWriter();
+            Assert.Equal(0, await ConsolaAlta.Ejecutar(cliente, "clave", new StringReader(respuesta), salida, ruta));
+            Assert.Equal(puts, handler.Puts);
+            Assert.Contains("actual: 7", salida.ToString());
+            Assert.Contains("JSON: 1", salida.ToString());
+            Assert.DoesNotContain("Nombre:", salida.ToString());
+        }
+        finally { File.Delete(ruta); }
+    }
+
+    [Fact]
+    public async Task RutaInexistenteFinalizaSinConexion()
+    {
         using var salida = new StringWriter();
-        using var entrada = new StringReader($"ftp://incorrecta\n{app.Urls.Single()}\n\nsecreto-003\nAda\n\n0\n250\n350\n450\n550\n650\n750\nno\n");
-        Assert.Equal(0, await ConsolaAlta.Iniciar(entrada, salida));
-        string texto = salida.ToString();
-        Assert.Contains("ID 1", texto);
-        Assert.Contains("http://localhost:5000", texto);
-        Assert.True(texto.IndexOf("Credencial", StringComparison.Ordinal) < texto.IndexOf("Nombre", StringComparison.Ordinal));
-        Assert.DoesNotContain("secreto-003", texto);
+        Assert.Equal(1, await ConsolaAlta.Iniciar(new StringReader(""), salida, ["/no/existe.json"]));
+        Assert.Contains("archivo", salida.ToString());
+    }
+
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ErrorHttpNoReintentaNiAfirmaRollback(bool perdida)
+    {
+        string ruta = Path.GetTempFileName();
+        await File.WriteAllTextAsync(ruta, CargaJsonTests.Uno);
+        try
+        {
+            using var handler = new Fallo(perdida);
+            using var cliente = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+            using var salida = new StringWriter();
+            Assert.Equal(1, await ConsolaAlta.Ejecutar(cliente, "clave", new StringReader("si"), salida, ruta));
+            Assert.Equal(2, handler.Solicitudes);
+            Assert.DoesNotContain("Catálogo reemplazado", salida.ToString());
+            Assert.Contains(perdida ? "No se pudo confirmar el resultado" : "Personaje 1 (Ada): fuerza", salida.ToString());
+        }
+        finally { File.Delete(ruta); }
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("\n")]
-    [InlineData("\nclave\n")]
-    [InlineData("incorrecta\n")]
-    public async Task Inicio_FinDeEntradaSaleSinEnviarPersonaje(string texto)
+    [InlineData("{")]
+    [InlineData("[]")]
+    [InlineData("null")]
+    [InlineData("[{}]")]
+    [InlineData("[1]")]
+    public async Task ArchivoInvalidoNoEnviaHttp(string json)
     {
-        using var salida = new StringWriter();
-        Assert.Equal(1, await ConsolaAlta.Iniciar(new StringReader(texto), salida));
-        Assert.DoesNotContain("Personaje cargado", salida.ToString());
+        string ruta = Path.GetTempFileName();
+        await File.WriteAllTextAsync(ruta, json);
+        try
+        {
+            using var handler = new Captura();
+            using var cliente = new HttpClient(handler);
+            using var salida = new StringWriter();
+            Assert.Equal(1, await ConsolaAlta.Ejecutar(cliente, "clave", new StringReader(""), salida, ruta));
+            Assert.Equal(0, handler.Puts);
+            Assert.Contains("archivo", salida.ToString());
+        }
+        finally { File.Delete(ruta); }
     }
 
     [Fact]
-    public async Task DatosInvalidos_SeCorrigenAntesDeEnviarElAlta()
+    public async Task RutaRelativaConEspaciosYFinDeEntradaEnConfirmacionCancela()
     {
-        using var handler = new AltaCapturada();
-        using var cliente = new HttpClient(handler) { BaseAddress = new Uri("http://localhost:5000") };
-        using var entrada = new StringReader("\nAda\n\n1\n\t\n*\n500\n500\n500\n500\n500\n500\n250\n350\n450\n550\n650\n750\nno\n");
-        using var salida = new StringWriter();
-        Assert.Equal(0, await ConsolaAlta.Ejecutar(cliente, "secreto-003", entrada, salida));
-        Assert.Equal(1, handler.Cantidad);
-        Assert.Contains("3000", salida.ToString());
-        Assert.DoesNotContain("secreto-003", salida.ToString());
+        string ruta = Path.Combine(Path.GetTempPath(), $"ruta con espacios {Guid.NewGuid()}.json");
+        await File.WriteAllTextAsync(ruta, CargaJsonTests.Uno);
+        try
+        {
+            using var handler = new Captura();
+            using var cliente = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+            using var salida = new StringWriter();
+            string relativa = Path.GetRelativePath(Environment.CurrentDirectory, ruta);
+            Assert.Equal(0, await ConsolaAlta.Ejecutar(cliente, "clave", new StringReader(relativa + "\n"), salida));
+            Assert.Equal(0, handler.Puts);
+            Assert.Contains("Carga cancelada", salida.ToString());
+        }
+        finally { File.Delete(ruta); }
     }
 
-    private sealed class AltaCapturada : HttpMessageHandler
+    private sealed class Fallo(bool perdida) : HttpMessageHandler
     {
-        internal int Cantidad { get; private set; }
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
+        internal int Solicitudes;
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
         {
-            Cantidad++;
-            Assert.Equal(HttpMethod.Post, request.Method);
-            Assert.Equal("/api/v1/personajes", request.RequestUri!.AbsolutePath);
-            Assert.Equal("Bearer", request.Headers.Authorization!.Scheme);
-            Assert.Equal("secreto-003", request.Headers.Authorization.Parameter);
-            using var json = System.Text.Json.JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
-            Assert.Equal("Ada", json.RootElement.GetProperty("nombre").GetString());
-            Assert.Equal("*", json.RootElement.GetProperty("ascii").GetString());
-            Assert.Equal(250, json.RootElement.GetProperty("fuerza").GetInt32());
-            return new HttpResponseMessage(HttpStatusCode.Created) { Content = new StringContent("{\"idPersonaje\":1}") };
+            Solicitudes++;
+            if (request.Method == HttpMethod.Get)
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"cantidad\":0}") });
+            if (perdida) throw new HttpRequestException("Respuesta perdida");
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StringContent("{\"mensaje\":\"Personaje 1 (Ada): fuerza\"}") });
         }
     }
 
-    [Fact]
-    public async Task CargaDosPersonajesManualmenteYConfirmaSusIds()
+    private sealed class Captura : HttpMessageHandler
     {
-        await using var app = ServidorHttp.Crear([
-            "--urls=http://127.0.0.1:0",
-            "--ConnectionStrings:Juego=Data Source=:memory:",
-            "--Catalogo:Credencial=prueba"
-        ]);
-        await app.StartAsync();
-        using var cliente = new HttpClient { BaseAddress = new Uri(app.Urls.Single()) };
-        using var entrada = new StringReader(
-            "Áda\n\n2\n*\n**\n249\n250\n350\n450\n550\n650\n750\nsí\n" +
-            "Lin\nDescripción\n1\n+\n750\n650\n550\n450\n350\n250\nno\n");
-        using var salida = new StringWriter();
-
-        Assert.Equal(0, await ConsolaAlta.Ejecutar(cliente, "prueba", entrada, salida));
-        Assert.Contains("ID 1", salida.ToString());
-        Assert.Contains("ID 2", salida.ToString());
-    }
-
-    [Fact]
-    public async Task UnAltaRechazadaNoSeAnunciaComoConfirmada()
-    {
-        await using var app = ServidorHttp.Crear([
-            "--urls=http://127.0.0.1:0",
-            "--ConnectionStrings:Juego=Data Source=:memory:",
-            "--Catalogo:Credencial=prueba"
-        ]);
-        await app.StartAsync();
-        using var cliente = new HttpClient { BaseAddress = new Uri(app.Urls.Single()) };
-        using var entrada = new StringReader("Ada\n\n1\n*\n250\n350\n450\n550\n650\n750\n");
-        using var salida = new StringWriter();
-
-        Assert.Equal(1, await ConsolaAlta.Ejecutar(cliente, "incorrecta", entrada, salida));
-        Assert.Contains("credencial", salida.ToString(), StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("¿Deseás cargar otro personaje?", salida.ToString());
+        internal int Puts;
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
+        {
+            Assert.Equal("clave", request.Headers.Authorization!.Parameter);
+            if (request.Method == HttpMethod.Put) Puts++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            { Content = new StringContent(request.Method == HttpMethod.Get ? "{\"cantidad\":7}" : "{\"cantidad\":1}") });
+        }
     }
 }
