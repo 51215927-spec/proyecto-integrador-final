@@ -174,7 +174,7 @@ Estas comprobaciones locales no acreditan la integración física entre dos equi
 
 Resultado final (2026-11-23): **207 pruebas aprobadas, 0 fallidas y 0 omitidas**, con las tres DLL de este worktree. Referencia: rama `feature/specc-007-crear-sistema-de-iniciacion-automatica`, base `b4f8412` y cambios locales de esta entrega. Verificación en este mismo worktree con SDK .NET 8.0.133, runtime 8.0.33, SQLite temporal y HTTP loopback. Se observaron ciclos rojo/verde en alta v2 (404 antes de implementar), cola/sala (404), avisos (404), almacenamiento y menú (expectativas pendientes), flujo de procesos y presencia sin estado (200 frente a 204 esperado).
 
-Las pruebas de caracterización añadidas que ya pasaban no se contabilizan como ciclos rojos. La suite conserva pruebas de reglas, privacidad, operaciones duplicadas, rollback y recuperación por recibo. La compatibilidad reabre la fixture anterior, preserva tablas y partidas y admite únicamente la adición de Invitado y AsignacionInvitado. El ingreso manual histórico se prueba mediante Recuperar acceso antiguo.
+Las pruebas de caracterización añadidas que ya pasaban no se contabilizan como ciclos rojos. La suite conserva pruebas de reglas, privacidad, operaciones duplicadas, rollback y recuperación por recibo. La compatibilidad reabre la fixture anterior, preserva tablas y partidas y admite únicamente la adición de Invitado y AsignacionInvitado. Los procesos de cliente ya no ejercitan el ingreso manual histórico, que fue retirado de la interfaz a solicitud del usuario.
 
 | Criterio | Evidencia local |
 |---|---|

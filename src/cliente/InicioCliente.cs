@@ -22,19 +22,9 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
         while (!ct.IsCancellationRequested)
         {
             var opcion = (await Menu(ct, "Inicio", "Elegí qué querés hacer",
-                ["Jugar", "Crear perfil", "Conexión", "Recuperar acceso antiguo", "Salir"])).ToLowerInvariant();
+                ["Jugar", "Crear perfil", "Conexión", "Salir"])).ToLowerInvariant();
             if (opcion is "salir" or "x") return;
             if (opcion is "conexión" or "conexion" or "c") { await CambiarConexion(ct); continue; }
-            if (opcion == "recuperar acceso antiguo")
-            {
-                // Flujo excepcional v1; nunca adjudica por nombre ni reemplaza identidades locales.
-                    interfaz.MostrarInicio(null, "Recuperar acceso", ["URL", "Partida", "Credencial", "Nombre"], 0, servidor.ToString(), "Acceso excepcional de una partida anterior");
-                    var config = await ConfiguracionCliente.LeerAsync(entrada, salida, ct);
-                using var anterior = new ClientePartidaHttp(config, Guid.NewGuid());
-                using var teclado = new EntradaCliente(entrada);
-                await new SesionPartidaCliente(config, anterior, new InterfazConsola()).Ejecutar(teclado, ct);
-                return;
-            }
             bool crearPerfil = opcion is "crear perfil" or "nuevo";
             if (!crearPerfil && opcion is not ("jugar" or "j" or "")) continue;
             InvitadoLocal? invitado = null;

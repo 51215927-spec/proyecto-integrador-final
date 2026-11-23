@@ -93,7 +93,7 @@ La cola es FIFO entre invitados presentes. Cancelar o vencer una sala devuelve a
 
 SSE autentica antes de suscribir y al emitir; entrega invalidaciones agrupadas por invitado. El cliente consulta estado completo al conectar/reconectar y tras avisos, sin polling estable. La conexión usa cabeceras, nunca secretos en URL. Reintentos esperan 1, 2 y 5 segundos; presencia cada cinco y vencimiento a quince. Avisos duplicados o agrupados no aplican jugadas. Presentaciones y recibos v1 conservan las revisiones y privacidad existentes.
 
-Las tablas nuevas son aditivas. Reiniciar conserva identidad y asignación iniciada; descarta presencia, cola y Listo. Los accesos antiguos permanecen utilizables desde Recuperar acceso antiguo con su credencial anterior y nombre registrado. No se vinculan plazas por nombre. El servidor filtra logs rutinarios de peticiones y EF Core a Warning, conservando advertencias y errores.
+Las tablas nuevas son aditivas. Reiniciar conserva identidad y asignación iniciada; descarta presencia, cola y Listo. Las partidas y credenciales antiguas permanecen en la base; el cliente actual no ofrece su recuperación. No se vinculan plazas por nombre. El servidor filtra logs rutinarios de peticiones y EF Core a Warning, conservando advertencias y errores.
 
 ## Administración e identidad (contrato v1)
 

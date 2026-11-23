@@ -1,6 +1,6 @@
 # Cliente
 
-Desde la raíz ejecutá `dotnet run --project src/cliente`. El menú ofrece **Jugar**, **Crear perfil**, **Conexión**, **Recuperar acceso antiguo** y **Salir**. Escribí la opción y Enter. Usa `http://localhost:5000/` por defecto; Conexión permite cambiar y recordar la dirección. En otra computadora usá la dirección del servidor.
+Desde la raíz ejecutá `dotnet run --project src/cliente`. El menú ofrece **Jugar**, **Crear perfil**, **Conexión** y **Salir**. Escribí la opción y Enter. Usa `http://localhost:5000/` por defecto; Conexión permite cambiar y recordar la dirección. En otra computadora usá la dirección del servidor.
 
 La primera vez que elegís Jugar se pide un nombre opcional (Enter: Invitado). Cada perfil tiene su propio acceso y partidas. Podés crear varios desde el mismo usuario del sistema con Crear perfil. El cliente conserva automáticamente esos accesos por servidor en `GuerraCartas`, dentro de los datos locales del usuario (`%LOCALAPPDATA%` en Windows y el directorio de datos del usuario en Unix). La carpeta y los archivos se restringen al usuario. No compartas esos archivos: contienen el acceso para retomar. Cambiar de equipo o borrar el acceso no permite recuperar una partida por nombre.
 
@@ -14,7 +14,6 @@ Los cambios llegan por avisos autenticados; no se consulta periódicamente la pr
 
 Un error de archivo local ofrece Reintentar o Salir sin reemplazar la identidad. Si el servidor rechaza definitivamente el acceso, escribir NUEVO confirma crear otro invitado; esa acción no recupera partidas del anterior. Cada perfil admite una sesión simultánea; distintas terminales del mismo usuario pueden jugar usando perfiles distintos.
 
-**Recuperar acceso antiguo** conserva el ingreso excepcional por URL, UUID, credencial de plaza y nombre exacto. Solo permite acceder con la credencial anterior; no adjudica plazas por nombre ni las vincula automáticamente a un invitado.
 
 Con entrada redirigida se envía una acción por línea; en el juego, línea vacía es Enter y `esc` abre el menú. EOF cierra sin abandonar.
 

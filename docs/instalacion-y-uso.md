@@ -108,7 +108,7 @@ Esc abre el menú: Continuar, Salir sin abandonar y Abandonar partida. La confir
 
 Ante una interrupción de red, esperá la reconexión automática o salí desde Esc. Mientras se recupera, se conserva el último estado confirmado y se bloquean nuevas jugadas. Una elección incierta se comprueba por su recibo antes de reenviar. Si el abandono no pudo confirmarse, el cliente lo advierte al salir.
 
-Para retomar, abrí el cliente en el mismo usuario del sistema y elegí Jugar. Si queda un solo perfil libre lo usa automáticamente; si hay varios libres, elegí el correspondiente por número. Después elegí Retomar. El acceso guardado localiza la partida activa en ese servidor. Una sesión anterior puede seguir ocupada hasta quince segundos. El cliente consulta el estado persistido; no reconstruye salas antiguas ni busca otra partida automáticamente. Para partidas creadas con el flujo anterior, elegí Recuperar acceso antiguo e ingresá los accesos originales. [Almacenamiento y errores de acceso](../src/cliente/README.md).
+Para retomar, abrí el cliente en el mismo usuario del sistema y elegí Jugar. Si queda un solo perfil libre lo usa automáticamente; si hay varios libres, elegí el correspondiente por número. Después elegí Retomar. El acceso guardado localiza la partida activa en ese servidor. Una sesión anterior puede seguir ocupada hasta quince segundos. El cliente consulta el estado persistido; no reconstruye salas antiguas ni busca otra partida automáticamente. [Almacenamiento y errores de acceso](../src/cliente/README.md).
 
 ## Problemas frecuentes
 
@@ -124,7 +124,7 @@ El spec 006 conserva el esquema SQLite: usá el archivo habitual y las credencia
 
 ## Bases existentes con inicio automático
 
-El spec 007 añade Invitado y AsignacionInvitado mediante creación idempotente; conserva todas las tablas anteriores. Hacé una copia de seguridad de SQLite con el servidor detenido antes de actualizar. Las partidas antiguas siguen accesibles mediante Recuperar acceso antiguo, acreditando la credencial de plaza y el nombre exacto registrado. No se reclaman por nombre. Para volver al binario anterior, detené el nuevo y conservá la base y las tablas añadidas; los accesos anteriores continúan disponibles. Los invitados y sus asignaciones solo se usan con la versión nueva.
+El spec 007 añade Invitado y AsignacionInvitado mediante creación idempotente; conserva todas las tablas anteriores. Hacé una copia de seguridad de SQLite con el servidor detenido antes de actualizar. Las partidas antiguas conservan sus filas y credenciales en la base, pero el cliente actual no incluye el flujo para recuperarlas. No se reclaman por nombre. Para volver al binario anterior, detené el nuevo y conservá la base y las tablas añadidas; los accesos anteriores continúan disponibles. Los invitados y sus asignaciones solo se usan con la versión nueva.
 
 ### Actualizar una instancia que ya está abierta
 

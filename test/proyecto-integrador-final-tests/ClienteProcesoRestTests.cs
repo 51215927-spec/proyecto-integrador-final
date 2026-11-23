@@ -7,44 +7,6 @@ namespace Proyecto_Integrador_Final.Tests;
 
 public sealed class ClienteProcesoRestTests
 {
-    [ContratoFact("GUERRA_CLIENTE_DLL")]
-    public async Task ProcesoSeIncorporaReabreSinArchivosYEsperaPlazaHastaLiberacion()
-    {
-        await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", "--ConnectionStrings:Juego=Data Source=:memory:"]);
-        var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
-        var partida = juego.CrearPartida();
-        await app.StartAsync();
-        string directorio = Path.Combine(Path.GetTempPath(), $"guerra-proceso-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(directorio);
-        try
-        {
-            await using (var primera = new Proceso(directorio))
-            {
-                await primera.Enviar($"recuperar acceso antiguo\n{app.Urls.Single()}\n{partida.Id}\n{partida.CredencialJ1}\nAna\n");
-                await primera.Esperar("Esperando inicio");
-                Assert.DoesNotContain(partida.CredencialJ1, primera.Texto);
-                primera.CerrarEntrada();
-                await primera.Terminar();
-                Assert.Contains("Salida local", primera.Texto);
-            }
-            await using (var segunda = new Proceso(directorio))
-            {
-                await segunda.Enviar($"recuperar acceso antiguo\n{app.Urls.Single()}\n{partida.Id}\n{partida.CredencialJ1}\nAna\n");
-                await segunda.Esperar("Sesión ocupada");
-                app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
-                await segunda.Esperar("Esperando inicio");
-                await segunda.Enviar("esc\ns\n\n");
-                await segunda.Terminar();
-                Assert.DoesNotContain("Final confirmado", segunda.Texto);
-            }
-            Assert.Empty(Directory.GetFiles(directorio));
-            Assert.Equal("esperandoInicio", juego.Presentacion(partida.Id, partida.CredencialJ2,
-                app.Services.GetRequiredService<AdministradorSesiones>().Incorporar(partida.Id, partida.CredencialJ2, new(Guid.NewGuid(), "Ada")).IdSesion).Fase);
-            await app.StopAsync();
-        }
-        finally { Directory.Delete(directorio, true); }
-    }
-
     private sealed class Proceso : IAsyncDisposable
     {
         private readonly Process proceso;
