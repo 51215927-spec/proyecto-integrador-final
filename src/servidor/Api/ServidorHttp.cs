@@ -153,7 +153,7 @@ internal static class ServidorHttp
                 Guid.TryParse(contexto.Request.Headers["X-Invitado"], out var invitado) ? invitado : Guid.Empty,
                 Credencial(contexto), IdSesion(contexto), accion);
         app.MapGet("/api/v2/acceso", (HttpContext c) => Results.Ok(Acceso(c, "estado")));
-        foreach (var accion in new[] { "sesion", "jugar", "listo", "cancelar", "salir" })
+        foreach (var accion in new[] { "sesion", "jugar", "cancelar", "salir" })
         {
             var operacion = accion;
             app.MapPut($"/api/v2/acceso/{operacion}", (HttpContext c) => Results.Ok(Acceso(c, operacion)));

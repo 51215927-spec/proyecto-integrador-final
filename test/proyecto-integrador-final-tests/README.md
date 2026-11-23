@@ -33,7 +33,7 @@ La suite del spec 006 aprobó **190 pruebas, 0 fallidas y 0 omitidas**, con las 
 
 ## Inicio automático
 
-Los casos v2 cubren invitado persistente, cola/sala/Listo, presencia, cancelación frente a inicio, rollback de asignaciones, reinicio y avisos SSE autenticados. AccesoLocalTests comprueba permisos Unix y corrupción; AislamientoInvitadoTests verifica que cambiar de servidor no envíe el secreto anterior y que el reemplazo exija confirmación. IntegracionRespuestaPerdidaTests también ejecuta el coordinador de juego con avisos y acceso automático.
+Los casos v2 cubren invitado persistente, cola y emparejamiento con inicio automático, presencia, cancelación frente a inicio, rollback de asignaciones, reinicio y avisos SSE autenticados. AccesoLocalTests comprueba permisos Unix y corrupción; AislamientoInvitadoTests verifica que cambiar de servidor no envíe el secreto anterior y que el reemplazo exija confirmación. IntegracionRespuestaPerdidaTests también ejecuta el coordinador de juego con avisos y acceso automático.
 
 InicioAutomaticoProcesoTests y AvisosSalaProcesoTests arrancan clientes reales y capturan treinta segundos sin polling en juego y sala. En Unix aíslan usuarios mediante XDG_DATA_HOME. En Windows se omiten de forma explícita para no tocar el perfil real: comprobar con perfiles distintos del mismo usuario o en dos equipos. El cliente ya no ofrece la recuperación manual de partidas antiguas. [Matriz y límites](../../docs/plan-de-pruebas.md#inicio-automático-de-partidas-spec-007).
 

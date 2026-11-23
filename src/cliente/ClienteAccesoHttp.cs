@@ -4,8 +4,8 @@ using System.Text.Json;
 namespace Proyecto_Integrador_Final.Cliente;
 
 internal sealed record DisponibilidadCliente(bool Disponible);
-internal sealed record EstadoAccesoCliente(string Estado, string Nombre, bool Listo, string? Rival,
-    bool RivalListo, string? Aviso, Guid? Partida);
+internal sealed record EstadoAccesoCliente(string Estado, string Nombre, string? Rival,
+    string? Aviso, Guid? Partida);
 internal sealed record AltaAccesoCliente(Guid Id, string Secreto)
 {
     public override string ToString() => "Alta de invitado";

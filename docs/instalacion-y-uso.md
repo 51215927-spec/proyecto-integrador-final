@@ -95,8 +95,8 @@ dotnet run --project src/servidor/servidor.csproj
 - Respondé las preguntas de inicio: dirección de escucha (Enter: `http://0.0.0.0:5000`), archivo SQLite (Enter: `guerra.db`) y credencial de catálogo. Una credencial vacía deshabilita las altas y se informa en pantalla. La ruta relativa de la base se interpreta desde el directorio de ejecución; su directorio debe existir y permitir escritura.
 - Con el servidor en ejecución, usá otra terminal para [cargar personajes](#cargar-personajes-desde-json) con un JSON de al menos seis personajes en el catálogo.
 - Abrí dos terminales del mismo usuario y ejecutá `dotnet run --project src/cliente` en cada una. En la primera elegí Jugar y creá tu primer perfil. En la segunda, elegí Crear perfil e ingresá otro nombre; también podés elegir Jugar y crear otro cuando informe que todos están en uso. Cada perfil conserva sus propias partidas y credenciales.
-- Usá Conexión para recordar otra dirección si corresponde. Elegí Jugar, omití o escribí el nombre y esperá rival. Escribí Listo y Enter en cada cliente. Con catálogo suficiente el servidor inicia y reparte sin comandos administrativos.
-- Si faltan seis personajes activos, ambos ven el aviso y pueden cancelar o reintentar con Listo cuando se complete el catálogo.
+- Usá Conexión para recordar otra dirección si corresponde. Elegí Jugar, omití o escribí el nombre y esperá rival. Al emparejarse, el servidor inicia y reparte sin confirmación ni comandos administrativos.
+- Si faltan seis personajes activos, ambos ven el aviso; el cliente reintenta automáticamente cuando actualiza su presencia. También pueden cancelar la búsqueda.
 
 La comprobación entre dos computadoras corresponde al ensayo de red pendiente. Para localhost, usá `http://127.0.0.1:5000` en ambos clientes. Desde otra computadora, usá la IP del servidor. [Conexión en red local](protocolo-de-partida.md#conexión-en-red-local)
 

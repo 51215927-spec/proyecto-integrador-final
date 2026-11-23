@@ -52,7 +52,7 @@ Antes de iniciar el host, la consola pide dirección de escucha (Enter: `http://
 
 Cada acción solicita por separado el UUID, la plaza (`J1` o `J2`) o el ID numérico positivo del personaje que corresponda. Los valores inválidos vuelven a pedirse. Fin de entrada cancela la acción incompleta y detiene el servidor.
 
-Para iniciar una partida nueva, cargar seis personajes activos con `subir-personajes`; los clientes eligen Jugar y confirman Listo. Las partidas creadas con el flujo v1 pueden recuperarse desde el cliente con sus credenciales originales. El servidor conserva los datos de juego al reiniciar. Para seguir una partida, ambos jugadores se reincorporan con sus credenciales.
+Para iniciar una partida nueva, cargar seis personajes activos con `subir-personajes`; los clientes eligen Jugar y el servidor inicia automáticamente cuando encuentra una pareja. Las partidas creadas con el flujo v1 pueden recuperarse desde el cliente con sus credenciales originales. El servidor conserva los datos de juego al reiniciar. Para seguir una partida, ambos jugadores se reincorporan con sus credenciales.
 
 ### Prueba manual excepcional del contrato v1 en una computadora
 
@@ -82,18 +82,17 @@ El flujo normal usa las siguientes rutas; v1 sigue disponible para juego y recup
 | `GET /api/v2/acceso` | Devuelve el estado autorizado del invitado. |
 | `PUT /api/v2/acceso/presencia` | Renueva presencia de invitado y su plaza iniciada; devuelve 204 sin estado. |
 | `PUT /api/v2/acceso/jugar` | Encola una vez o devuelve asignación existente. |
-| `PUT /api/v2/acceso/listo` | Confirma preparación; ambos presentes y listos inician una partida. |
 | `PUT /api/v2/acceso/cancelar` | Retira cola/sala; si ya inició devuelve partida sin abandonarla. |
 | `PUT /api/v2/acceso/salir` | Libera sesión y reserva previa; conserva partida iniciada. |
 | `GET /api/v2/avisos` | Stream SSE con `data: cambio` y línea vacía. Sin datos privados. |
 
-Disponibilidad exige secreto e identidad; no exige ni adquiere sesión. Excepto el alta, las demás exigen `Authorization: Bearer <secreto>`, `X-Invitado: <UUID>` y `X-Sesion: <UUID temporal>`. Las acciones PUT no necesitan datos de juego. El estado contiene `estado` (libre, buscando, sala, partida), `nombre`, `listo`, `rival`, `rivalListo`, `aviso` y `partida` (UUID interno o null); no contiene secretos. El cliente nunca pide estos identificadores al usuario. Identidad inválida: 401 invitadoInvalido; otra sesión vigente: 409 sesionOcupada; sesión vencida: 409 sesionVencida. Se conservan el sobre de errores y 503 por almacenamiento no disponible.
+Disponibilidad exige secreto e identidad; no exige ni adquiere sesión. Excepto el alta, las demás exigen `Authorization: Bearer <secreto>`, `X-Invitado: <UUID>`, y `X-Sesion: <UUID temporal>`. Las acciones PUT no necesitan datos de juego. El estado contiene `estado` (libre, buscando, sala, partida), `nombre`, `rival`, `aviso` y `partida` (UUID interno o null); no contiene secretos. El cliente nunca pide estos identificadores al usuario. Identidad inválida: 401 invitadoInvalido; otra sesión vigente: 409 sesionOcupada; sesión vencida: 409 sesionVencida. Se conservan el sobre de errores y 503 por almacenamiento no disponible.
 
-La cola es FIFO entre invitados presentes. Cancelar o vencer una sala devuelve al rival conectado al final de la cola con rivalSalio y sin Listo. Con menos de seis personajes, ambos ven catalogoInsuficiente y pueden reintentar Listo sin inicio parcial. Cancelación e inicio se serializan bajo la sincronización compartida; el resultado posterior al inicio conserva la partida. El abandono solo usa el endpoint explícito v1 y su confirmación de interfaz.
+La cola es FIFO entre invitados presentes. Cancelar o vencer una sala devuelve al rival conectado al final de la cola con rivalSalio. La partida inicia en cuanto hay una pareja y seis personajes activos; si faltan, ambos ven catalogoInsuficiente y los intentos automáticos se repiten al actualizar estado o presencia, sin inicio parcial. Cancelación e inicio se serializan bajo la sincronización compartida; el resultado posterior al inicio conserva la partida. El abandono solo usa el endpoint explícito v1 y su confirmación de interfaz.
 
 SSE autentica antes de suscribir y al emitir; entrega invalidaciones agrupadas por invitado. El cliente consulta estado completo al conectar/reconectar y tras avisos, sin polling estable. La conexión usa cabeceras, nunca secretos en URL. Reintentos esperan 1, 2 y 5 segundos; presencia cada cinco y vencimiento a quince. Avisos duplicados o agrupados no aplican jugadas. Presentaciones y recibos v1 conservan las revisiones y privacidad existentes.
 
-Las tablas nuevas son aditivas. Reiniciar conserva identidad y asignación iniciada; descarta presencia, cola y Listo. Las partidas y credenciales antiguas permanecen en la base; el cliente actual no ofrece su recuperación. No se vinculan plazas por nombre. El servidor filtra logs rutinarios de peticiones y EF Core a Warning, conservando advertencias y errores.
+Las tablas nuevas son aditivas. Reiniciar conserva identidad y asignación iniciada; descarta presencia, cola y salas pendientes. Las partidas y credenciales antiguas permanecen en la base; el cliente actual no ofrece su recuperación. No se vinculan plazas por nombre. El servidor filtra logs rutinarios de peticiones y EF Core a Warning, conservando advertencias y errores.
 
 ## Administración e identidad (contrato v1)
 

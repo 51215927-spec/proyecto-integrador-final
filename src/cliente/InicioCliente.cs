@@ -178,7 +178,7 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
             return (await entrada.ReadLineAsync(ct))?.Trim().ToLowerInvariant() switch
             {
                 null => null, "" or "enter" => ConsoleKey.Enter, "esc" => ConsoleKey.Escape,
-                "listo" => ConsoleKey.Enter, "cancelar" or "cancelar búsqueda" => ConsoleKey.C,
+                "cancelar" or "cancelar búsqueda" => ConsoleKey.C,
                 "salir" or "salir sin abandonar" => ConsoleKey.Escape,
                 "buscar oponente" or "jugar" => ConsoleKey.Enter,
                 "w" => ConsoleKey.W, "a" => ConsoleKey.A, "s" => ConsoleKey.S, "d" => ConsoleKey.D,
@@ -241,18 +241,18 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
             {
                 string situacion = estado.Estado switch
                 {
-                    "sala" => "Sala de preparación",
+                    "sala" => "Rival encontrado",
                     "libre" => "Búsqueda finalizada",
                     _ => http.Conectado ? "Buscando oponente" : "Reconectando…"
                 };
                 string[] opciones = estado.Estado == "sala"
-                    ? [estado.Listo ? "Esperando al rival" : "Listo", "Cancelar búsqueda", "Salir sin abandonar"]
+                    ? ["Esperando inicio automático", "Cancelar búsqueda", "Salir sin abandonar"]
                     : estado.Estado == "libre" ? ["Buscar oponente", "Salir sin abandonar"]
                     : ["Cancelar búsqueda", "Salir sin abandonar"];
                 if (huella != JsonSerializer.Serialize(new { estado, situacion, opciones, http.Conectado }))
                 {
                     interfaz.MostrarSala(estado.Nombre, situacion, estado.Rival ?? "Esperando rival",
-                        estado.Listo, estado.RivalListo, estado.Aviso, opciones, foco, servidor.ToString());
+                        estado.Aviso, opciones, foco, servidor.ToString());
                     if (!http.Conectado) salida.WriteLine("Reconectando…");
                     huella = JsonSerializer.Serialize(new { estado, situacion, opciones, http.Conectado });
                 }
@@ -267,7 +267,7 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
                         else if (tecla is ConsoleKey.DownArrow or ConsoleKey.RightArrow or ConsoleKey.S or ConsoleKey.D or ConsoleKey.J or ConsoleKey.L)
                             foco = Math.Min(opciones.Length - 1, foco + 1);
                         string accion = tecla == ConsoleKey.Enter ? opciones[foco].ToLowerInvariant() :
-                            tecla == ConsoleKey.C ? "cancelar búsqueda" : tecla == ConsoleKey.L ? "listo" : "";
+                            tecla == ConsoleKey.C ? "cancelar búsqueda" : "";
                         // Las líneas de texto se aceptan en pruebas y terminales redirigidas.
                         if (tecla == ConsoleKey.NoName) accion = "";
                         if (tecla == ConsoleKey.Escape) accion = "salir sin abandonar";
@@ -278,8 +278,8 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
                             estado = await http.Accion("cancelar", ct);
                             if (estado.Estado != "partida") return estado;
                         }
-                        else if ((accion is "listo" or "l" or "" or "esperando al rival") && estado.Estado == "sala")
-                            estado = await http.Accion("listo", ct);
+                        else if (accion == "" && estado.Estado == "sala")
+                            estado = await http.Accion(null, ct);
                         else if ((accion is "jugar" or "j" or "buscar oponente") && estado.Estado == "libre")
                             estado = await http.Accion("jugar", ct);
                     }

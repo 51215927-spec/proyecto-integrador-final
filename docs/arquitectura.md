@@ -16,7 +16,7 @@ flowchart LR
     Servidor -->|EF Core| SQLite
 ```
 
-Emparejamiento reserva una sala para dos invitados conectados. Cuando ambos confirman Listo, AlmacenPartidas crea e inicia la partida y guarda sus asignaciones en una transacción; el dominio copia los personajes activos del catálogo. La creación manual queda como operación excepcional. Cada elección se valida contra la sesión, la revisión y la solicitud vigente. Con ambas cartas, el servidor compara los puntajes mediante el dominio y guarda el resultado y el recibo dentro de la misma escritura. La presentación devuelve la mano propia y los combates resueltos.
+Emparejamiento reserva una sala para dos invitados conectados. Al completar la pareja, AlmacenPartidas crea e inicia automáticamente la partida y guarda sus asignaciones en una transacción; el dominio copia los personajes activos del catálogo. Si faltan seis personajes activos, el cliente vuelve a intentar al consultar estado o renovar presencia. La creación manual queda como operación excepcional. Cada elección se valida contra la sesión, la revisión y la solicitud vigente. Con ambas cartas, el servidor compara los puntajes mediante el dominio y guarda el resultado y el recibo dentro de la misma escritura. La presentación devuelve la mano propia y los combates resueltos.
 
 ## Entrada interactiva
 
@@ -91,7 +91,7 @@ La reconstrucción restaura el estado sin repartir ni repetir resultados. El cat
 
 ## Coordinación de invitados (spec 007)
 
-`Invitados` persiste UUID, hash y nombre; `Emparejamiento` conserva cola, salas y sesiones temporales con FIFO y exclusión mutua compartida con el juego. Una sala sin presencia libera reservas y devuelve al rival vigente al final de la cola, sin Listo. Inicio y asignaciones se confirman juntos antes de publicar avisos. Ninguna regla de combate se copia al emparejamiento.
+`Invitados` persiste UUID, hash y nombre; `Emparejamiento` conserva cola, salas y sesiones temporales con FIFO y exclusión mutua compartida con el juego. Una sala sin presencia libera reservas y devuelve al rival vigente al final de la cola. El emparejamiento intenta iniciar automáticamente y conserva la sala mientras falte catálogo. Inicio y asignaciones se confirman juntos antes de publicar avisos. Ninguna regla de combate se copia al emparejamiento.
 
 `Avisos` mantiene canales acotados por invitado: varios cambios pueden agruparse en una invalidación sin datos privados. SSE autentica identidad y sesión por cabeceras. `ClienteAccesoHttp` mantiene esa conexión y reconecta con espera progresiva; `SesionPartidaCliente` consulta una presentación completa al recibir cambios o resolver una operación, conservando revisión mínima y recibos. El recorrido excepcional v1 conserva su sincronización anterior. `EntradaLineas` mantiene una sola lectura física de stdin redirigido y permite cancelar la espera de una pantalla al entrar al juego.
 

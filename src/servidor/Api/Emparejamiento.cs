@@ -1,7 +1,7 @@
 namespace Proyecto_Integrador_Final.Api;
 
-internal sealed record EstadoAcceso(string Estado, string Nombre, bool Listo, string? Rival,
-    bool RivalListo, string? Aviso, Guid? Partida);
+internal sealed record EstadoAcceso(string Estado, string Nombre, string? Rival,
+    string? Aviso, Guid? Partida);
 
 // Solo coordina acceso y reservas. Todas las transiciones de juego pertenecen a Partida.
 internal sealed class Emparejamiento(Invitados invitados, AlmacenPartidas almacen,
@@ -12,7 +12,7 @@ internal sealed class Emparejamiento(Invitados invitados, AlmacenPartidas almace
         internal InvitadoGuardado Invitado = invitado;
         internal Guid Sesion = sesion;
         internal DateTimeOffset Vence = vence;
-        internal bool Buscando, Listo;
+        internal bool Buscando;
         internal long Orden;
         internal Guid? Rival;
         internal string? Aviso;
@@ -59,35 +59,17 @@ internal sealed class Emparejamiento(Invitados invitados, AlmacenPartidas almace
                     else sesiones.Renovar(partida.IdPartida, secreto, sesion);
                 }
             }
+            if ((accion is "presencia" or "estado") && partida is null && actual.Rival is not null)
+            {
+                IntentarIniciar(actual);
+                partida = almacen.Activa(id);
+            }
             switch (accion)
             {
                 case "jugar" when partida is null:
                     if (!actual.Buscando && actual.Rival is null) Encolar(id, actual);
                     Emparejar();
-                    break;
-                case "listo" when partida is null:
-                    if (actual.Rival is not { } rival || !presentes.TryGetValue(rival, out var otro))
-                        throw new ErrorApi(409, "operacionIncompatible", "No hay una sala vigente.");
-                    actual.Listo = true;
-                    if (otro.Listo)
-                    {
-                        try
-                        {
-                            // Se conserva el orden FIFO asignado a las plazas de la sala.
-                            var primero = actual.Orden < otro.Orden ? actual : otro;
-                            var segundo = ReferenceEquals(primero, actual) ? otro : actual;
-                            var nueva = almacen.CrearAutomatica(primero.Invitado, segundo.Invitado, catalogo);
-                            actual.Rival = otro.Rival = null;
-                            actual.Listo = otro.Listo = false;
-                            actual.Aviso = otro.Aviso = null;
-                            // La credencial ya fue validada; ambas sesiones reciben acceso sin secretos en memoria.
-                            sesiones.IncorporarAutenticado(nueva, "J1", primero.Sesion);
-                            sesiones.IncorporarAutenticado(nueva, "J2", segundo.Sesion);
-                            partida = almacen.Activa(id);
-                        }
-                        catch (ExcepcionPartida error) when (error.Codigo == "operacionIncompatible")
-                        { actual.Aviso = otro.Aviso = "catalogoInsuficiente"; }
-                    }
+                    partida = almacen.Activa(id);
                     break;
                 case "cancelar" when partida is null:
                     Retirar(id); Emparejar(); break;
@@ -98,9 +80,9 @@ internal sealed class Emparejamiento(Invitados invitados, AlmacenPartidas almace
                     Emparejar();
                     avisos.Publicar(id);
                     if (partida is not null) PublicarPartida(partida.IdPartida);
-                    return new("libre", invitado.Nombre, false, null, false, null, null);
+                    return new("libre", invitado.Nombre, null, null, null);
             }
-            if (accion is "jugar" or "listo" or "cancelar" || estabaPresente != PartidaPresente(id))
+            if (accion is "jugar" or "cancelar" or "presencia" || estabaPresente != PartidaPresente(id))
             {
                 avisos.Publicar(id);
                 if (actual.Rival is { } rivalActual) avisos.Publicar(rivalActual);
@@ -108,6 +90,24 @@ internal sealed class Emparejamiento(Invitados invitados, AlmacenPartidas almace
             }
             return Vista(actual, partida);
         }
+    }
+
+    private void IntentarIniciar(Presencia participante)
+    {
+        if (participante.Rival is not { } rival || !presentes.TryGetValue(rival, out var otro)) return;
+        try
+        {
+            var primero = participante.Orden < otro.Orden ? participante : otro;
+            var segundo = ReferenceEquals(primero, participante) ? otro : participante;
+            var nueva = almacen.CrearAutomatica(primero.Invitado, segundo.Invitado, catalogo);
+            participante.Rival = otro.Rival = null;
+            participante.Aviso = otro.Aviso = null;
+            sesiones.IncorporarAutenticado(nueva, "J1", primero.Sesion);
+            sesiones.IncorporarAutenticado(nueva, "J2", segundo.Sesion);
+            PublicarPartida(nueva);
+        }
+        catch (ExcepcionPartida error) when (error.Codigo == "operacionIncompatible")
+        { participante.Aviso = otro.Aviso = "catalogoInsuficiente"; }
     }
 
     private bool PartidaPresente(Guid id) => almacen.Activa(id) is { } partida && sesiones.AmbosPresentes(partida.IdPartida);
@@ -130,7 +130,7 @@ internal sealed class Emparejamiento(Invitados invitados, AlmacenPartidas almace
         }
     }
     private void Encolar(Guid id, Presencia p)
-    { p.Buscando = true; p.Listo = false; p.Orden = ++orden; cola.AddLast(id); }
+    { p.Buscando = true; p.Orden = ++orden; cola.AddLast(id); }
     private void Emparejar()
     {
         while (cola.Count >= 2)
@@ -140,15 +140,16 @@ internal sealed class Emparejamiento(Invitados invitados, AlmacenPartidas almace
             presentes[a].Buscando = presentes[b].Buscando = false;
             presentes[a].Rival = b; presentes[b].Rival = a;
             avisos.Publicar(a); avisos.Publicar(b);
+            IntentarIniciar(presentes[a]);
         }
     }
     private void Retirar(Guid id)
     {
         if (!presentes.TryGetValue(id, out var p)) return;
-        cola.Remove(id); p.Buscando = false; p.Listo = false;
+        cola.Remove(id); p.Buscando = false;
         if (p.Rival is { } rival && presentes.TryGetValue(rival, out var otro))
         {
-            otro.Rival = null; otro.Listo = false; otro.Aviso = "rivalSalio";
+            otro.Rival = null; otro.Aviso = "rivalSalio";
             avisos.Publicar(rival);
             if (otro.Vence > reloj.GetUtcNow()) Encolar(rival, otro);
         }
@@ -158,6 +159,6 @@ internal sealed class Emparejamiento(Invitados invitados, AlmacenPartidas almace
     {
         var otro = p.Rival is { } rival ? presentes.GetValueOrDefault(rival) : null;
         return new(partida is not null ? "partida" : otro is not null ? "sala" : p.Buscando ? "buscando" : "libre",
-            p.Invitado.Nombre, p.Listo, otro?.Invitado.Nombre, otro?.Listo ?? false, p.Aviso, partida?.IdPartida);
+            p.Invitado.Nombre, otro?.Invitado.Nombre, p.Aviso, partida?.IdPartida);
     }
 }

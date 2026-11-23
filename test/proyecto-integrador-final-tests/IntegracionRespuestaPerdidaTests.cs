@@ -31,8 +31,7 @@ public sealed class IntegracionRespuestaPerdidaTests
             if (automatico)
             {
                 await accesoA!.Accion("sesion", default); await accesoB!.Accion("sesion", default);
-                await accesoA.Accion("jugar", default); await accesoB.Accion("jugar", default);
-                await accesoA.Accion("listo", default); var iniciada = await accesoB.Accion("listo", default);
+                await accesoA.Accion("jugar", default); var iniciada = await accesoB.Accion("jugar", default);
                 partida = new(iniciada.Partida!.Value, accesoA.Invitado.Secreto, accesoB.Invitado.Secreto);
             }
             // Los transportes conectan a Kestrel por loopback con credenciales separadas.

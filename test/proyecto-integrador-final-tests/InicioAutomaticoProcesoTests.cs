@@ -26,9 +26,6 @@ public class InicioAutomaticoProcesoTests
             await a.Esperar("Buscando oponente");
             await using var b = new Proceso(Path.Combine(carpeta, "b"));
             await b.Enviar($"conexion\n{app.Urls.Single()}\njugar\n\n");
-            try { await a.Esperar("Sala ·"); await b.Esperar("Sala ·"); }
-            catch { Assert.Fail("A: " + a.Texto + "\nB: " + b.Texto + "\nPeticiones: " + string.Join(", ", peticiones)); }
-            await a.Enviar("listo\n"); await b.Enviar("listo\n");
             await a.Esperar("Tu plaza:"); await b.Esperar("Tu plaza:");
             Assert.DoesNotContain("UUID", a.Texto + b.Texto);
             Assert.DoesNotContain("Credencial", a.Texto + b.Texto);

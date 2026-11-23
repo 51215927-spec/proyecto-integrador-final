@@ -33,7 +33,7 @@ public class InicioAutomaticoHttpTests
     }
 
     [Fact]
-    public async Task ColaFifoListoIdempotenteYCarreraCancelarConservanUnaAsignacion()
+    public async Task ColaFifoIniciaAlEmparejarYReintentaCuandoSeCargaElCatalogo()
     {
         await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"]);
         await app.StartAsync();
@@ -44,16 +44,16 @@ public class InicioAutomaticoHttpTests
         await Accion(b, "jugar");
         Assert.Equal("buscando", (await Accion(c, "jugar")).GetProperty("estado").GetString());
         await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => Accion(a, "jugar")));
-        Assert.Equal("sala", (await Accion(a, "listo")).GetProperty("estado").GetString());
-        var bloqueada = await Accion(b, "listo");
+        var bloqueada = await Estado(b);
+        Assert.Equal("sala", bloqueada.GetProperty("estado").GetString());
         Assert.Equal("catalogoInsuficiente", bloqueada.GetProperty("aviso").GetString());
         Assert.Equal("catalogoInsuficiente", (await Estado(a)).GetProperty("aviso").GetString());
         var catalogo = app.Services.GetRequiredService<CatalogoPersonajes>();
         for (int i = 0; i < 6; i++) catalogo.DarDeAlta(new($"Carta {i}", "", "*", 750, 550, 500, 250, 500, 450));
-        var iniciada = await Accion(a, "listo");
+        var iniciada = await Estado(a);
         Assert.Equal("partida", iniciada.GetProperty("estado").GetString());
         var id = iniciada.GetProperty("partida").GetGuid();
-        Assert.Equal(id, (await Accion(b, "listo")).GetProperty("partida").GetGuid());
+        Assert.Equal(id, (await Estado(b)).GetProperty("partida").GetGuid());
         Assert.Equal(id, (await Accion(a, "cancelar")).GetProperty("partida").GetGuid());
         Assert.Equal(id, (await Accion(a, "jugar")).GetProperty("partida").GetGuid());
         Assert.Equal("buscando", (await Estado(c)).GetProperty("estado").GetString());
@@ -69,17 +69,19 @@ public class InicioAutomaticoHttpTests
     }
 
     [Fact]
-    public async Task CancelarSalaDevuelveRivalABusquedaSinListo()
+    public async Task CancelarSalaDevuelveRivalABusquedaSinConfirmacion()
     {
         await using var app = ServidorHttp.Crear(["--ConnectionStrings:Juego=Data Source=:memory:", "--urls=http://127.0.0.1:0"]);
         await app.StartAsync();
         using var a = await Nuevo(app.Urls.Single());
         using var b = await Nuevo(app.Urls.Single());
-        await Accion(a, "jugar"); await Accion(b, "jugar"); await Accion(b, "listo");
+        await Accion(a, "jugar"); await Accion(b, "jugar");
         Assert.Equal("libre", (await Accion(a, "cancelar")).GetProperty("estado").GetString());
         var rival = await Estado(b);
         Assert.Equal("buscando", rival.GetProperty("estado").GetString());
-        Assert.False(rival.GetProperty("listo").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, rival.GetProperty("partida").ValueKind);
+        using var listo = await b.PutAsJsonAsync("api/v2/acceso/listo", new { });
+        Assert.Equal(HttpStatusCode.NotFound, listo.StatusCode);
         Assert.Equal("rivalSalio", rival.GetProperty("aviso").GetString());
     }
 

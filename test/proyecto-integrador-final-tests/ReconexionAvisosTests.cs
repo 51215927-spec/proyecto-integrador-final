@@ -7,7 +7,7 @@ namespace Proyecto_Integrador_Final.Tests;
 public class ReconexionAvisosTests
 {
     [Fact]
-    public async Task ReiniciarHostResincronizaAvisosYNoReviveBusquedaNiListo()
+    public async Task ReiniciarHostResincronizaAvisosYNoReviveBusquedaNiSala()
     {
         var archivo = Path.Combine(Path.GetTempPath(), "reinicio-avisos-" + Guid.NewGuid() + ".db");
         var args = new[] { $"--ConnectionStrings:Juego=Data Source={archivo};Pooling=False", "--urls=http://127.0.0.1:0" };
@@ -25,10 +25,12 @@ public class ReconexionAvisosTests
             }
             using var a = await Nuevo(); using var b = await Nuevo();
             await a.Accion("jugar", limite.Token); await b.Accion("jugar", limite.Token);
-            await a.Accion("listo", limite.Token); var partida = (await b.Accion("listo", limite.Token)).Partida;
+            var partida = (await b.Accion("jugar", limite.Token)).Partida;
+            var catalogo = primero.Services.GetRequiredService<CatalogoPersonajes>();
+            for (int i = 1; i <= 6; i++) catalogo.Desactivar(i);
             using var c = await Nuevo(); using var d = await Nuevo(); using var e = await Nuevo();
             await c.Accion("jugar", limite.Token); await d.Accion("jugar", limite.Token);
-            await c.Accion("listo", limite.Token); await e.Accion("jugar", limite.Token);
+            await e.Accion("jugar", limite.Token);
             var escuchar = a.Escuchar(limite.Token);
             try
             {
@@ -44,7 +46,7 @@ public class ReconexionAvisosTests
                 foreach (var anterior in new[] { c, d, e })
                 {
                     var estado = await anterior.Accion("sesion", limite.Token);
-                    Assert.Equal("libre", estado.Estado); Assert.False(estado.Listo); Assert.Null(estado.Rival);
+                    Assert.Equal("libre", estado.Estado); Assert.Null(estado.Rival);
                 }
                 await segundo.StopAsync(limite.Token);
             }

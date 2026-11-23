@@ -174,19 +174,21 @@ Estas comprobaciones locales no acreditan la integración física entre dos equi
 
 Resultado final (2026-11-23): **207 pruebas aprobadas, 0 fallidas y 0 omitidas**, con las tres DLL de este worktree. Referencia: rama `feature/specc-007-crear-sistema-de-iniciacion-automatica`, base `b4f8412` y cambios locales de esta entrega. Verificación en este mismo worktree con SDK .NET 8.0.133, runtime 8.0.33, SQLite temporal y HTTP loopback. Se observaron ciclos rojo/verde en alta v2 (404 antes de implementar), cola/sala (404), avisos (404), almacenamiento y menú (expectativas pendientes), flujo de procesos y presencia sin estado (200 frente a 204 esperado).
 
+La revisión del 2026-11-23 que elimina la confirmación manual actualiza los casos y compiló la solución completa (0 advertencias, 0 errores). No se volvió a ejecutar la suite; las cifras siguientes son evidencia de la revisión anterior al cambio.
+
 Las pruebas de caracterización añadidas que ya pasaban no se contabilizan como ciclos rojos. La suite conserva pruebas de reglas, privacidad, operaciones duplicadas, rollback y recuperación por recibo. La compatibilidad reabre la fixture anterior, preserva tablas y partidas y admite únicamente la adición de Invitado y AsignacionInvitado. Los procesos de cliente ya no ejercitan el ingreso manual histórico, que fue retirado de la interfaz a solicitud del usuario.
 
 | Criterio | Evidencia local |
 |---|---|
-| CA1 | InicioAutomaticoProcesoTests: dos clientes reales, nombres omitidos, Jugar/Listo y partida sin datos internos ni comandos de inicio. |
+| CA1 | InicioAutomaticoProcesoTests: dos clientes reales, nombres omitidos, Jugar y partida automática sin datos internos ni comandos de inicio. |
 | CA2 | AccesoLocalTests y AislamientoInvitadoTests: persistencia, permisos Unix 0700/0600, corrupción sin sobrescritura, cambio de servidor sin filtrar acceso y rechazo con reemplazo explícito NUEVO. |
 | CA3 | InicioAutomaticoHttpTests: tres invitados, FIFO, reintentos concurrentes y exclusión de segunda sesión. |
-| CA4 | InicioAutomaticoHttpTests: un Listo no inicia, catálogo insuficiente comunicado a ambos, reintento e inicio único. |
-| CA5 | RecuperacionInvitadoTests y AtomicidadInicioTests: vencimiento a quince segundos, rival devuelto sin Listo y carrera cancelar/iniciar sin abandono ni huérfanos. |
+| CA4 | InicioAutomaticoHttpTests: el emparejamiento intenta iniciar de inmediato, comunica catálogo insuficiente y reintenta al actualizar estado. |
+| CA5 | RecuperacionInvitadoTests y AtomicidadInicioTests: vencimiento a quince segundos, rival devuelto a búsqueda e inicio automático atómico frente a cancelación. |
 | CA6 | Avisos autenticados y pruebas de procesos: tráfico inactivo de treinta segundos, sin consultas periódicas de presentación ni estado; mantenimiento de presencia y conexión permitido. EstadoClienteTests conserva rechazo de revisiones antiguas y duplicados; los avisos no contienen vistas. |
 | CA7 | IntegracionRespuestaPerdidaTests, modo automático con SSE: recibo antes de reenvío con y sin commit; RecuperacionInvitadoTests: pausa y recuperación de ambos; ReconexionAvisosTests: reconexión tras reiniciar host. |
 | CA8 | Proceso real que cierra/reabre y retoma; exclusión de sesión, Jugar con partida activa y reglas de confirmación de abandono existentes. |
-| CA9 | ReconexionAvisosTests: reinicio real conserva partida/identidad e invalida cola, sala y Listo. |
+| CA9 | ReconexionAvisosTests: reinicio real conserva partida/identidad e invalida cola y salas pendientes. |
 | CA10 | Durante dos clientes activos se ejecuta ayuda administrativa; logs rutinarios HTTP deshabilitados y advertencia controlada observable. |
 | CA11 | Suite de regresión y CompatibilidadPersistenciaTests; AtomicidadInicioTests fuerza fallo de asignación y comprueba rollback de partida, cartas y solicitudes. |
 | CA12 | Guías de cliente, servidor, instalación, protocolo, arquitectura y base actualizadas; matriz y límites documentados. |

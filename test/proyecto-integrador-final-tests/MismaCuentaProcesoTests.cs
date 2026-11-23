@@ -21,8 +21,6 @@ public class MismaCuentaProcesoTests
             await using var b = new InicioAutomaticoProcesoTests.Proceso(datos);
             await b.Enviar("jugar\n"); await b.Esperar("Todos los perfiles están en uso");
             await b.Enviar("crear perfil\nBruno\n");
-            await a.Esperar("Sala ·"); await b.Esperar("Sala ·");
-            await a.Enviar("listo\n"); await b.Enviar("listo\n");
             await a.Esperar("Tu plaza:"); await b.Esperar("Tu plaza:");
             a.CerrarEntrada(); await a.Terminar();
             await using var regreso = new InicioAutomaticoProcesoTests.Proceso(datos);

@@ -68,12 +68,12 @@ internal sealed partial class InterfazConsola
         Pie("Escribí el texto · Enter para confirmar · Esc para cancelar");
     }
 
-    internal void MostrarSala(string perfil, string estado, string rival, bool listo, bool rivalListo,
+    internal void MostrarSala(string perfil, string estado, string rival,
         string? aviso, IReadOnlyList<string> opciones, int foco, string servidor)
     {
         Encabezado(perfil, estado, aviso);
         Paneles(PanelInfo("Servidor", servidor), PanelInfo("Sala", rival));
-        Paneles(PanelInfo("Preparación", $"{perfil}: {(listo ? "Listo" : "Sin confirmar")}\n{rival}: {(rivalListo ? "Listo" : "Sin confirmar")}"));
+        Paneles(PanelInfo("Inicio automático", "La partida empieza al encontrar rival y tener catálogo suficiente."));
         Paneles(PanelInfo("Acciones", ListaOpciones(opciones, foco)));
         Pie(Controles);
     }

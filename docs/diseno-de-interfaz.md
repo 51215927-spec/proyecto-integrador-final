@@ -8,7 +8,7 @@ Trabajo de análisis y diseño para TI. La base es el cliente de consola previst
 
 | Estado | Información visible y acciones |
 |---|---|
-| Inicio y preparación | Identidad local cuando se asigne, preparación y configuración requerida por el protocolo. |
+| Inicio y emparejamiento | Identidad local cuando se asigne, estado de búsqueda y comienzo automático al encontrar rival. |
 | Espera inicial | Motivo conocido de la espera, por ejemplo, inicio de partida o llegada del rival. |
 | Inicio de ronda | Número de ronda, marcador acumulado, jugador mano y tres cartas propias. |
 | Turno para abrir | Elegir una carta propia disponible y uno de los seis atributos. |
