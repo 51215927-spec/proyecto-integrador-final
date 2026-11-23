@@ -191,9 +191,11 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
     {
         int foco = 0;
         var texto = new StringBuilder();
+        string? errorEntrada = null;
         while (true)
         {
             string? ayuda = texto.Length == 0 ? detalle : $"{detalle} · Opción: {texto}";
+            if (errorEntrada is not null) ayuda = $"{errorEntrada} · Opción: {texto}";
             interfaz.MostrarInicio(perfil, titulo, opciones, foco, servidor.ToString(), ayuda);
             var evento = await LeerEntradaMenu(ct, opciones);
             if (evento.Opcion is { } opcion) return (opcion, null);
@@ -203,8 +205,11 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
             if (tecla == ConsoleKey.Enter)
             {
                 int directa = EntradaTeclado.IndiceOpcion(texto.ToString(), opciones);
+                if (directa < 0 && texto.Length > 0 && !EntradaTeclado.EsSecuenciaAtajosNavegacion(texto.ToString()))
+                { errorEntrada = "Opción no reconocida"; continue; }
                 return (opciones[directa >= 0 ? directa : foco], null);
             }
+            errorEntrada = null;
             if (tecla is ConsoleKey.UpArrow or ConsoleKey.LeftArrow or ConsoleKey.W or ConsoleKey.A or ConsoleKey.K or ConsoleKey.H)
                 foco = Math.Max(0, foco - 1);
             else if (tecla is ConsoleKey.DownArrow or ConsoleKey.RightArrow or ConsoleKey.S or ConsoleKey.D or ConsoleKey.J or ConsoleKey.L)
@@ -222,9 +227,11 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
     {
         int foco = 0;
         var texto = new StringBuilder();
+        string? errorEntrada = null;
         while (true)
         {
             string? ayuda = texto.Length == 0 ? detalle : $"{detalle} · Opción: {texto}";
+            if (errorEntrada is not null) ayuda = $"{errorEntrada} · Opción: {texto}";
             interfaz.MostrarInicio(perfil, titulo, opciones, foco, servidor.ToString(), ayuda);
             var evento = await LeerEntradaMenu(ct, opciones);
             if (evento.Opcion is { } opcion) return opcion;
@@ -232,8 +239,11 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
             if (tecla == ConsoleKey.Enter)
             {
                 int directa = EntradaTeclado.IndiceOpcion(texto.ToString(), opciones);
+                if (directa < 0 && texto.Length > 0 && !EntradaTeclado.EsSecuenciaAtajosNavegacion(texto.ToString()))
+                { errorEntrada = "Opción no reconocida"; continue; }
                 return opciones[directa >= 0 ? directa : foco];
             }
+            errorEntrada = null;
             if (tecla is ConsoleKey.UpArrow or ConsoleKey.LeftArrow or ConsoleKey.W or ConsoleKey.A or ConsoleKey.K or ConsoleKey.H)
                 foco = Math.Max(0, foco - 1);
             else if (tecla is ConsoleKey.DownArrow or ConsoleKey.RightArrow or ConsoleKey.S or ConsoleKey.D or ConsoleKey.J or ConsoleKey.L)
@@ -258,6 +268,7 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
         }
         while (!Console.KeyAvailable) await Task.Delay(25, ct);
         var tecla = Console.ReadKey(true);
+        if (tecla.KeyChar is '\u0004' or '\u001a') throw new EndOfStreamException("Fin de la entrada de consola.");
         return new(tecla.Key, null, tecla.KeyChar);
     }
 
@@ -288,6 +299,7 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
             var tecla = Console.ReadKey(true);
             if (tecla.Key == ConsoleKey.Enter) return texto.ToString();
             if (tecla.Key == ConsoleKey.Escape) return "";
+            if (tecla.KeyChar is '\u0004' or '\u001a') throw new EndOfStreamException("Fin de la entrada de consola.");
             if (tecla.Key == ConsoleKey.Backspace)
             { if (texto.Length > 0) texto.Length--; }
             else if (!char.IsControl(tecla.KeyChar)) texto.Append(tecla.KeyChar);
@@ -304,6 +316,8 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
         int foco = 0;
         long version = -1;
         string? huella = null;
+        string? opcionesAnteriores = null;
+        string? errorEntrada = null;
         var texto = new StringBuilder();
         var presencia = DateTimeOffset.UtcNow.AddSeconds(5);
         var reintento = DateTimeOffset.MinValue;
@@ -322,14 +336,24 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
                     ? ["Esperando inicio automático", "Cancelar búsqueda", "Salir sin abandonar"]
                     : estado.Estado == "libre" ? ["Buscar oponente", "Salir sin abandonar"]
                     : ["Cancelar búsqueda", "Salir sin abandonar"];
-                if (huella != JsonSerializer.Serialize(new { estado, situacion, opciones, http.Conectado, texto = texto.ToString() }))
+                string claveOpciones = JsonSerializer.Serialize(opciones);
+                if (claveOpciones != opcionesAnteriores)
                 {
-                    string? detalle = texto.Length == 0 ? estado.Aviso : string.IsNullOrWhiteSpace(estado.Aviso)
-                        ? $"Opción: {texto}" : $"{estado.Aviso} · Opción: {texto}";
+                    foco = Math.Clamp(foco, 0, opciones.Length - 1);
+                    texto.Clear();
+                    errorEntrada = null;
+                    huella = null;
+                    opcionesAnteriores = claveOpciones;
+                }
+                if (huella != JsonSerializer.Serialize(new { estado, situacion, opciones, http.Conectado, foco, texto = texto.ToString(), errorEntrada }))
+                {
+                    string? detalle = texto.Length == 0 ? estado.Aviso : errorEntrada is not null
+                        ? $"{errorEntrada} · Opción: {texto}"
+                        : string.IsNullOrWhiteSpace(estado.Aviso) ? $"Opción: {texto}" : $"{estado.Aviso} · Opción: {texto}";
                     interfaz.MostrarSala(estado.Nombre, situacion, estado.Rival ?? "Esperando rival",
                         detalle, opciones, foco, servidor.ToString());
                     if (!http.Conectado) salida.WriteLine("Reconectando…");
-                    huella = JsonSerializer.Serialize(new { estado, situacion, opciones, http.Conectado, texto = texto.ToString() });
+                    huella = JsonSerializer.Serialize(new { estado, situacion, opciones, http.Conectado, foco, texto = texto.ToString(), errorEntrada });
                 }
                 lectura ??= LeerEntradaMenu(fin.Token, opciones);
                 try
@@ -342,7 +366,10 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
                             foco = Math.Max(0, foco - 1);
                         else if (tecla is ConsoleKey.DownArrow or ConsoleKey.RightArrow or ConsoleKey.S or ConsoleKey.D or ConsoleKey.J or ConsoleKey.L)
                             foco = Math.Min(opciones.Length - 1, foco + 1);
-                        string accion = evento.Opcion?.ToLowerInvariant() ??
+                        string? opcionActual = evento.Opcion is { } opcionEscrita &&
+                            EntradaTeclado.IndiceOpcion(opcionEscrita, opciones) is int indiceActual && indiceActual >= 0
+                                ? opciones[indiceActual] : null;
+                        string accion = opcionActual?.ToLowerInvariant() ??
                             (tecla == ConsoleKey.Enter ? opciones[foco].ToLowerInvariant() :
                             tecla == ConsoleKey.C && evento.Caracter == '\0' ? "cancelar búsqueda" : "");
                         if (tecla == ConsoleKey.Enter && texto.Length > 0)
@@ -353,16 +380,18 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
                                 accion = "cancelar búsqueda";
                             else if (EntradaTeclado.EsIgual(texto.ToString(), "x") || EntradaTeclado.EsIgual(texto.ToString(), "salir"))
                                 accion = "salir sin abandonar";
-                            texto.Clear();
+                            else if (!EntradaTeclado.EsSecuenciaAtajosNavegacion(texto.ToString()))
+                            { accion = "opción inválida"; errorEntrada = "Opción no reconocida"; }
+                            if (accion != "opción inválida") { texto.Clear(); errorEntrada = null; }
                         }
                         // Las líneas de texto se aceptan en pruebas y terminales redirigidas.
                         if (tecla == ConsoleKey.NoName) accion = "";
                         if (tecla == ConsoleKey.Escape) accion = "salir sin abandonar";
                         if (tecla is ConsoleKey.UpArrow or ConsoleKey.DownArrow or ConsoleKey.LeftArrow or ConsoleKey.RightArrow)
-                            texto.Clear();
+                        { texto.Clear(); errorEntrada = null; }
                         else if (tecla != ConsoleKey.Enter && evento.Caracter == '\0' && tecla is not ConsoleKey.C)
                             texto.Clear();
-                        else if (!char.IsControl(evento.Caracter)) texto.Append(evento.Caracter);
+                        else if (!char.IsControl(evento.Caracter)) { texto.Append(evento.Caracter); errorEntrada = null; }
                         if (accion is "salir" or "salir sin abandonar" or "x")
                             return await http.Accion("salir", ct);
                         if (accion is "cancelar" or "cancelar búsqueda" or "c")
@@ -370,7 +399,7 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
                             estado = await http.Accion("cancelar", ct);
                             if (estado.Estado != "partida") return estado;
                         }
-                        else if ((accion is "" or "esperando inicio automático") && estado.Estado == "sala")
+                        else if (tecla == ConsoleKey.Enter && (accion is "" or "esperando inicio automático") && estado.Estado == "sala")
                             estado = await http.Accion(null, ct);
                         else if ((accion is "jugar" or "j" or "buscar oponente") && estado.Estado == "libre")
                             estado = await http.Accion("jugar", ct);
@@ -411,7 +440,7 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
             while (!Console.KeyAvailable) await Task.Delay(25, ct);
             var tecla = Console.ReadKey(true);
             if (tecla.Key == ConsoleKey.Enter) { salida.WriteLine(); return texto.ToString(); }
-            if (tecla.KeyChar is '\u0004' or '\u001a') throw new EndOfStreamException();
+            if (tecla.KeyChar is '\u0004' or '\u001a') throw new EndOfStreamException("Fin de la entrada de consola.");
             if (tecla.Key == ConsoleKey.Backspace)
             { if (texto.Length > 0) { texto.Length--; salida.Write("\b \b"); } }
             else if (!char.IsControl(tecla.KeyChar)) { texto.Append(tecla.KeyChar); salida.Write(tecla.KeyChar); }

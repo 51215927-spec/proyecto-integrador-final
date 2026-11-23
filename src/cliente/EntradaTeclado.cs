@@ -17,6 +17,12 @@ internal static class EntradaTeclado
 
     internal static bool EsIgual(string primero, string segundo) => Normalizar(primero) == Normalizar(segundo);
 
+    internal static bool EsSecuenciaAtajosNavegacion(string texto)
+    {
+        string limpia = texto.Trim();
+        return limpia.Length > 0 && limpia.All(caracter => "wasdhjkl".Contains(char.ToLowerInvariant(caracter)));
+    }
+
     internal static ConsoleKey Tecla(string? texto) => texto?.Trim().ToLowerInvariant() switch
     {
         "" or "enter" => ConsoleKey.Enter,

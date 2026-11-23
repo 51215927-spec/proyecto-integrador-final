@@ -348,6 +348,12 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
                     else foco = indice;
                     tecla = ConsoleKey.Enter;
                 }
+                else if (tecla == ConsoleKey.Enter && !EntradaTeclado.EsSecuenciaAtajosNavegacion(texto))
+                {
+                    aviso = "Opción no reconocida. Elegí una opción de la lista.";
+                    Dibujar(true);
+                    return false;
+                }
             }
         }
         if (tecla is ConsoleKey.Enter or ConsoleKey.Escape or ConsoleKey.UpArrow or ConsoleKey.DownArrow or ConsoleKey.LeftArrow or ConsoleKey.RightArrow)
