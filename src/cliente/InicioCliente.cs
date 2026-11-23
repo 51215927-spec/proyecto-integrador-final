@@ -188,6 +188,9 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
             return (await entrada.ReadLineAsync(ct))?.Trim().ToLowerInvariant() switch
             {
                 null => null, "" or "enter" => ConsoleKey.Enter, "esc" => ConsoleKey.Escape,
+                "listo" => ConsoleKey.Enter, "cancelar" or "cancelar búsqueda" => ConsoleKey.C,
+                "salir" or "salir sin abandonar" => ConsoleKey.Escape,
+                "buscar oponente" or "jugar" => ConsoleKey.Enter,
                 "w" => ConsoleKey.W, "a" => ConsoleKey.A, "s" => ConsoleKey.S, "d" => ConsoleKey.D,
                 "h" => ConsoleKey.H, "j" => ConsoleKey.J, "k" => ConsoleKey.K, "l" => ConsoleKey.L,
                 _ => ConsoleKey.NoName
@@ -219,7 +222,8 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
     private async Task<EstadoAccesoCliente> Sala(ClienteAccesoHttp http, EstadoAccesoCliente estado, CancellationToken ct)
     {
         using var fin = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        Task<string>? lectura = null;
+        Task<ConsoleKey?>? lectura = null;
+        int foco = 0;
         long version = -1;
         string? huella = null;
         var presencia = DateTimeOffset.UtcNow.AddSeconds(5);
@@ -242,16 +246,25 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
                 if (huella != JsonSerializer.Serialize(new { estado, situacion, opciones, http.Conectado }))
                 {
                     interfaz.MostrarSala(estado.Nombre, situacion, estado.Rival ?? "Esperando rival",
-                        estado.Listo, estado.RivalListo, estado.Aviso, opciones, 0, servidor.ToString());
+                        estado.Listo, estado.RivalListo, estado.Aviso, opciones, foco, servidor.ToString());
                     if (!http.Conectado) salida.WriteLine("Reconectando…");
                     huella = JsonSerializer.Serialize(new { estado, situacion, opciones, http.Conectado });
                 }
-                lectura ??= Linea(fin.Token);
+                lectura ??= LeerTecla(fin.Token);
                 try
                 {
                     if (lectura.IsCompleted)
                     {
-                        var accion = (await lectura).Trim().ToLowerInvariant(); lectura = null;
+                        var tecla = await lectura; lectura = null;
+                        if (tecla is ConsoleKey.UpArrow or ConsoleKey.LeftArrow or ConsoleKey.W or ConsoleKey.A or ConsoleKey.K or ConsoleKey.H)
+                            foco = Math.Max(0, foco - 1);
+                        else if (tecla is ConsoleKey.DownArrow or ConsoleKey.RightArrow or ConsoleKey.S or ConsoleKey.D or ConsoleKey.J or ConsoleKey.L)
+                            foco = Math.Min(opciones.Length - 1, foco + 1);
+                        string accion = tecla == ConsoleKey.Enter ? opciones[foco].ToLowerInvariant() :
+                            tecla == ConsoleKey.C ? "cancelar búsqueda" : tecla == ConsoleKey.L ? "listo" : "";
+                        // Las líneas de texto se aceptan en pruebas y terminales redirigidas.
+                        if (tecla == ConsoleKey.NoName) accion = "";
+                        if (tecla == ConsoleKey.Escape) accion = "salir sin abandonar";
                         if (accion is "salir" or "salir sin abandonar" or "x")
                             return await http.Accion("salir", ct);
                         if (accion is "cancelar" or "cancelar búsqueda" or "c")
@@ -259,9 +272,9 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
                             estado = await http.Accion("cancelar", ct);
                             if (estado.Estado != "partida") return estado;
                         }
-                        else if ((accion is "listo" or "l" or "") && estado.Estado == "sala")
+                        else if ((accion is "listo" or "l" or "" or "esperando al rival") && estado.Estado == "sala")
                             estado = await http.Accion("listo", ct);
-                        else if ((accion is "jugar" or "j") && estado.Estado == "libre")
+                        else if ((accion is "jugar" or "j" or "buscar oponente") && estado.Estado == "libre")
                             estado = await http.Accion("jugar", ct);
                     }
                     if (DateTimeOffset.UtcNow >= presencia)
