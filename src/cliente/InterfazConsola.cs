@@ -59,6 +59,15 @@ internal sealed partial class InterfazConsola
         Pie(Controles);
     }
 
+    internal void MostrarCampo(string? perfil, string situacion, string campo, string valor,
+        string servidor, string? detalle = null)
+    {
+        Encabezado(perfil, situacion, detalle);
+        Paneles(PanelInfo("Servidor", servidor));
+        Paneles(PanelInfo(campo, $"> {valor}_"));
+        Pie("Escribí el texto · Enter para confirmar · Esc para cancelar");
+    }
+
     internal void MostrarSala(string perfil, string estado, string rival, bool listo, bool rivalListo,
         string? aviso, IReadOnlyList<string> opciones, int foco, string servidor)
     {

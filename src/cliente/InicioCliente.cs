@@ -212,8 +212,24 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
 
     private async Task<string> PreguntarTexto(CancellationToken ct, string titulo, string campo, string ayuda, string defecto)
     {
-        interfaz.MostrarInicio(null, titulo, [campo], 0, servidor.ToString(), ayuda + $"\nValor predeterminado: {defecto}");
-        return await Linea(ct);
+        if (!ReferenceEquals(entrada, Console.In) || Console.IsInputRedirected)
+        {
+            interfaz.MostrarCampo(null, titulo, campo, "", servidor.ToString(), ayuda + $" · Enter: {defecto}");
+            return await Linea(ct);
+        }
+
+        var texto = new StringBuilder();
+        while (true)
+        {
+            interfaz.MostrarCampo(null, titulo, campo, texto.ToString(), servidor.ToString(), ayuda + $" · Enter: {defecto}");
+            while (!Console.KeyAvailable) await Task.Delay(25, ct);
+            var tecla = Console.ReadKey(true);
+            if (tecla.Key == ConsoleKey.Enter) return texto.ToString();
+            if (tecla.Key == ConsoleKey.Escape) return "";
+            if (tecla.Key == ConsoleKey.Backspace)
+            { if (texto.Length > 0) texto.Length--; }
+            else if (!char.IsControl(tecla.KeyChar)) texto.Append(tecla.KeyChar);
+        }
     }
 
     private void Mensaje(string titulo, string detalle) =>
