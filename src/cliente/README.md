@@ -1,6 +1,6 @@
 # Cliente
 
-Desde la raíz ejecutá `dotnet run --project src/cliente`. El menú ofrece **Jugar**, **Crear perfil**, **Conexión** y **Salir**. Escribí la opción y Enter. Usa `http://localhost:5000/` por defecto; Conexión permite cambiar y recordar la dirección. En otra computadora usá la dirección del servidor.
+Desde la raíz ejecutá `dotnet run --project src/cliente`. El menú ofrece **Jugar**, **Crear perfil**, **Administrar perfiles**, **Conexión** y **Salir**. Escribí la opción o su número y Enter; también podés navegar con flechas, WASD o HJKL. Usa `http://localhost:5000/` por defecto; Conexión permite cambiar y recordar la dirección. En otra computadora usá la dirección del servidor.
 
 La primera vez que elegís Jugar se pide un nombre opcional (Enter: Invitado). Cada perfil tiene su propio acceso y partidas. Podés crear varios desde el mismo usuario del sistema con Crear perfil. El cliente conserva automáticamente esos accesos por servidor en `GuerraCartas`, dentro de los datos locales del usuario (`%LOCALAPPDATA%` en Windows y el directorio de datos del usuario en Unix). La carpeta y los archivos se restringen al usuario. No compartas esos archivos: contienen el acceso para retomar. Cambiar de equipo o borrar el acceso no permite recuperar una partida por nombre.
 
@@ -10,7 +10,7 @@ En **Administrar perfiles** podés borrar el perfil seleccionado pulsando Delete
 
 Jugar muestra **Buscando oponente**; cuando llega otro invitado, el servidor inicia automáticamente una sola partida si hay seis personajes activos, sin confirmación manual. Si falta catálogo, ambos ven el aviso y el cliente reintenta automáticamente al actualizar su presencia; también pueden cancelar la búsqueda. Si sale el rival antes del inicio, volvés a buscar.
 
-Durante el juego usá flechas, WASD o HJKL y Enter para elegir carta y atributo. Cada resultado se lee por separado. Esc abre Continuar, Salir sin abandonar y Abandonar partida. Abandonar requiere confirmar Sí; No es la opción inicial. Ctrl+C y fin de entrada salen sin abandonar. La salida normal libera la sesión; después de un corte puede seguir ocupada hasta quince segundos.
+Durante el juego podés escribir el nombre de la carta o atributo y Enter, o navegar con flechas, WASD o HJKL. Cada resultado se lee por separado. Esc abre Continuar, Salir sin abandonar y Abandonar partida; también podés escribir la opción. Abandonar requiere confirmar Sí; No es la opción inicial. Ctrl+C y fin de entrada salen sin abandonar. La salida normal libera la sesión; después de un corte puede seguir ocupada hasta quince segundos.
 
 Los cambios llegan por avisos autenticados; no se consulta periódicamente la presentación. Al cortar la conexión aparece Reconectando… y se reintenta con esperas de 1, 2 y 5 segundos. Una elección con respuesta perdida se comprueba por su recibo antes de reenviarse. Al reabrir, elegí Jugar y **Retomar** para continuar tu partida activa. No se inicia otra búsqueda al terminar una partida.
 

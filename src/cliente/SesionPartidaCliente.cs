@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text;
 
 namespace Proyecto_Integrador_Final.Cliente;
 
@@ -9,6 +10,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
     // El reloj se sustituye en pruebas para comprobar intervalos sin esperar segundos reales.
     private readonly TimeProvider tiempo = reloj ?? TimeProvider.System;
     private readonly EstadoCliente estado = new(configuracion.Partida);
+    private readonly StringBuilder textoTeclado = new();
     private long versionAviso = -1;
     private bool conexionAnterior;
     private bool incorporado, terminal, protocolo, corregir, abandono, salidaFinal;
@@ -39,7 +41,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         using var cierre = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var token = cierre.Token;
         // La versión de pantalla permite descartar confirmaciones capturadas para opciones anteriores.
-        Task<(ConsoleKey? Tecla, int Version)>? tecla = null;
+        Task<(ConsoleKey? Tecla, int Version, string? Texto, char Caracter)>? tecla = null;
         try
         {
             Dibujar();
@@ -103,7 +105,8 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
                     var evento = await tecla;
                     tecla = null;
                     if (evento.Tecla is null) { aviso = "Fin de la entrada."; break; }
-                    if ((menu >= 0 || leyendo is not null || evento.Tecla == ConsoleKey.Escape || evento.Version == versionPantalla) && Procesar(evento.Tecla.Value)) break;
+                    if ((menu >= 0 || leyendo is not null || evento.Tecla == ConsoleKey.Escape || evento.Version == versionPantalla) &&
+                        Procesar(evento.Tecla.Value, evento.Texto, evento.Caracter)) break;
                 }
                 // Al cambiar de pantalla solo se descarta el sobrante interactivo, nunca las líneas futuras.
                 if (descartarEntrada) { entrada.DescartarSobrante(); descartarEntrada = false; }
@@ -306,10 +309,10 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
     private int versionPantalla;
 
     // La tecla se etiqueta al llegar, no al iniciar la espera, para admitir la entrada del estado ya visible.
-    private async Task<(ConsoleKey? Tecla, int Version)> LeerEvento(EntradaCliente entrada, CancellationToken ct)
+    private async Task<(ConsoleKey? Tecla, int Version, string? Texto, char Caracter)> LeerEvento(EntradaCliente entrada, CancellationToken ct)
     {
         var tecla = await entrada.Leer(ct);
-        return (tecla, Volatile.Read(ref versionPantalla));
+        return (tecla, Volatile.Read(ref versionPantalla), entrada.Texto, entrada.Caracter);
     }
     // Antes del POST deben coincidir revisión, solicitud, carta y atributo de la operación original.
     private static bool Vigente(EleccionCliente e, PresentacionCliente v) =>
@@ -317,8 +320,38 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         s.IdsPersonajePermitidos.Contains(e.IdPersonaje) && (s.Tipo == "carta" ? e.Atributo is null : s.AtributosPermitidos.Contains(e.Atributo));
     private static string ClaveSeleccion(PresentacionCliente v) => JsonSerializer.Serialize(new { v.Revision, v.Solicitud, v.Pausada });
 
-    private bool Procesar(ConsoleKey tecla)
+    private bool Procesar(ConsoleKey tecla, string? texto, char caracter)
     {
+        if (texto is null && tecla == ConsoleKey.Enter) texto = textoTeclado.ToString();
+        else if (texto is null && tecla == ConsoleKey.Backspace)
+        { if (textoTeclado.Length > 0) textoTeclado.Length--; Dibujar(true); return false; }
+        else if (texto is null && !char.IsControl(caracter))
+        { textoTeclado.Append(caracter); Dibujar(true); }
+        if (!string.IsNullOrWhiteSpace(texto))
+        {
+            IReadOnlyList<string>? opcionesTexto = menu >= 0
+                ? confirmarAbandono ? ["No", "Sí"] : ["Continuar", "Salir sin abandonar", "Abandonar partida"]
+                : leyendo is not null ? ["Continuar"] : null;
+            if (opcionesTexto is null && !terminal && estado.Actual && pendiente is null &&
+                !abandono && escritura is null && estado.Vista is { Pausada: false, Solicitud: { } solicitud } vista)
+            {
+                opcionesTexto = atributo
+                    ? solicitud.AtributosPermitidos
+                    : solicitud.IdsPersonajePermitidos.Select(id => vista.Mano.Single(c => c.IdPersonaje == id).Nombre).ToArray();
+            }
+            if (opcionesTexto is not null)
+            {
+                int indice = EntradaTeclado.IndiceOpcion(texto, opcionesTexto);
+                if (indice >= 0)
+                {
+                    if (menu >= 0) menu = indice;
+                    else foco = indice;
+                    tecla = ConsoleKey.Enter;
+                }
+            }
+        }
+        if (tecla is ConsoleKey.Enter or ConsoleKey.Escape or ConsoleKey.UpArrow or ConsoleKey.DownArrow or ConsoleKey.LeftArrow or ConsoleKey.RightArrow)
+            textoTeclado.Clear();
         // Esc siempre puede abrir o cerrar el menú, aun durante reconexión o envío pendiente.
         if (tecla == ConsoleKey.Escape)
         {
@@ -411,10 +444,11 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
     private void Dibujar(bool forzar = false)
     {
         var v = estado.Vista;
-        string nueva = JsonSerializer.Serialize(new { v, estado.Actual, aviso, menu, confirmarAbandono, leyendo, foco, atributo, pendiente, terminal });
+        string avisoVisible = textoTeclado.Length == 0 ? aviso : $"{aviso} · Opción: {textoTeclado}";
+        string nueva = JsonSerializer.Serialize(new { v, estado.Actual, avisoVisible, menu, confirmarAbandono, leyendo, foco, atributo, pendiente, terminal });
         if (!forzar && huella == nueva) return;
         huella = nueva;
-        interfaz.MostrarRed(configuracion.Nombre, v, estado.Actual, aviso, leyendo, menu, confirmarAbandono,
+        interfaz.MostrarRed(configuracion.Nombre, v, estado.Actual, avisoVisible, leyendo, menu, confirmarAbandono,
             foco, atributo, pendiente is not null, abandono);
     }
 }

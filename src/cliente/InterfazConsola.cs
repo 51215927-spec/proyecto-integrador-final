@@ -14,7 +14,7 @@ internal sealed partial class InterfazConsola
     private static readonly Style Barra = new(Verde, new Color(32, 44, 36), Decoration.Bold);
     private static readonly Style Borde = new(new Color(95, 120, 105));
 
-    private const string Controles = "Flechas, WASD o HJKL\nEnter para confirmar.";
+    private const string Controles = "Escribí una opción o navegá con flechas, WASD o HJKL\nEnter para confirmar.";
 
     private readonly TextReader entrada;
     private readonly bool leerTeclas;
@@ -116,7 +116,7 @@ internal sealed partial class InterfazConsola
     public CartaVisible PedirCarta(IReadOnlyList<CartaVisible> mano)
     {
         CartaVisible[] opciones = CopiarOpciones(mano);
-        int elegida = Elegir(opciones.Length, foco =>
+        int elegida = Elegir(opciones.Select(c => c.Nombre).ToArray(), foco =>
         {
             Encabezado((string?)null, "Elegí una carta");
             MostrarMano(opciones, foco);
@@ -128,7 +128,7 @@ internal sealed partial class InterfazConsola
     public CartaVisible PedirCarta(MesaVisible mesa, IReadOnlyList<CartaVisible> cartas, bool abre)
     {
         CartaVisible[] opciones = CopiarOpciones(cartas);
-        int elegida = Elegir(opciones.Length, foco =>
+        int elegida = Elegir(opciones.Select(c => c.Nombre).ToArray(), foco =>
         {
             string estado = abre
                 ? $"Rondas ganadas · {Rondas(mesa)}"
@@ -146,7 +146,7 @@ internal sealed partial class InterfazConsola
         if (opciones.Length == 0)
             throw new InvalidOperationException("Se solicitó un atributo sin opciones disponibles.");
 
-        int elegida = Elegir(opciones.Length, foco =>
+        int elegida = Elegir(opciones, foco =>
         {
             if (mesa is null)
                 Encabezado((string?)null, "Elegí un atributo");
@@ -358,13 +358,18 @@ internal sealed partial class InterfazConsola
     private static Text Opcion(string opcion, bool enfocada) =>
         enfocada ? new Text($"> {TextoVisible(opcion)}", Barra) : new Text($"  {TextoVisible(opcion)}");
 
-    private int Elegir(int cantidad, Action<int> dibujar)
+    private int Elegir(IReadOnlyList<string> opciones, Action<int> dibujar)
     {
         int foco = 0;
         dibujar(foco);
         while (true)
         {
-            ConsoleKey tecla = LeerTecla();
+            ConsoleKey tecla = LeerTecla(out var texto);
+            if (texto is not null)
+            {
+                int directa = EntradaTeclado.IndiceOpcion(texto, opciones);
+                if (directa >= 0) return directa;
+            }
             if (tecla == ConsoleKey.Enter)
                 return foco;
 
@@ -375,7 +380,7 @@ internal sealed partial class InterfazConsola
                 _ => 0
             };
 
-            int nuevo = Math.Clamp(foco + paso, 0, cantidad - 1);
+            int nuevo = Math.Clamp(foco + paso, 0, opciones.Count - 1);
             if (nuevo != foco)
             {
                 foco = nuevo;
@@ -384,28 +389,18 @@ internal sealed partial class InterfazConsola
         }
     }
 
-    private ConsoleKey LeerTecla()
+    private ConsoleKey LeerTecla(out string? texto)
     {
         if (leerTeclas)
+        {
+            texto = null;
             return Console.ReadKey(intercept: true).Key;
+        }
 
-        // Con entrada por líneas, una línea vacía equivale a presionar Enter.
         string linea = entrada.ReadLine()
             ?? throw new EndOfStreamException("Se cerró la entrada de consola.");
-
-        return linea.Trim().ToLowerInvariant() switch
-        {
-            "" => ConsoleKey.Enter,
-            "w" => ConsoleKey.W,
-            "a" => ConsoleKey.A,
-            "s" => ConsoleKey.S,
-            "d" => ConsoleKey.D,
-            "h" => ConsoleKey.H,
-            "j" => ConsoleKey.J,
-            "k" => ConsoleKey.K,
-            "l" => ConsoleKey.L,
-            _ => ConsoleKey.NoName
-        };
+        texto = linea.Trim();
+        return EntradaTeclado.Tecla(texto);
     }
 
     // Los caracteres de control y formato se reemplazan por espacios al mostrar texto.
