@@ -22,8 +22,9 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
         while (!ct.IsCancellationRequested)
         {
             var opcion = (await Menu(ct, "Inicio", "Elegí qué querés hacer",
-                ["Jugar", "Crear perfil", "Conexión", "Salir"])).ToLowerInvariant();
+                ["Jugar", "Crear perfil", "Administrar perfiles", "Conexión", "Salir"])).ToLowerInvariant();
             if (opcion is "salir" or "x") return;
+            if (opcion == "administrar perfiles") { await AdministrarPerfiles(ct); continue; }
             if (opcion is "conexión" or "conexion" or "c") { await CambiarConexion(ct); continue; }
             bool crearPerfil = opcion is "crear perfil" or "nuevo";
             if (!crearPerfil && opcion is not ("jugar" or "j" or "")) continue;
@@ -145,13 +146,62 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
             if (libres.Count == 0 && rechazados.Count == 1) return (rechazados[0], false);
             var opciones = elegibles.Select(p => $"Usar perfil · {p.Nombre}").ToList();
             opciones.Add("Crear perfil"); opciones.Add("Reintentar disponibilidad"); opciones.Add("Volver");
-            var opcion = await Menu(ct, elegibles.Count == 0 ? "Perfiles ocupados" : "Elegir perfil",
-                elegibles.Count == 0 ? "Todos los perfiles están en uso" : "Seleccioná con las flechas y confirmá",
-                opciones, elegibles.Count == 0 ? "Ocupado" : elegibles[0].Nombre);
+            var (opcion, borrar) = await MenuPerfiles(ct, elegibles.Count == 0 ? "Perfiles ocupados" : "Elegir perfil",
+                elegibles.Count == 0 ? "Todos los perfiles están en uso" : "Delete o Backspace elimina el perfil seleccionado sin confirmación.",
+                opciones, elegibles.Count == 0 ? "Ocupado" : elegibles[0].Nombre, elegibles.Count);
+            if (borrar is { } indiceBorrar)
+            {
+                local.Quitar(servidor, elegibles[indiceBorrar].Id);
+                if (local.Perfiles(servidor).Length == 0) return (null, true);
+                continue;
+            }
+            if (opcion is null) continue;
             int indice = opciones.IndexOf(opcion);
             if (indice >= 0 && indice < elegibles.Count) return (elegibles[indice], false);
             if (opcion == "Crear perfil") return (null, false);
             if (opcion == "Volver") return (null, true);
+        }
+    }
+
+    private async Task AdministrarPerfiles(CancellationToken ct)
+    {
+        while (true)
+        {
+            var perfiles = local.Perfiles(servidor);
+            if (perfiles.Length == 0)
+            {
+                await Menu(ct, "Administrar perfiles", "No hay perfiles guardados.", ["Volver"]);
+                return;
+            }
+            var opciones = perfiles.Select(p => $"Perfil · {p.Nombre}").Append("Volver").ToArray();
+            var (opcion, borrar) = await MenuPerfiles(ct, "Administrar perfiles",
+                "Seleccioná un perfil y pulsá Delete o Backspace para borrarlo sin confirmación.",
+                opciones, perfiles[0].Nombre, perfiles.Length);
+            if (borrar is { } indiceBorrar)
+            {
+                local.Quitar(servidor, perfiles[indiceBorrar].Id);
+                continue;
+            }
+            if (opcion == "Volver") return;
+        }
+    }
+
+    private async Task<(string? Opcion, int? Borrar)> MenuPerfiles(CancellationToken ct, string titulo,
+        string detalle, IReadOnlyList<string> opciones, string? perfil, int cantidadPerfiles)
+    {
+        int foco = 0;
+        while (true)
+        {
+            interfaz.MostrarInicio(perfil, titulo, opciones, foco, servidor.ToString(), detalle);
+            var tecla = await LeerTecla(ct);
+            if ((tecla is ConsoleKey.Delete or ConsoleKey.Backspace) && foco < cantidadPerfiles)
+                return (null, foco);
+            if (tecla is ConsoleKey.UpArrow or ConsoleKey.LeftArrow or ConsoleKey.W or ConsoleKey.A or ConsoleKey.K or ConsoleKey.H)
+                foco = Math.Max(0, foco - 1);
+            else if (tecla is ConsoleKey.DownArrow or ConsoleKey.RightArrow or ConsoleKey.S or ConsoleKey.D or ConsoleKey.J or ConsoleKey.L)
+                foco = Math.Min(opciones.Count - 1, foco + 1);
+            else if (tecla == ConsoleKey.Enter) return (opciones[foco], null);
+            else if (tecla == ConsoleKey.Escape) return (opciones[^1], null);
         }
     }
 
@@ -178,6 +228,7 @@ internal sealed class InicioCliente(TextReader entrada, TextWriter salida, Acces
             return (await entrada.ReadLineAsync(ct))?.Trim().ToLowerInvariant() switch
             {
                 null => null, "" or "enter" => ConsoleKey.Enter, "esc" => ConsoleKey.Escape,
+                "delete" or "del" => ConsoleKey.Delete, "backspace" or "bksp" => ConsoleKey.Backspace,
                 "cancelar" or "cancelar búsqueda" => ConsoleKey.C,
                 "salir" or "salir sin abandonar" => ConsoleKey.Escape,
                 "buscar oponente" or "jugar" => ConsoleKey.Enter,

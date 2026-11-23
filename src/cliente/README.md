@@ -6,6 +6,8 @@ La primera vez que elegís Jugar se pide un nombre opcional (Enter: Invitado). C
 
 Al elegir Jugar, el cliente consulta cuáles de tus perfiles están libres. Si hay uno solo libre, entra automáticamente; si hay varios, muestra sus nombres numerados para elegir. Los ocupados no se ofrecen para entrar. Si todos están en uso, podés crear otro perfil, reintentar o volver. La consulta no ocupa perfiles ni extiende sesiones ajenas. Si otro cliente toma el perfil durante la selección, se actualiza la disponibilidad. El acceso único guardado por la versión anterior se conserva automáticamente como primer perfil.
 
+En **Administrar perfiles** podés borrar el perfil seleccionado pulsando Delete o Backspace. Se elimina de este dispositivo sin confirmación; el servidor no borra partidas ya iniciadas.
+
 Jugar muestra **Buscando oponente**; cuando llega otro invitado, el servidor inicia automáticamente una sola partida si hay seis personajes activos, sin confirmación manual. Si falta catálogo, ambos ven el aviso y el cliente reintenta automáticamente al actualizar su presencia; también pueden cancelar la búsqueda. Si sale el rival antes del inicio, volvés a buscar.
 
 Durante el juego usá flechas, WASD o HJKL y Enter para elegir carta y atributo. Cada resultado se lee por separado. Esc abre Continuar, Salir sin abandonar y Abandonar partida. Abandonar requiere confirmar Sí; No es la opción inicial. Ctrl+C y fin de entrada salen sin abandonar. La salida normal libera la sesión; después de un corte puede seguir ocupada hasta quince segundos.

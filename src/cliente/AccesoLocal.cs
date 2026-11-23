@@ -68,6 +68,8 @@ internal sealed class AccesoLocal(string directorio)
             throw new IOException("El perfil elegido cambió. Volvé a seleccionar.");
         return perfiles.Select(p => p.Id == anterior ? invitado : p).ToArray();
     });
+    internal void Quitar(Uri servidor, Guid id) => Modificar(servidor,
+        perfiles => perfiles.Where(p => p.Id != id).ToArray());
 
     private static T? LeerArchivo<T>(string ruta) where T : class
     {
