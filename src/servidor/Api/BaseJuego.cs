@@ -14,8 +14,14 @@ internal sealed class BaseJuego(DbContextOptions<BaseJuego> opciones) : DbContex
     internal DbSet<SolicitudGuardada> Solicitudes => Set<SolicitudGuardada>();
     internal DbSet<OperacionGuardada> Operaciones => Set<OperacionGuardada>();
 
+    internal DbSet<InvitadoGuardado> Invitados => Set<InvitadoGuardado>();
+    internal DbSet<AsignacionInvitado> Asignaciones => Set<AsignacionInvitado>();
+
     protected override void OnModelCreating(ModelBuilder modelo)
     {
+        modelo.Entity<InvitadoGuardado>().ToTable("Invitado");
+        modelo.Entity<AsignacionInvitado>().ToTable("AsignacionInvitado").HasKey(a => new { a.IdInvitado, a.IdPartida });
+        modelo.Entity<AsignacionInvitado>().HasIndex(a => new { a.IdPartida, a.Rol }).IsUnique();
         modelo.Entity<PersonajeCatalogo>().ToTable("PersonajeCatalogo").Property(p => p.Id).ValueGeneratedNever();
         modelo.Entity<PartidaGuardada>().ToTable("Partida");
         modelo.Entity<ParticipanteGuardado>().ToTable("Participante")

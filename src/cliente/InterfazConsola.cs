@@ -49,6 +49,26 @@ internal sealed partial class InterfazConsola
         Paneles(PanelInfo("Jugador local", local ?? "Identidad pendiente"), PanelInfo("Estado", TextoVisible(estado)));
     }
 
+    internal void MostrarInicio(string? perfil, string situacion, IReadOnlyList<string> opciones, int foco,
+        string servidor, string? detalle = null)
+    {
+        Encabezado(perfil, situacion, detalle);
+        Paneles(PanelInfo("Servidor", servidor),
+            PanelInfo("GUERRA", "Partidas de cartas · elegí una opción para continuar."));
+        Paneles(PanelInfo("Inicio", ListaOpciones(opciones, foco)));
+        Pie(Controles);
+    }
+
+    internal void MostrarSala(string perfil, string estado, string rival, bool listo, bool rivalListo,
+        string? aviso, IReadOnlyList<string> opciones, int foco, string servidor)
+    {
+        Encabezado(perfil, estado, aviso);
+        Paneles(PanelInfo("Servidor", servidor), PanelInfo("Sala", rival));
+        Paneles(PanelInfo("Preparación", $"{perfil}: {(listo ? "Listo" : "Sin confirmar")}\n{rival}: {(rivalListo ? "Listo" : "Sin confirmar")}"));
+        Paneles(PanelInfo("Acciones", ListaOpciones(opciones, foco)));
+        Pie(Controles);
+    }
+
     public void MostrarEsperaInicial(string local, string participantes, string motivo)
     {
         Encabezado(local, "Antes de la partida", motivo);

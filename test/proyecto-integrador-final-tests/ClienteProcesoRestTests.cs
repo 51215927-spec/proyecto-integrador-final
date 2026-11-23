@@ -20,7 +20,7 @@ public sealed class ClienteProcesoRestTests
         {
             await using (var primera = new Proceso(directorio))
             {
-                await primera.Enviar($"{app.Urls.Single()}\n{partida.Id}\n{partida.CredencialJ1}\nAna\n");
+                await primera.Enviar($"recuperar acceso antiguo\n{app.Urls.Single()}\n{partida.Id}\n{partida.CredencialJ1}\nAna\n");
                 await primera.Esperar("Esperando inicio");
                 Assert.DoesNotContain(partida.CredencialJ1, primera.Texto);
                 primera.CerrarEntrada();
@@ -29,7 +29,7 @@ public sealed class ClienteProcesoRestTests
             }
             await using (var segunda = new Proceso(directorio))
             {
-                await segunda.Enviar($"{app.Urls.Single()}\n{partida.Id}\n{partida.CredencialJ1}\nAna\n");
+                await segunda.Enviar($"recuperar acceso antiguo\n{app.Urls.Single()}\n{partida.Id}\n{partida.CredencialJ1}\nAna\n");
                 await segunda.Esperar("Sesión ocupada");
                 app.Services.GetRequiredService<AdministradorSesiones>().CerrarSesion(partida.Id, "J1");
                 await segunda.Esperar("Esperando inicio");

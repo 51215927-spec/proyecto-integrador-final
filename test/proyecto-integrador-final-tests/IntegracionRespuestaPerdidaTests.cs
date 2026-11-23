@@ -10,9 +10,11 @@ namespace Proyecto_Integrador_Final.Tests;
 public sealed class IntegracionRespuestaPerdidaTests
 {
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ClienteResuelveEleccionInciertaContraSQLiteReal(bool confirmarAntesDelCorte)
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public async Task ClienteResuelveEleccionInciertaContraSQLiteReal(bool confirmarAntesDelCorte, bool automatico)
     {
         // La base temporal aísla el ensayo y permite comprobar commits reales de SQLite.
         string archivo = Path.Combine(Path.GetTempPath(), $"guerra-red-{Guid.NewGuid():N}.db");
@@ -21,22 +23,33 @@ public sealed class IntegracionRespuestaPerdidaTests
             await using var app = ServidorHttp.Crear(["--urls=http://127.0.0.1:0", $"--ConnectionStrings:Juego=Data Source={archivo}"]);
             var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
             for (int i = 0; i < 6; i++) app.Services.GetRequiredService<CatalogoPersonajes>().DarDeAlta(new($"Carta {i}", "Descripción", "Arte", 750, 550, 500, 250, 500, 450));
-            var partida = juego.CrearPartida();
+            var partida = automatico ? null : juego.CrearPartida();
             await app.StartAsync();
+            var url = new Uri(app.Urls.Single() + "/");
+            using var accesoA = automatico ? new ClienteAccesoHttp(url, await ClienteAccesoHttp.Crear(url, "Ana", default)) : null;
+            using var accesoB = automatico ? new ClienteAccesoHttp(url, await ClienteAccesoHttp.Crear(url, "Luis", default)) : null;
+            if (automatico)
+            {
+                await accesoA!.Accion("sesion", default); await accesoB!.Accion("sesion", default);
+                await accesoA.Accion("jugar", default); await accesoB.Accion("jugar", default);
+                await accesoA.Accion("listo", default); var iniciada = await accesoB.Accion("listo", default);
+                partida = new(iniciada.Partida!.Value, accesoA.Invitado.Secreto, accesoB.Invitado.Secreto);
+            }
             // Los transportes conectan a Kestrel por loopback con credenciales separadas.
-            var config = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida.Id, partida.CredencialJ1, "Ana");
-            using var rival = new ClientePartidaHttp(config with { Credencial = partida.CredencialJ2, Nombre = "Luis" }, Guid.NewGuid());
+            var config = new ConfiguracionCliente(new Uri(app.Urls.Single() + "/"), partida!.Id, partida.CredencialJ1, "Ana");
+            using var rival = new ClientePartidaHttp(config with { Credencial = partida.CredencialJ2, Nombre = "Luis" }, accesoB?.Sesion ?? Guid.NewGuid());
             await rival.Incorporar(default);
             // El intermediario decide si el primer envío llega a confirmarse antes del corte.
             using var corte = new CorteHttp(confirmarAntesDelCorte);
-            using var cliente = new ClientePartidaHttp(config, Guid.NewGuid(), corte);
+            using var cliente = new ClientePartidaHttp(config, accesoA?.Sesion ?? Guid.NewGuid(), corte, accesoA);
             await cliente.Incorporar(default);
-            juego.Iniciar(partida.Id);
+            if (!automatico) juego.Iniciar(partida.Id);
             var inicial = await cliente.Presentacion(default);
             using var cierre = new CancellationTokenSource(TimeSpan.FromSeconds(12));
             var entrada = new Teclas();
             var salida = new Salida();
-            var sesion = new SesionPartidaCliente(config, cliente, new InterfazConsola(entrada, salida));
+            var escuchar = accesoA?.Escuchar(cierre.Token);
+            var sesion = new SesionPartidaCliente(config, cliente, new InterfazConsola(entrada, salida), avisos: accesoA);
             // Se usa el bucle real del cliente para observar su recuperación, además del transporte.
             var tarea = sesion.Ejecutar(new EntradaCliente(entrada), cierre.Token);
             try
@@ -74,6 +87,7 @@ public sealed class IntegracionRespuestaPerdidaTests
                 // El bucle se cancela y se espera antes de detener el servidor del ensayo.
                 cierre.Cancel();
                 await tarea.WaitAsync(TimeSpan.FromSeconds(3));
+                if (escuchar is not null) try { await escuchar; } catch (OperationCanceledException) { }
             }
             await app.StopAsync();
         }

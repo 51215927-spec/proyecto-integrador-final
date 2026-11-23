@@ -10,7 +10,7 @@ namespace Proyecto_Integrador_Final.Tests;
 public class CompatibilidadPersistenciaTests
 {
     [Fact]
-    public async Task BaseDeE18a050ContinuaSinMigracionYRecuperaReciboAnterior()
+    public async Task BaseDeE18a050ConservaEsquemaAnteriorYRecuperaReciboConMigracionAditiva()
     {
         string ruta = Path.Combine(Path.GetTempPath(), $"anterior-{Guid.NewGuid()}.db");
         string cadena = $"Data Source={ruta};Pooling=False";
@@ -70,7 +70,7 @@ public class CompatibilidadPersistenciaTests
         using var db = new SqliteConnection(cadena);
         db.Open();
         using var command = db.CreateCommand();
-        command.CommandText = "SELECT group_concat(sql, char(10)) FROM (SELECT sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY name)";
+        command.CommandText = "SELECT group_concat(sql, char(10)) FROM (SELECT sql FROM sqlite_master WHERE sql IS NOT NULL AND tbl_name NOT IN ('Invitado', 'AsignacionInvitado') ORDER BY name)";
         return (string)command.ExecuteScalar()!;
     }
 }

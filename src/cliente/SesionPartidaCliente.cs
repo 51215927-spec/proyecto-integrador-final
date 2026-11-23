@@ -4,11 +4,13 @@ namespace Proyecto_Integrador_Final.Cliente;
 
 // El bucle es el único dueño del modelo y de la consola. HTTP nunca modifica la interfaz.
 internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, ClientePartidaHttp http,
-    InterfazConsola interfaz, TimeProvider? reloj = null)
+    InterfazConsola interfaz, TimeProvider? reloj = null, ClienteAccesoHttp? avisos = null)
 {
     // El reloj se sustituye en pruebas para comprobar intervalos sin esperar segundos reales.
     private readonly TimeProvider tiempo = reloj ?? TimeProvider.System;
     private readonly EstadoCliente estado = new(configuracion.Partida);
+    private long versionAviso = -1;
+    private bool conexionAnterior;
     private bool incorporado, terminal, protocolo, corregir, abandono, salidaFinal;
     private string aviso = "Conectando…";
     private string? huella, seleccion;
@@ -49,6 +51,14 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
                 if (presencia?.IsCompleted == true) await CompletarPresencia();
                 if (!terminal)
                 {
+                    if (avisos is not null)
+                    {
+                        if (avisos.Conectado && (!conexionAnterior || avisos.Version != versionAviso))
+                        { proximaVista = Ahora; versionAviso = avisos.Version; }
+                        if (!avisos.Conectado && conexionAnterior)
+                        { estado.PerderComunicacion(); aviso = "Reconectando…"; Dibujar(); }
+                        conexionAnterior = avisos.Conectado;
+                    }
                     if (incorporado)
                     {
                         // Consulta y presencia avanzan por separado, incluso mientras se lee o se navega.
@@ -56,7 +66,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
                         {
                             generacionVista = generacion;
                             consulta = http.Presentacion(token);
-                            proximaVista = Ahora.AddSeconds(1);
+                            proximaVista = avisos is null ? Ahora.AddSeconds(1) : DateTimeOffset.MaxValue;
                         }
                         // Una consulta lenta no retiene la renovación de presencia ni acumula ticks atrasados.
                         if (!corregible && !presenciaBloqueada && presencia is null && Ahora >= proximaPresencia)
@@ -260,6 +270,7 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
     private void Tratar(FalloCliente error)
     {
         estado.PerderComunicacion();
+        if (avisos is not null) proximaVista = Ahora.AddSeconds(1);
         seleccion = null;
         atributo = false;
         aviso = error.Transitorio ? "Sin comunicación · Último estado confirmado. Reconectando…" : error.Codigo;
@@ -268,6 +279,11 @@ internal sealed class SesionPartidaCliente(ConfiguracionCliente configuracion, C
         {
             incorporado = false; generacion++; reciboAusente = false;
             aviso = "Sesión vencida. Reincorporando con la misma identidad…";
+        }
+        else if (error.Codigo == "invitadoInvalido")
+        {
+            protocolo = true; corregible = true;
+            aviso = "El servidor rechazó el acceso. Enter para volver al menú o Esc para salir. Crear otro invitado requiere confirmación y no recupera esta partida.";
         }
         // Identidad o partida incorrectas requieren corregir datos: no se reintenta indefinidamente lo mismo.
         else if (error.Codigo is "entradaInvalida" or "credencialInvalida" or "sinPermiso" or "recursoNoEncontrado")

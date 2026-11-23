@@ -2,7 +2,7 @@
 
 ## Entrada de datos en ejecución
 
-El servidor y el cliente solicitan su configuración por consola. La herramienta de carga acepta una ruta JSON como argumento opcional; si falta, la solicita. No se necesitan variables de entorno de usuario. La configuración de conexión permite corregir campos; un error de archivo o carga finaliza sin reintento automático. El fin de entrada cancela las acciones incompletas. Las credenciales ingresadas no se muestran en una terminal interactiva ni en los diagnósticos. Con entrada redirigida se leen por líneas.
+El servidor solicita su configuración por consola. El cliente ofrece Jugar y recuerda su conexión y acceso por servidor. La herramienta de carga acepta una ruta JSON como argumento opcional; si falta, la solicita. No se necesitan variables de entorno de usuario. La configuración de conexión permite corregir campos; un error de archivo o carga finaliza sin reintento automático. El fin de entrada cancela las acciones incompletas. Las credenciales ingresadas no se muestran en una terminal interactiva ni en los diagnósticos. Con entrada redirigida se leen por líneas.
 
 ## Instalación de herramientas y dependencias
 
@@ -69,7 +69,8 @@ dotnet test proyecto-integrador-final.sln
 dotnet run --project src/cliente
 ```
 
-El cliente solicita URL base, UUID de partida, credencial de plaza y nombre. Necesitás una partida creada en el servidor para jugar. Las pruebas incluyen transporte HTTP, coordinación de consola y servidor local con SQLite temporal. Para incluir los contratos que arrancan ejecutables, compilá primero y configurá las tres rutas `GUERRA_*_DLL` como indica el [README de pruebas](../test/proyecto-integrador-final-tests/README.md). Sin esas rutas, los casos condicionales se omiten; un resultado verde no implica que hayan corrido todos.
+El cliente ofrece Jugar, Crear perfil, Conexión y Salir. No pide UUID ni credenciales en el recorrido normal. Las pruebas incluyen transporte HTTP, coordinación de consola y SQLite temporal. Para ejecutar también los contratos de procesos, configurá las tres rutas `GUERRA_*_DLL` del mismo worktree según el [README de pruebas](../test/proyecto-integrador-final-tests/README.md).
+
 
 Las dependencias y los comandos del servidor están en [API y operación del servidor](protocolo-de-partida.md#operación-del-servidor).
 
@@ -81,7 +82,7 @@ Con el servidor en ejecución y una credencial de catálogo no vacía, ejecutá 
 dotnet run --project src/subir-personajes -- "src/subir-personajes/ejemplos/personajes.json"
 ```
 
-Podés indicar otro archivo de personajes reales u omitir el argumento para que se solicite la ruta. Luego se piden URL y credencial. La herramienta muestra ambas cantidades y pide confirmación antes de **reemplazar todo el catálogo** con el JSON. Cargá al menos seis personajes válidos y distintos para jugar. No se cargan ejemplos automáticamente. Consultá el [formato, validaciones, cancelación y errores](../src/subir-personajes/README.md).
+Podés indicar otro archivo de personajes reales u omitir el argumento para que se solicite la ruta. Luego se piden URL y credencial. La herramienta muestra ambas cantidades y pide confirmación antes de **reemplazar todo el catálogo** con el JSON. Cargá al menos seis personajes válidos y distintos para jugar. Al iniciar, el servidor carga estos seis personajes de ejemplo únicamente si el catálogo está vacío. Consultá el [formato, validaciones, cancelación y errores](../src/subir-personajes/README.md).
 
 ## Cómo iniciar una partida
 
@@ -93,9 +94,9 @@ dotnet run --project src/servidor/servidor.csproj
 
 - Respondé las preguntas de inicio: dirección de escucha (Enter: `http://0.0.0.0:5000`), archivo SQLite (Enter: `guerra.db`) y credencial de catálogo. Una credencial vacía deshabilita las altas y se informa en pantalla. La ruta relativa de la base se interpreta desde el directorio de ejecución; su directorio debe existir y permitir escritura.
 - Con el servidor en ejecución, usá otra terminal para [cargar personajes](#cargar-personajes-desde-json) con un JSON de al menos seis personajes en el catálogo.
-- Escribí `crear` y pulsá Enter en la consola del servidor. Copiá el UUID que aparece junto a `Partida` y entregale a cada jugador la credencial de su plaza (`J1` o `J2`).
-- En otras dos terminales, ejecutá `dotnet run --project src/cliente`. Cada jugador ingresa la URL del servidor, el UUID de partida, su credencial de plaza y su nombre. Ambos esperan el inicio; las sesiones se renuevan automáticamente.
-- En la consola del servidor, escribí `iniciar`, pulsá Enter y respondé con el UUID que mostró `crear`. Si aparece «Partida iniciada.», el servidor repartió tres cartas a cada jugador y J1 puede elegir la primera carta y el atributo.
+- Abrí dos terminales del mismo usuario y ejecutá `dotnet run --project src/cliente` en cada una. En la primera elegí Jugar y creá tu primer perfil. En la segunda, elegí Crear perfil e ingresá otro nombre; también podés elegir Jugar y crear otro cuando informe que todos están en uso. Cada perfil conserva sus propias partidas y credenciales.
+- Usá Conexión para recordar otra dirección si corresponde. Elegí Jugar, omití o escribí el nombre y esperá rival. Escribí Listo y Enter en cada cliente. Con catálogo suficiente el servidor inicia y reparte sin comandos administrativos.
+- Si faltan seis personajes activos, ambos ven el aviso y pueden cancelar o reintentar con Listo cuando se complete el catálogo.
 
 La comprobación entre dos computadoras corresponde al ensayo de red pendiente. Para localhost, usá `http://127.0.0.1:5000` en ambos clientes. Desde otra computadora, usá la IP del servidor. [Conexión en red local](protocolo-de-partida.md#conexión-en-red-local)
 
@@ -107,7 +108,7 @@ Esc abre el menú: Continuar, Salir sin abandonar y Abandonar partida. La confir
 
 Ante una interrupción de red, esperá la reconexión automática o salí desde Esc. Mientras se recupera, se conserva el último estado confirmado y se bloquean nuevas jugadas. Una elección incierta se comprueba por su recibo antes de reenviar. Si el abandono no pudo confirmarse, el cliente lo advierte al salir.
 
-Para retomar tras cerrar, volvé a ejecutar el cliente e ingresá los mismos datos y el nombre exacto. El proceso crea una sesión nueva y puede tener que esperar la liberación de la plaza. No guarda datos locales ni reproduce resultados anteriores; muestra el estado persistido por el servidor.
+Para retomar, abrí el cliente en el mismo usuario del sistema y elegí Jugar. Si queda un solo perfil libre lo usa automáticamente; si hay varios libres, elegí el correspondiente por número. Después elegí Retomar. El acceso guardado localiza la partida activa en ese servidor. Una sesión anterior puede seguir ocupada hasta quince segundos. El cliente consulta el estado persistido; no reconstruye salas antiguas ni busca otra partida automáticamente. Para partidas creadas con el flujo anterior, elegí Recuperar acceso antiguo e ingresá los accesos originales. [Almacenamiento y errores de acceso](../src/cliente/README.md).
 
 ## Problemas frecuentes
 
@@ -115,8 +116,16 @@ Para retomar tras cerrar, volvé a ejecutar el cliente e ingresá los mismos dat
 - Si falla la conexión, verificá que el servidor informe la escucha y que coincidan la IP y el puerto. En red local, comprobá que ambos equipos estén en la misma red y que el puerto configurado permita conexiones entrantes.
 - Si el alta devuelve 401, comprobá que la credencial de catálogo coincida con la ingresada al iniciar el servidor.
 - Si la sesión vence, el cliente se reincorpora automáticamente. Si indica sesión ocupada, esperá su vencimiento o pedí al operador que use `cerrar-sesion`.
-- Si rechaza credencial, nombre o partida, Enter permite volver a ingresar los datos. Si cambiaste el destino o plaza, una operación anterior puede haberse aplicado: su recuperación requiere los datos originales.
+- Si el servidor rechaza la identidad, el cliente ofrece crear otra mediante confirmación explícita NUEVO. La identidad nueva no recupera partidas anteriores. Si no puede leer o guardar los archivos locales, ofrece reintentar o salir sin reemplazarlos.
 
 ## Bases existentes tras la separación del servidor
 
 El spec 006 conserva el esquema SQLite: usá el archivo habitual y las credenciales de las plazas existentes. El servidor reconstruye el dominio desde las filas guardadas y conserva recibos, manos y solicitudes. Al reiniciar, las sesiones temporales dejan de estar vigentes y ambos clientes deben reincorporarse. La compatibilidad automatizada se comprobó con una base creada por la versión anterior; no hace falta una migración para este cambio. [Referencia y límites de validación](plan-de-pruebas.md#separación-de-responsabilidades-spec-006).
+
+## Bases existentes con inicio automático
+
+El spec 007 añade Invitado y AsignacionInvitado mediante creación idempotente; conserva todas las tablas anteriores. Hacé una copia de seguridad de SQLite con el servidor detenido antes de actualizar. Las partidas antiguas siguen accesibles mediante Recuperar acceso antiguo, acreditando la credencial de plaza y el nombre exacto registrado. No se reclaman por nombre. Para volver al binario anterior, detené el nuevo y conservá la base y las tablas añadidas; los accesos anteriores continúan disponibles. Los invitados y sus asignaciones solo se usan con la versión nueva.
+
+### Actualizar una instancia que ya está abierta
+
+Después de actualizar el código, cerrá los clientes e iniciá nuevamente el servidor para cargar la ruta de disponibilidad de perfiles. Se conservan la base y el acceso local anterior; no borres las credenciales para crear un segundo jugador. Crear perfil añade un acceso distinto al archivo existente.

@@ -28,7 +28,7 @@ public sealed class ArranqueRestTests
     }
 
     [ContratoFact("GUERRA_CLIENTE_DLL")]
-    public async Task SolicitaConexionCorrigeCamposYNoOfreceDemo()
+    public async Task RecuperacionExcepcionalCorrigeCamposYNoOfreceDemo()
     {
         var inicio = new ProcessStartInfo("dotnet")
         {
@@ -38,7 +38,7 @@ public sealed class ArranqueRestTests
         using var proceso = Process.Start(inicio)!;
         using var plazo = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var salida = proceso.StandardOutput.ReadToEndAsync(plazo.Token);
-        await proceso.StandardInput.WriteAsync("invalida\nhttp://localhost:5000/prefijo/\ninvalido\n00000000-0000-0000-0000-000000000000\n");
+        await proceso.StandardInput.WriteAsync("recuperar acceso antiguo\ninvalida\nhttp://localhost:5000/prefijo/\ninvalido\n00000000-0000-0000-0000-000000000000\n");
         proceso.StandardInput.Close();
         await proceso.WaitForExitAsync(plazo.Token);
         var texto = await salida;

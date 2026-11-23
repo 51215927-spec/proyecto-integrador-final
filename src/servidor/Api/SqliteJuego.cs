@@ -20,6 +20,9 @@ internal sealed class SqliteJuego : IDisposable
         }
         using var db = Abrir();
         db.Database.EnsureCreated();
+        // EnsureCreated no evoluciona bases anteriores. Solo añadimos tablas, sin tocar las existentes.
+        db.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS Invitado (Id TEXT NOT NULL PRIMARY KEY, Hash BLOB NOT NULL, Nombre TEXT NOT NULL)");
+        db.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS AsignacionInvitado (IdInvitado TEXT NOT NULL, IdPartida TEXT NOT NULL, Rol TEXT NOT NULL, PRIMARY KEY (IdInvitado, IdPartida), UNIQUE (IdPartida, Rol))");
     }
 
     internal T Ejecutar<T>(bool escritura, Func<BaseJuego, T> operacion)
