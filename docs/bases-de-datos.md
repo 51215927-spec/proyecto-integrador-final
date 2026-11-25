@@ -42,3 +42,12 @@ La carga JSON valida el lote completo antes de escribir. `ReemplazarCatalogo` bo
 `AlmacenPartidas.Cargar` reconstruye `EstadoPartida` y sus participantes, cartas, rondas, combates y solicitudes. El dominio no recibe entidades EF ni hashes de credencial. `Guardar` actualiza las filas existentes e incorpora las nuevas; `SqliteJuego.Ejecutar` confirma esos cambios y los recibos en una transacción. Un fallo anterior al commit revierte el conjunto. La conexión mantenida abierta permite usar `:memory:` en pruebas; en operación se conserva SQLite en archivo.
 
 El spec 006 no cambia tablas ni columnas. `CompatibilidadPersistenciaTests` reabre una base producida por el servidor anterior (`e18a050`), recupera una operación confirmada y continúa el combate sin modificar el esquema. La prueba usa la [fixture SQL](../test/proyecto-integrador-final-tests/Fixtures/partida-e18a050.sql), no una migración. [Evidencia](plan-de-pruebas.md#separación-de-responsabilidades-spec-006).
+
+## Evolución aditiva del spec 007
+
+Después de EnsureCreated, SqliteJuego crea idempotentemente Invitado (Id, Hash, Nombre) y AsignacionInvitado (IdInvitado, IdPartida, Rol; unicidad de plaza). No altera las tablas anteriores. El servidor guarda SHA256 del secreto aleatorio de 256 bits; el acceso de invitado acredita la plaza asignada mediante el hash de Participante. No hay secretos persistidos en claro en servidor. Partida, cartas y asignaciones se escriben en la misma transacción; una falla revierte todo el inicio.
+
+Solo se persisten asignaciones de partidas iniciadas. Presencia, búsquedas y salas previas desaparecen al reiniciar. Una consulta de asignación filtra partidas finalizadas. Las plazas antiguas conservan su credencial y no se adjudican por nombre. La recuperación excepcional no crea vínculos con invitados nuevos.
+
+
+Al arrancar el ejecutable del servidor, `CatalogoPredeterminado` carga el JSON de ejemplos embebido si la tabla de catálogo no tiene filas. La operación valida y reemplaza el lote en una transacción. Si ya hay personajes, no modifica ni agrega ninguno; esto conserva las ediciones y evita duplicados en reinicios.

@@ -30,7 +30,7 @@ El JSON siempre es una lista, incluso para un solo personaje:
 
 Todos los campos son obligatorios: tres textos y seis enteros. No incluyas ID; el servidor asigna 1..N en orden y activa todos los personajes. La lista no puede estar vacía ni repetir nombres ignorando mayúsculas y espacios externos. Nombre no puede estar vacío; descripción y ASCII pueden ser cadenas vacías. ASCII no admite tabulaciones y permite hasta 25 líneas de 120 caracteres, contando LF, CRLF o CR. Cada atributo debe estar entre 250 y 750; los seis suman 3000, con al menos uno de 650 o más y uno de 350 o menos.
 
-Los seis ejemplos reutilizan nombres y atributos de la demostración del cliente. Se cargan por el mismo flujo, indicando su ruta; nunca se cargan automáticamente.
+Los seis ejemplos reutilizan nombres y atributos de la demostración del cliente. El servidor los carga al iniciar si el catálogo está vacío. También podés volver a cargarlos por el flujo de reemplazo indicando su ruta.
 
 Los errores de archivo, formato, validación o guardado finalizan con código 1, sin reintentos. El servidor valida el lote completo y guarda en una sola transacción: un rechazo o fallo de guardado conserva el catálogo anterior. Si se pierde la respuesta después de enviar el reemplazo, el resultado es desconocido: el catálogo puede ser el anterior o el nuevo completo. La herramienta informa esa incertidumbre y no afirma un rollback. Éxito o cancelación voluntaria terminan con código 0. Para recuperar un catálogo reemplazado, cargá su JSON anterior.
 

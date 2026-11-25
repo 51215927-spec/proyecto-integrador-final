@@ -169,3 +169,45 @@ Resultado: build con **0 errores y 0 advertencias** y **190 aprobadas, 0 fallida
 El cambio de comportamiento del dominio siguió rojo, verde y refactorización: el rojo inicial falló con `CS0246` por ausencia de `CartaPartida` (`/tmp/006-domain-red.log`); el verde de dominio, ronda y vista en el repositorio aprobó 15 pruebas (`/tmp/006-domain-green.log`) antes de la suite completa de 190. Las pruebas adicionales de vista y coordinación se añadieron como caracterización y no se presentan como TDD completo. El registro por criterio se mantiene en los specs canónicos de la copia principal de `main`, excluidos de Git.
 
 Estas comprobaciones locales no acreditan la integración física entre dos equipos Windows del spec 002. No se ejecutaron instalaciones ni acciones sobre bases de producción, y no se repitió una revisión visual manual de todas las pantallas. El detalle por fuente está en el [catálogo](archivos/README.md).
+
+## Inicio automático de partidas (spec 007)
+
+Resultado final (2026-11-23): **207 pruebas aprobadas, 0 fallidas y 0 omitidas**, con las tres DLL de este worktree. Referencia: rama `feature/specc-007-crear-sistema-de-iniciacion-automatica`, base `b4f8412` y cambios locales de esta entrega. Verificación en este mismo worktree con SDK .NET 8.0.133, runtime 8.0.33, SQLite temporal y HTTP loopback. Se observaron ciclos rojo/verde en alta v2 (404 antes de implementar), cola/sala (404), avisos (404), almacenamiento y menú (expectativas pendientes), flujo de procesos y presencia sin estado (200 frente a 204 esperado).
+
+La revisión del 2026-11-23 que elimina la confirmación manual actualiza los casos y compiló la solución completa (0 advertencias, 0 errores). No se volvió a ejecutar la suite; las cifras siguientes son evidencia de la revisión anterior al cambio.
+
+Las pruebas de caracterización añadidas que ya pasaban no se contabilizan como ciclos rojos. La suite conserva pruebas de reglas, privacidad, operaciones duplicadas, rollback y recuperación por recibo. La compatibilidad reabre la fixture anterior, preserva tablas y partidas y admite únicamente la adición de Invitado y AsignacionInvitado. Los procesos de cliente ya no ejercitan el ingreso manual histórico, que fue retirado de la interfaz a solicitud del usuario.
+
+| Criterio | Evidencia local |
+|---|---|
+| CA1 | InicioAutomaticoProcesoTests: dos clientes reales, nombres omitidos, Jugar y partida automática sin datos internos ni comandos de inicio. |
+| CA2 | AccesoLocalTests y AislamientoInvitadoTests: persistencia, permisos Unix 0700/0600, corrupción sin sobrescritura, cambio de servidor sin filtrar acceso y rechazo con reemplazo explícito NUEVO. |
+| CA3 | InicioAutomaticoHttpTests: tres invitados, FIFO, reintentos concurrentes y exclusión de segunda sesión. |
+| CA4 | InicioAutomaticoHttpTests: el emparejamiento intenta iniciar de inmediato, comunica catálogo insuficiente y reintenta al actualizar estado. |
+| CA5 | RecuperacionInvitadoTests y AtomicidadInicioTests: vencimiento a quince segundos, rival devuelto a búsqueda e inicio automático atómico frente a cancelación. |
+| CA6 | Avisos autenticados y pruebas de procesos: tráfico inactivo de treinta segundos, sin consultas periódicas de presentación ni estado; mantenimiento de presencia y conexión permitido. EstadoClienteTests conserva rechazo de revisiones antiguas y duplicados; los avisos no contienen vistas. |
+| CA7 | IntegracionRespuestaPerdidaTests, modo automático con SSE: recibo antes de reenvío con y sin commit; RecuperacionInvitadoTests: pausa y recuperación de ambos; ReconexionAvisosTests: reconexión tras reiniciar host. |
+| CA8 | Proceso real que cierra/reabre y retoma; exclusión de sesión, Jugar con partida activa y reglas de confirmación de abandono existentes. |
+| CA9 | ReconexionAvisosTests: reinicio real conserva partida/identidad e invalida cola y salas pendientes. |
+| CA10 | Durante dos clientes activos se ejecuta ayuda administrativa; logs rutinarios HTTP deshabilitados y advertencia controlada observable. |
+| CA11 | Suite de regresión y CompatibilidadPersistenciaTests; AtomicidadInicioTests fuerza fallo de asignación y comprueba rollback de partida, cartas y solicitudes. |
+| CA12 | Guías de cliente, servidor, instalación, protocolo, arquitectura y base actualizadas; matriz y límites documentados. |
+
+Para reproducir todos los contratos en Unix, desde la raíz del worktree:
+
+```sh
+dotnet build proyecto-integrador-final.sln
+GUERRA_CLIENTE_DLL="$PWD/src/cliente/bin/Debug/net8.0/cliente.dll" GUERRA_SERVIDOR_DLL="$PWD/src/servidor/bin/Debug/net8.0/servidor.dll" GUERRA_CARGA_DLL="$PWD/src/subir-personajes/bin/Debug/net8.0/subir-personajes.dll" dotnet test proyecto-integrador-final.sln
+```
+
+Los procesos del ensayo automático aíslan usuarios con XDG_DATA_HOME; se omiten expresamente en Windows para no usar el perfil real del operador. El cliente implementa ACL del usuario para Windows, pero su comprobación en Windows y el ensayo físico en dos computadoras siguen pendientes. Las pruebas locales no acreditan configuración de red ni experiencia de teclado físico en dos equipos.
+
+### Ampliación: varios perfiles en el mismo usuario
+
+Resultado: **216 aprobadas, 0 fallidas y 0 omitidas**, 2026-11-23, misma rama y worktree de la funcionalidad, con las tres GUERRA_*_DLL. Incluye las 207 pruebas anteriores y nueve casos adicionales.
+
+- PerfilesTests: migración del acceso único, seis altas simultáneas sin pérdida, reemplazo de un solo perfil y disponibilidad sin ocupar ni renovar sesiones.
+- SeleccionPerfilesTests: selección automática del único libre (incluidos tres perfiles con dos ocupados), selección numérica entre varios libres, todos ocupados, creación explícita y carrera real inyectada antes de adquirir sesión.
+- MismaCuentaProcesoTests: dos terminales con la misma carpeta de datos crean perfiles independientes, juegan y reabren el único libre sin selector.
+
+El nuevo archivo local Version 2 conserva la lectura del acceso anterior. No hay modificación de esquema del servidor. Para probarlo manualmente basta un usuario del sistema y dos terminales, con Crear perfil para el segundo jugador. Es necesario reiniciar el servidor para cargar el endpoint de disponibilidad. El ensayo de procesos sigue aislando datos temporales en Unix para no tocar los accesos reales; la ejecución física en Windows y en dos equipos sigue pendiente.
