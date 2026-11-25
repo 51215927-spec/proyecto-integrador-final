@@ -1,6 +1,6 @@
 namespace Proyecto_Integrador_Final.Api;
 
-internal sealed class CoordinadorPartidas(AlmacenPartidas almacen, AdministradorSesiones sesiones, CatalogoPersonajes catalogo)
+internal sealed class CoordinadorPartidas(AlmacenPartidas almacen, AdministradorSesiones sesiones, CatalogoPersonajes catalogo, Avisos? avisos = null)
 {
     private readonly VistaPartida vista = new();
     internal PartidaCreada CrearPartida() => almacen.CrearPartida();
@@ -67,7 +67,12 @@ internal sealed class CoordinadorPartidas(AlmacenPartidas almacen, Administrador
     {
         lock (sesiones.Sincronizacion)
         {
-            try { return almacen.Ejecutar(id, escritura, accion); }
+            try
+            {
+                var resultado = almacen.Ejecutar(id, escritura, accion);
+                if (escritura) avisos?.PublicarPartida(almacen, id);
+                return resultado;
+            }
             catch (ExcepcionPartida error)
             {
                 throw new ErrorApi(error.Codigo == "eleccionInvalida" ? 422 : 409, error.Codigo, error.Message);

@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="../subir-personajes/ejemplos/personajes.json" LogicalName="Proyecto_Integrador_Final.personajes-predeterminados.json" />
     <Compile Include="../comun/EntradaConsola.cs" Link="EntradaConsola.cs" />
   </ItemGroup>
 

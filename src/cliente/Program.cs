@@ -29,18 +29,8 @@ internal static class Program
                 Console.SetOut(new StreamWriter(new FileStream(new SafeFileHandle((IntPtr)1, ownsHandle: false),
                     FileAccess.Write), new UTF8Encoding(false)) { AutoFlush = true });
             using var flujo = Console.IsInputRedirected ? new StreamReader(Console.OpenStandardInput()) : null;
-            TextReader lector = flujo ?? Console.In;
-            // La sesión dura todo el proceso, incluidos los reintentos y la corrección de datos.
-            Guid idSesion = Guid.NewGuid();
-            bool corregir;
-            do
-            {
-                var configuracion = await ConfiguracionCliente.LeerAsync(lector, Console.Out, cierre.Token);
-                // Cada configuración tiene su transporte y coordinador para no mezclar operaciones de otras plazas.
-                using var cliente = new ClientePartidaHttp(configuracion, idSesion);
-                using var entrada = new EntradaCliente(lector);
-                corregir = await new SesionPartidaCliente(configuracion, cliente, new InterfazConsola()).Ejecutar(entrada, cierre.Token);
-            } while (corregir && !cierre.IsCancellationRequested);
+            TextReader lector = flujo is null ? Console.In : new EntradaLineas(flujo);
+            await new InicioCliente(lector, Console.Out, AccesoLocal.DelUsuario()).Ejecutar(cierre.Token);
             return 0;
         }
         // EOF y cancelación cierran localmente; solo el menú confirmado puede enviar abandono.

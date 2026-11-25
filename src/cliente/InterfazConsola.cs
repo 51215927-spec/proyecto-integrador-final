@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -14,7 +15,7 @@ internal sealed partial class InterfazConsola
     private static readonly Style Barra = new(Verde, new Color(32, 44, 36), Decoration.Bold);
     private static readonly Style Borde = new(new Color(95, 120, 105));
 
-    private const string Controles = "Flechas, WASD o HJKL\nEnter para confirmar.";
+    private const string Controles = "Escribí una opción o navegá con flechas, WASD o HJKL\nEnter para confirmar.";
 
     private readonly TextReader entrada;
     private readonly bool leerTeclas;
@@ -47,6 +48,35 @@ internal sealed partial class InterfazConsola
     {
         Encabezado(local, "Preparación");
         Paneles(PanelInfo("Jugador local", local ?? "Identidad pendiente"), PanelInfo("Estado", TextoVisible(estado)));
+    }
+
+    internal void MostrarInicio(string? perfil, string situacion, IReadOnlyList<string> opciones, int foco,
+        string servidor, string? detalle = null)
+    {
+        Encabezado(perfil, situacion, detalle);
+        Paneles(PanelInfo("Servidor", servidor),
+            PanelInfo("GUERRA", "Partidas de cartas · elegí una opción para continuar."));
+        Paneles(PanelInfo("Inicio", ListaOpciones(opciones, foco)));
+        Pie(Controles);
+    }
+
+    internal void MostrarCampo(string? perfil, string situacion, string campo, string valor,
+        string servidor, string? detalle = null)
+    {
+        Encabezado(perfil, situacion, detalle);
+        Paneles(PanelInfo("Servidor", servidor));
+        Paneles(PanelInfo(campo, $"> {valor}_"));
+        Pie("Escribí el texto · Enter para confirmar · Esc para cancelar");
+    }
+
+    internal void MostrarSala(string perfil, string estado, string rival,
+        string? aviso, IReadOnlyList<string> opciones, int foco, string servidor)
+    {
+        Encabezado(perfil, estado, aviso);
+        Paneles(PanelInfo("Servidor", servidor), PanelInfo("Sala", rival));
+        Paneles(PanelInfo("Inicio automático", "La partida empieza al encontrar rival y tener catálogo suficiente."));
+        Paneles(PanelInfo("Acciones", ListaOpciones(opciones, foco)));
+        Pie(Controles);
     }
 
     public void MostrarEsperaInicial(string local, string participantes, string motivo)
@@ -87,11 +117,11 @@ internal sealed partial class InterfazConsola
     public CartaVisible PedirCarta(IReadOnlyList<CartaVisible> mano)
     {
         CartaVisible[] opciones = CopiarOpciones(mano);
-        int elegida = Elegir(opciones.Length, foco =>
+        int elegida = Elegir(opciones.Select(c => c.Nombre).ToArray(), (foco, texto) =>
         {
             Encabezado((string?)null, "Elegí una carta");
             MostrarMano(opciones, foco);
-            Pie(Controles);
+            Pie(ControlesConTexto(texto));
         });
         return opciones[elegida];
     }
@@ -99,14 +129,14 @@ internal sealed partial class InterfazConsola
     public CartaVisible PedirCarta(MesaVisible mesa, IReadOnlyList<CartaVisible> cartas, bool abre)
     {
         CartaVisible[] opciones = CopiarOpciones(cartas);
-        int elegida = Elegir(opciones.Length, foco =>
+        int elegida = Elegir(opciones.Select(c => c.Nombre).ToArray(), (foco, texto) =>
         {
             string estado = abre
                 ? $"Rondas ganadas · {Rondas(mesa)}"
                 : $"Te toca responder · Marcador · Combates {Combates(mesa)} · Rondas {Rondas(mesa)}";
             Encabezado(mesa, estado);
             MostrarMano(opciones, foco, abre ? "Tu mano" : "Cartas disponibles");
-            Pie(abre ? $"Tu turno\nDespués elegís el atributo.\n{Controles}" : Controles);
+            Pie(abre ? $"Tu turno\nDespués elegís el atributo.\n{ControlesConTexto(texto)}" : ControlesConTexto(texto));
         });
         return opciones[elegida];
     }
@@ -117,7 +147,7 @@ internal sealed partial class InterfazConsola
         if (opciones.Length == 0)
             throw new InvalidOperationException("Se solicitó un atributo sin opciones disponibles.");
 
-        int elegida = Elegir(opciones.Length, foco =>
+        int elegida = Elegir(opciones, (foco, texto) =>
         {
             if (mesa is null)
                 Encabezado((string?)null, "Elegí un atributo");
@@ -125,7 +155,7 @@ internal sealed partial class InterfazConsola
                 Encabezado(mesa, "Elegí un atributo");
 
             Paneles(PanelInfo("Atributo del combate", ListaOpciones(opciones, foco)));
-            Pie(Controles);
+            Pie(ControlesConTexto(texto));
         });
         return opciones[elegida];
     }
@@ -329,15 +359,47 @@ internal sealed partial class InterfazConsola
     private static Text Opcion(string opcion, bool enfocada) =>
         enfocada ? new Text($"> {TextoVisible(opcion)}", Barra) : new Text($"  {TextoVisible(opcion)}");
 
-    private int Elegir(int cantidad, Action<int> dibujar)
+    private static string ControlesConTexto(string texto) =>
+        texto.Length == 0 ? Controles : $"{Controles}\nOpción: {TextoVisible(texto)}";
+
+    private int Elegir(IReadOnlyList<string> opciones, Action<int, string> dibujar)
     {
         int foco = 0;
-        dibujar(foco);
+        var texto = new StringBuilder();
+        dibujar(foco, "");
         while (true)
         {
-            ConsoleKey tecla = LeerTecla();
+            var entrada = LeerTecla();
+            ConsoleKey tecla = entrada.Tecla;
+            if (entrada.Texto is { } linea)
+            {
+                int directa = EntradaTeclado.IndiceOpcion(linea, opciones);
+                if (directa >= 0) return directa;
+                tecla = EntradaTeclado.Tecla(linea);
+                if (tecla == ConsoleKey.Enter && linea.Length > 0)
+                {
+                    if (EntradaTeclado.EsIgual(linea, "enter")) return foco;
+                    continue;
+                }
+            }
             if (tecla == ConsoleKey.Enter)
-                return foco;
+            {
+                if (texto.Length == 0) return foco;
+                int directa = EntradaTeclado.IndiceOpcion(texto.ToString(), opciones);
+                if (directa >= 0) return directa;
+                if (EntradaTeclado.EsSecuenciaAtajosNavegacion(texto.ToString()))
+                { texto.Clear(); return foco; }
+                dibujar(foco, texto.ToString());
+                continue;
+            }
+
+            bool cambioTexto = false;
+            if (tecla is ConsoleKey.UpArrow or ConsoleKey.DownArrow or ConsoleKey.LeftArrow or ConsoleKey.RightArrow)
+            { cambioTexto = texto.Length > 0; texto.Clear(); }
+            else if (tecla == ConsoleKey.Backspace && texto.Length > 0)
+            { texto.Length--; cambioTexto = true; }
+            else if (!char.IsControl(entrada.Caracter))
+            { texto.Append(entrada.Caracter); cambioTexto = true; }
 
             int paso = tecla switch
             {
@@ -346,37 +408,28 @@ internal sealed partial class InterfazConsola
                 _ => 0
             };
 
-            int nuevo = Math.Clamp(foco + paso, 0, cantidad - 1);
+            int nuevo = Math.Clamp(foco + paso, 0, opciones.Count - 1);
             if (nuevo != foco)
             {
                 foco = nuevo;
-                dibujar(foco);
+                dibujar(foco, texto.ToString());
             }
+            else if (cambioTexto) dibujar(foco, texto.ToString());
         }
     }
 
-    private ConsoleKey LeerTecla()
+    private (ConsoleKey Tecla, string? Texto, char Caracter) LeerTecla()
     {
         if (leerTeclas)
-            return Console.ReadKey(intercept: true).Key;
+        {
+            var tecla = Console.ReadKey(intercept: true);
+            if (tecla.KeyChar is '\u0004' or '\u001a') throw new EndOfStreamException("Fin de la entrada de consola.");
+            return (tecla.Key, null, tecla.KeyChar);
+        }
 
-        // Con entrada por líneas, una línea vacía equivale a presionar Enter.
         string linea = entrada.ReadLine()
             ?? throw new EndOfStreamException("Se cerró la entrada de consola.");
-
-        return linea.Trim().ToLowerInvariant() switch
-        {
-            "" => ConsoleKey.Enter,
-            "w" => ConsoleKey.W,
-            "a" => ConsoleKey.A,
-            "s" => ConsoleKey.S,
-            "d" => ConsoleKey.D,
-            "h" => ConsoleKey.H,
-            "j" => ConsoleKey.J,
-            "k" => ConsoleKey.K,
-            "l" => ConsoleKey.L,
-            _ => ConsoleKey.NoName
-        };
+        return (EntradaTeclado.Tecla(linea), linea.Trim(), '\0');
     }
 
     // Los caracteres de control y formato se reemplazan por espacios al mostrar texto.

@@ -16,6 +16,7 @@ internal sealed class ClientePartidaHttp : IDisposable
 {
     private readonly HttpClient http;
     private readonly ConfiguracionCliente configuracion;
+    private readonly ClienteAccesoHttp? acceso;
     internal Guid IdSesion { get; }
     // Los DTO siguen camelCase y rechazan números JSON codificados como texto.
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
@@ -23,9 +24,10 @@ internal sealed class ClientePartidaHttp : IDisposable
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict,
     };
 
-    internal ClientePartidaHttp(ConfiguracionCliente configuracion, Guid idSesion, HttpMessageHandler? handler = null)
+    internal ClientePartidaHttp(ConfiguracionCliente configuracion, Guid idSesion, HttpMessageHandler? handler = null, ClienteAccesoHttp? acceso = null)
     {
         this.configuracion = configuracion;
+        this.acceso = acceso;
         IdSesion = idSesion;
         // No seguir redirecciones evita enviar las cabeceras de identidad a otro destino.
         http = new(handler ?? new HttpClientHandler { AllowAutoRedirect = false })
@@ -37,7 +39,7 @@ internal sealed class ClientePartidaHttp : IDisposable
     // Incorporación y reintentos conservan el UUID generado para este proceso.
     internal Task<SesionConfirmada> Incorporar(CancellationToken ct) =>
         Enviar<SesionConfirmada>(HttpMethod.Put, "participantes/me/sesion", new IncorporacionCliente(IdSesion, configuracion.Nombre), ct);
-    internal Task Renovar(CancellationToken ct) => Enviar<object>(HttpMethod.Put, "participantes/me/presencia", null, ct);
+    internal Task Renovar(CancellationToken ct) => acceso is null ? Enviar<object>(HttpMethod.Put, "participantes/me/presencia", null, ct) : acceso.Renovar(ct);
     internal Task<PresentacionCliente> Presentacion(CancellationToken ct) => Enviar<PresentacionCliente>(HttpMethod.Get, "presentacion", null, ct);
     internal Task<ReciboCliente> Elegir(EleccionCliente eleccion, CancellationToken ct) => Enviar<ReciboCliente>(HttpMethod.Post, "elecciones", eleccion, ct);
     // Consultar el recibo permite resolver una respuesta perdida antes de reenviar la elección.
