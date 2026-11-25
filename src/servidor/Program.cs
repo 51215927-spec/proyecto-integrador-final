@@ -25,13 +25,9 @@ internal static class Program
             try
             {
                 await using var app = ServidorHttp.Crear([], inicio: inicio);
-                var juego = app.Services.GetRequiredService<CoordinadorPartidas>();
+                CatalogoPredeterminado.CargarSiVacio(app.Services.GetRequiredService<CatalogoPersonajes>());
                 await app.StartAsync();
-                var consola = Task.Run(() => ConsolaServidor.Ejecutar(juego, app.Services.GetRequiredService<AdministradorSesiones>(),
-                    app.Services.GetRequiredService<CatalogoPersonajes>(), Console.In, Console.Out,
-                    app.Lifetime.ApplicationStopping));
-                var terminada = await Task.WhenAny(consola, app.WaitForShutdownAsync());
-                await terminada;
+                await app.WaitForShutdownAsync();
                 await app.StopAsync();
                 return 0;
             }

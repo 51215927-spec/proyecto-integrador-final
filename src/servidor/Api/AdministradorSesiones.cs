@@ -3,7 +3,7 @@ namespace Proyecto_Integrador_Final.Api;
 internal sealed record Incorporacion(Guid IdSesion, string? Nombre);
 internal sealed record Sesion(string Rol, Guid IdSesion, DateTimeOffset VenceUtc);
 
-internal sealed class AdministradorSesiones(AlmacenPartidas almacen, TimeProvider reloj)
+internal sealed class AdministradorSesiones(AlmacenPartidas almacen, TimeProvider reloj, Avisos? avisos = null)
 {
     private readonly Dictionary<(Guid, string), Sesion> sesiones = [];
     internal object Sincronizacion => almacen.Infraestructura.Sincronizacion;
@@ -25,6 +25,15 @@ internal sealed class AdministradorSesiones(AlmacenPartidas almacen, TimeProvide
         }
     }
 
+    internal void IncorporarAutenticado(Guid partida, string rol, Guid sesion)
+    {
+        lock (Sincronizacion)
+        {
+            almacen.ExigirParticipante(partida, rol);
+            sesiones[(partida, rol)] = new(rol, sesion, reloj.GetUtcNow().AddSeconds(15));
+        }
+    }
+
     internal void Renovar(Guid id, string? credencial, Guid idSesion)
     {
         lock (Sincronizacion)
@@ -41,6 +50,7 @@ internal sealed class AdministradorSesiones(AlmacenPartidas almacen, TimeProvide
         {
             almacen.ExigirParticipante(id, rol);
             sesiones.Remove((id, rol));
+            avisos?.PublicarPartida(almacen, id);
         }
     }
 
@@ -50,6 +60,7 @@ internal sealed class AdministradorSesiones(AlmacenPartidas almacen, TimeProvide
         {
             var nueva = almacen.ReemplazarCredencial(id, rol);
             sesiones.Remove((id, rol));
+            avisos?.PublicarPartida(almacen, id);
             return nueva;
         }
     }

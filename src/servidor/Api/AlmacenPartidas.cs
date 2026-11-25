@@ -26,6 +26,33 @@ internal sealed class AlmacenPartidas : IDisposable
         });
     }
 
+    // Estado y adjudicación se confirman juntos; una falla no deja partidas parciales.
+    internal Guid CrearAutomatica(InvitadoGuardado primero, InvitadoGuardado segundo, CatalogoPersonajes catalogo) =>
+        Infraestructura.Ejecutar(true, db =>
+        {
+            var estado = new EstadoPartida { Id = Guid.NewGuid() };
+            estado.Participantes[0].Nombre = primero.Nombre;
+            estado.Participantes[1].Nombre = segundo.Nombre;
+            new Partida(estado).Iniciar(catalogo.CopiarActivos(db));
+            var guardada = new PartidaGuardada { Id = estado.Id };
+            var participantes = new[]
+            {
+                new ParticipanteGuardado { IdPartida = estado.Id, Rol = "J1", Hash = primero.Hash, Nombre = primero.Nombre },
+                new ParticipanteGuardado { IdPartida = estado.Id, Rol = "J2", Hash = segundo.Hash, Nombre = segundo.Nombre }
+            };
+            db.Partidas.Add(guardada);
+            db.Participantes.AddRange(participantes);
+            db.Asignaciones.AddRange(
+                new AsignacionInvitado { IdInvitado = primero.Id, IdPartida = estado.Id, Rol = "J1" },
+                new AsignacionInvitado { IdInvitado = segundo.Id, IdPartida = estado.Id, Rol = "J2" });
+            Guardar(db, guardada, participantes, estado);
+            return estado.Id;
+        });
+
+    internal AsignacionInvitado? Activa(Guid invitado) => Infraestructura.Ejecutar(false, db =>
+        (from a in db.Asignaciones join p in db.Partidas on a.IdPartida equals p.Id
+         where a.IdInvitado == invitado && p.Fase != "finalizada" select a).SingleOrDefault());
+
     internal T Ejecutar<T>(Guid id, bool escritura, Func<UnidadPartida, T> accion) =>
         Infraestructura.Ejecutar(escritura, db =>
         {
