@@ -22,7 +22,7 @@ La API y el dominio tienen responsabilidades distintas: la API identifica al jug
 
 ## Conexión en red local
 
-El diseño prevé conexiones HTTP en la red local por el puerto TCP 5000. Cada cliente de juego solicita la dirección base del servidor por consola al iniciar. Una URL de ejemplo es `http://192.168.1.20:5000`. En la instalación se usa la IP asignada al equipo servidor.
+El diseño prevé conexiones HTTP en la red local por el puerto TCP 5000. Cada cliente usa localhost por defecto y permite recordar otra dirección desde Conexión. Una URL de ejemplo es `http://192.168.1.20:5000`. En la instalación se usa la IP asignada al equipo servidor.
 
 Localhost identifica la computadora del propio proceso: sirve para probar clientes y servidor en el mismo equipo. El cliente de otra computadora debe usar la dirección de red del servidor. Este debe aceptar conexiones en una interfaz accesible desde esa red, no limitarse a localhost; El servidor escucha por defecto en `0.0.0.0:5000`. La pregunta inicial permite elegir otra dirección de escucha.
 
@@ -52,9 +52,9 @@ Antes de iniciar el host, la consola pide dirección de escucha (Enter: `http://
 
 Cada acción solicita por separado el UUID, la plaza (`J1` o `J2`) o el ID numérico positivo del personaje que corresponda. Los valores inválidos vuelven a pedirse. Fin de entrada cancela la acción incompleta y detiene el servidor.
 
-Para iniciar una partida, cargar al menos seis personajes activos con `subir-personajes`. Ejecutar `crear`, incorporar a ambos jugadores y luego ejecutar `iniciar` con el UUID. El servidor conserva los datos de juego al reiniciar. Para seguir una partida, ambos jugadores se reincorporan con sus credenciales.
+Para iniciar una partida nueva, cargar seis personajes activos con `subir-personajes`; los clientes eligen Jugar y el servidor inicia automáticamente cuando encuentra una pareja. Las partidas creadas con el flujo v1 pueden recuperarse desde el cliente con sus credenciales originales. El servidor conserva los datos de juego al reiniciar. Para seguir una partida, ambos jugadores se reincorporan con sus credenciales.
 
-### Prueba del servidor en una sola computadora
+### Prueba manual excepcional del contrato v1 en una computadora
 
 Desde la raíz del repositorio, usá una base de prueba para que el catálogo y las partidas del ensayo queden en un archivo propio. En PowerShell, ejecutá:
 
@@ -70,7 +70,31 @@ dotnet run --project src/servidor/servidor.csproj
 
 Si el inicio falla, verificá que el UUID corresponda a la partida creada, que ambas sesiones sigan vigentes y que el catálogo tenga suficientes personajes activos. Al terminar, detené el servidor con Ctrl+C. Si volvés a iniciarlo con el mismo archivo, conserva la partida y requiere que ambos participantes vuelvan a incorporarse.
 
-## Administración e identidad
+## Inicio automático y avisos (v2)
+
+El flujo normal usa las siguientes rutas; v1 sigue disponible para juego y recuperación excepcional.
+
+| Método y ruta | Función |
+|---|---|
+| `POST /api/v2/invitados` | Recibe `{ "nombre": null }` o nombre de hasta 80 caracteres. Emite HTTP 201 `{ "id": "UUID", "secreto": "aleatorio" }`. Nombre omitido: Invitado. |
+| `PUT /api/v2/acceso/disponibilidad` | Consulta autenticada `{ "disponible": true/false }`, sin incorporar ni renovar sesión. |
+| `PUT /api/v2/acceso/sesion` | Incorpora o recupera sesión y devuelve estado completo. |
+| `GET /api/v2/acceso` | Devuelve el estado autorizado del invitado. |
+| `PUT /api/v2/acceso/presencia` | Renueva presencia de invitado y su plaza iniciada; devuelve 204 sin estado. |
+| `PUT /api/v2/acceso/jugar` | Encola una vez o devuelve asignación existente. |
+| `PUT /api/v2/acceso/cancelar` | Retira cola/sala; si ya inició devuelve partida sin abandonarla. |
+| `PUT /api/v2/acceso/salir` | Libera sesión y reserva previa; conserva partida iniciada. |
+| `GET /api/v2/avisos` | Stream SSE con `data: cambio` y línea vacía. Sin datos privados. |
+
+Disponibilidad exige secreto e identidad; no exige ni adquiere sesión. Excepto el alta, las demás exigen `Authorization: Bearer <secreto>`, `X-Invitado: <UUID>`, y `X-Sesion: <UUID temporal>`. Las acciones PUT no necesitan datos de juego. El estado contiene `estado` (libre, buscando, sala, partida), `nombre`, `rival`, `aviso` y `partida` (UUID interno o null); no contiene secretos. El cliente nunca pide estos identificadores al usuario. Identidad inválida: 401 invitadoInvalido; otra sesión vigente: 409 sesionOcupada; sesión vencida: 409 sesionVencida. Se conservan el sobre de errores y 503 por almacenamiento no disponible.
+
+La cola es FIFO entre invitados presentes. Cancelar o vencer una sala devuelve al rival conectado al final de la cola con rivalSalio. La partida inicia en cuanto hay una pareja y seis personajes activos; si faltan, ambos ven catalogoInsuficiente y los intentos automáticos se repiten al actualizar estado o presencia, sin inicio parcial. Cancelación e inicio se serializan bajo la sincronización compartida; el resultado posterior al inicio conserva la partida. El abandono solo usa el endpoint explícito v1 y su confirmación de interfaz.
+
+SSE autentica antes de suscribir y al emitir; entrega invalidaciones agrupadas por invitado. El cliente consulta estado completo al conectar/reconectar y tras avisos, sin polling estable. La conexión usa cabeceras, nunca secretos en URL. Reintentos esperan 1, 2 y 5 segundos; presencia cada cinco y vencimiento a quince. Avisos duplicados o agrupados no aplican jugadas. Presentaciones y recibos v1 conservan las revisiones y privacidad existentes.
+
+Las tablas nuevas son aditivas. Reiniciar conserva identidad y asignación iniciada; descarta presencia, cola y salas pendientes. Las partidas y credenciales antiguas permanecen en la base; el cliente actual no ofrece su recuperación. No se vinculan plazas por nombre. El servidor filtra logs rutinarios de peticiones y EF Core a Warning, conservando advertencias y errores.
+
+## Administración e identidad (contrato v1)
 
 El operador crea, inicia y cancela partidas mediante la consola local del servidor. La creación genera un UUID de partida y dos credenciales aleatorias independientes, una por plaza J1/J2, que el operador entrega a cada jugador fuera de la API. Solo se almacena el hash de cada credencial. El cliente envía su credencial en `Authorization: Bearer` y el servidor deduce la plaza. El nombre visible se registra al incorporarse y queda fijo. El operador puede reemplazar una credencial desde el servidor y revocar la sesión anterior sin cambiar de plaza ni perder la mano.
 
@@ -144,7 +168,7 @@ Cada solicitud de alta válida crea un personaje. La idempotencia por `idOperaci
 
 ### Mantenimiento del catálogo
 
-El operador retira personajes desactivándolos por ID. Las partidas iniciadas conservan su copia de los personajes después de reiniciar o desactivar un personaje.
+El servidor no tiene consola administrativa; el acceso excepcional v1 solo permite recuperar partidas existentes. El catálogo se gestiona por HTTP con la herramienta subir-personajes. El servidor retira personajes desactivándolos mediante el acceso HTTP administrativo configurado. Las partidas iniciadas conservan su copia de los personajes después de reiniciar o desactivar un personaje.
 
 Cada escritura de juego usa una transacción SQLite con adquisición del turno de escritura antes de leer el estado para validar. Se comprueba primero si existe el recibo propio. Si los campos normalizados coinciden se devuelve el recibo guardado sin aplicar otra transición. Si difieren, se rechaza con `operacionIncompatible`. Para una operación nueva se comprueban presencia, fase, revisión, titular, solicitud, carta y atributo. Se confirman juntos estado, solicitud consumida, revisión y recibo. Si la escritura no está disponible se devuelve `503`; el cliente reutiliza el identificador original. Los recibos se conservan junto con la partida, incluso finalizada. Inicio y cancelación locales validan la transición desde la fase persistida antes de modificarla.
 
@@ -189,3 +213,7 @@ Si se pierde la respuesta, consultá `GET /elecciones/{idOperacion}` con la mism
 `GET /api/v1/personajes/resumen` y `PUT /api/v1/personajes` requieren la misma cabecera `Authorization: Bearer <credencial de catálogo>` que el POST individual existente. GET devuelve `{ "cantidad": N }`, contando activos e inactivos. PUT recibe directamente la lista del [formato JSON](../src/subir-personajes/README.md), valida todos sus elementos y reemplaza las filas del catálogo en una transacción. Devuelve HTTP 200 con `{ "cantidad": N }` tras el commit; asigna IDs 1..N y marca todos activos. No modifica tablas de partidas.
 
 Una entrada inválida devuelve 400 con `codigo`, `mensaje` localizable e `idSeguimiento`; credencial ausente o incorrecta devuelve 401 y almacenamiento no disponible, 503. El POST individual conserva su contrato. Un fallo de guardado revierte el reemplazo. Perder la respuesta HTTP puede ocultar un commit exitoso: no implica rollback ni autoriza reintento automático.
+
+### Perfiles locales
+
+Un usuario del sistema puede guardar varios accesos de invitado para el mismo servidor. Cada acceso conserva exclusión de sesión independiente. Consultar disponibilidad no reserva el perfil; un 409 sesionOcupada al incorporarse exige actualizar disponibilidad y volver a elegir. No se añaden tablas ni se vinculan identidades por nombre. El cliente ofrece Crear perfil; Jugar selecciona sin pregunta cuando hay exactamente un perfil libre.

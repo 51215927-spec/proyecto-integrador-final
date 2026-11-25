@@ -1,15 +1,22 @@
-# Cliente REST
+# Cliente
 
-Conecta una plaza de una partida al servidor y muestra cartas, turnos y resultados con Spectre.Console. Desde la raíz ejecutá `dotnet run --project src/cliente`.
+Desde la raíz ejecutá `dotnet run --project src/cliente`. El menú ofrece **Jugar**, **Crear perfil**, **Administrar perfiles**, **Conexión** y **Salir**. Escribí la opción o su número y Enter; también podés navegar con flechas, WASD o HJKL. Usa `http://localhost:5000/` por defecto; Conexión permite cambiar y recordar la dirección. En otra computadora usá la dirección del servidor.
 
-Ingresá la URL base HTTP/HTTPS, el UUID de la partida, la credencial de tu plaza y tu nombre. Al retomar, el nombre debe coincidir exactamente. La credencial se oculta en terminal interactiva. El operador crea e inicia la partida desde el servidor.
+La primera vez que elegís Jugar se pide un nombre opcional (Enter: Invitado). Cada perfil tiene su propio acceso y partidas. Podés crear varios desde el mismo usuario del sistema con Crear perfil. El cliente conserva automáticamente esos accesos por servidor en `GuerraCartas`, dentro de los datos locales del usuario (`%LOCALAPPDATA%` en Windows y el directorio de datos del usuario en Unix). La carpeta y los archivos se restringen al usuario. No compartas esos archivos: contienen el acceso para retomar. Cambiar de equipo o borrar el acceso no permite recuperar una partida por nombre.
 
-Usá flechas, WASD o HJKL y Enter para elegir carta y, si corresponde, atributo. Cada resultado se lee en una pantalla separada: Enter presenta el siguiente resultado o el estado vigente. Durante la lectura continúan las consultas y la presencia. Las cartas muestran nombre y atributos.
+Al elegir Jugar, el cliente consulta cuáles de tus perfiles están libres. Si hay uno solo libre, entra automáticamente; si hay varios, muestra sus nombres numerados para elegir. Los ocupados no se ofrecen para entrar. Si todos están en uso, podés crear otro perfil, reintentar o volver. La consulta no ocupa perfiles ni extiende sesiones ajenas. Si otro cliente toma el perfil durante la selección, se actualiza la disponibilidad. El acceso único guardado por la versión anterior se conserva automáticamente como primer perfil.
 
-Esc abre Continuar, Salir sin abandonar y Abandonar partida. Abandonar requiere confirmar Sí; No es la opción inicial. Ctrl+C y fin de entrada salen localmente sin abandonar. La plaza puede seguir ocupada hasta quince segundos desde su última renovación o hasta que el operador cierre la sesión.
+En **Administrar perfiles** podés borrar el perfil seleccionado pulsando Delete o Backspace. Se elimina de este dispositivo sin confirmación; el servidor no borra partidas ya iniciadas.
 
-La reconexión es automática. Una elección con respuesta perdida se comprueba por su recibo antes de reenviar el mismo cuerpo. Al cerrar no se guardan credenciales ni operaciones: para retomar, ingresá nuevamente los datos. El historial previo no se reproduce.
+Jugar muestra **Buscando oponente**; cuando llega otro invitado, el servidor inicia automáticamente una sola partida si hay seis personajes activos, sin confirmación manual. Si falta catálogo, ambos ven el aviso y el cliente reintenta automáticamente al actualizar su presencia; también pueden cancelar la búsqueda. Si sale el rival antes del inicio, volvés a buscar.
 
-Con entrada redirigida, enviá una acción por línea: letras de movimiento, línea vacía para Enter y `esc` para el menú. EOF cierra sin abandonar. La salida redirigida conserva las pantallas por líneas.
+Durante el juego podés escribir el nombre de la carta o atributo y Enter, o navegar con flechas, WASD o HJKL. Cada resultado se lee por separado. Esc abre Continuar, Salir sin abandonar y Abandonar partida; también podés escribir la opción. Abandonar requiere confirmar Sí; No es la opción inicial. Ctrl+C y fin de entrada salen sin abandonar. La salida normal libera la sesión; después de un corte puede seguir ocupada hasta quince segundos.
 
-[Arquitectura](../../docs/arquitectura.md) · [Instalación y uso](../../docs/instalacion-y-uso.md) · [Pruebas](../../docs/plan-de-pruebas.md)
+Los cambios llegan por avisos autenticados; no se consulta periódicamente la presentación. Al cortar la conexión aparece Reconectando… y se reintenta con esperas de 1, 2 y 5 segundos. Una elección con respuesta perdida se comprueba por su recibo antes de reenviarse. Al reabrir, elegí Jugar y **Retomar** para continuar tu partida activa. No se inicia otra búsqueda al terminar una partida.
+
+Un error de archivo local ofrece Reintentar o Salir sin reemplazar la identidad. Si el servidor rechaza definitivamente el acceso, escribir NUEVO confirma crear otro invitado; esa acción no recupera partidas del anterior. Cada perfil admite una sesión simultánea; distintas terminales del mismo usuario pueden jugar usando perfiles distintos.
+
+
+Con entrada redirigida se envía una acción por línea; en el juego, línea vacía es Enter y `esc` abre el menú. EOF cierra sin abandonar.
+
+[Instalación y uso](../../docs/instalacion-y-uso.md) · [Protocolo](../../docs/protocolo-de-partida.md) · [Pruebas](../../docs/plan-de-pruebas.md)
